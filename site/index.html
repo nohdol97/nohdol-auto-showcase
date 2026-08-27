@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="nohdol-auto 데스크톱 자동화 도구의 동작 방식과 승인 사용자용 설치 경로를 안내합니다."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <title>nohdol-auto 프로그램 소개</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <header class="hero">
+        <p class="eyebrow">NOHDOL AUTO</p>
+        <h1>자동화 도구를<br />한눈에 살펴보세요</h1>
+        <p class="intro">
+          실제 계정이나 결제 없이 만든 안전한 데모로 각 프로그램의 흐름을 확인할 수 있습니다.
+          설치 파일은 승인된 사용자에게만 별도 제공됩니다.
+        </p>
+      </header>
+
+      <aside class="notice" aria-label="설치 전 안내">
+        <strong>다운로드 접근 안내</strong>
+        <p>
+          이 설명 페이지는 공개되어 있지만 설치 파일은 공개 저장소에 두지 않습니다.
+          프로그램별 인증코드 검증에 성공한 경우에만 짧게 유효한 다운로드가 발급됩니다.
+        </p>
+      </aside>
+
+      <section aria-labelledby="apps-title">
+        <div class="section-heading">
+          <h2 id="apps-title">프로그램</h2>
+          <p id="catalog-status" role="status" aria-live="polite">목록을 불러오는 중입니다.</p>
+        </div>
+        <div id="app-list" class="app-list" aria-busy="true"></div>
+      </section>
+    </main>
+
+    <footer>
+      <p>인증코드는 브라우저에 저장하지 않으며 설치 파일은 비공개 저장소에서 전달됩니다.</p>
+    </footer>
+  </body>
+</html>
