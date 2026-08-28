@@ -55,7 +55,13 @@ function renderInstallForm(app, card) {
     option.value = item.id;
     asset.append(option);
   }
-  asset.value = app.defaultAssetId;
+  const detectedAssetId = window.showcasePlatform.detectAssetId(
+    navigator.userAgentData?.platform ?? navigator.platform ?? "",
+    navigator.userAgent ?? "",
+  );
+  asset.value = app.assets.some((item) => item.id === detectedAssetId)
+    ? detectedAssetId
+    : app.defaultAssetId;
   assetLabel.append(asset);
 
   const codeLabel = element("label", "field-label", "설치 인증코드");

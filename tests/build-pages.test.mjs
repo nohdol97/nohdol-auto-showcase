@@ -3,6 +3,7 @@ import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import vm from "node:vm";
 import { buildPages, validateCatalog } from "../scripts/build-pages.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
@@ -45,6 +46,18 @@ test("requires the default asset to reference an allowlisted installer", () => {
   assert.throws(() => validateCatalog(invalid), /valid default asset/);
 });
 
+test("detects supported desktop platforms and leaves mobile or unknown platforms to the app fallback", async () => {
+  const source = await readFile(path.join(root, "site", "platform.js"), "utf8");
+  const context = { window: {} };
+  vm.runInNewContext(source, context);
+  const { detectAssetId } = context.window.showcasePlatform;
+  assert.equal(detectAssetId("Win32", "desktop"), "windows");
+  assert.equal(detectAssetId("macOS", "desktop"), "macos");
+  assert.equal(detectAssetId("Linux x86_64", "desktop"), "linux");
+  assert.equal(detectAssetId("Linux armv8l", "Android 15"), null);
+  assert.equal(detectAssetId("", "unknown"), null);
+});
+
 test("the published catalog includes the AutoTrip workflow GIF", () => {
   assert.equal(catalog.apps[0].demoGif, "./assets/autotrip-workflow.gif");
   assert.match(catalog.apps[0].demoAlt, /실제 AutoTrip 프로그램/);
@@ -70,6 +83,7 @@ test("build creates catalog, detail, and installation routes without an authenti
   const detailRoute = await readFile(path.join(output, "apps", "autotrip", "index.html"), "utf8");
   const installRoute = await readFile(path.join(output, "install", "autotrip", "index.html"), "utf8");
   const appScript = await readFile(path.join(output, "app.js"), "utf8");
+  const platformScript = await readFile(path.join(output, "platform.js"), "utf8");
   const generated = await readFile(path.join(output, "apps.json"), "utf8");
   const demoGif = await readFile(path.join(output, "assets", "autotrip-workflow.gif"));
   assert.match(html, /data-page="catalog"/);
@@ -80,7 +94,8 @@ test("build creates catalog, detail, and installation routes without an authenti
   assert.match(installRoute, /<base href="\.\.\/\.\.\/"/);
   assert.match(appScript, /설치 인증코드/);
   assert.match(appScript, /설치 인증코드 필요/);
-  assert.match(appScript, /asset\.value = app\.defaultAssetId/);
+  assert.match(appScript, /app\.assets\.some/);
+  assert.match(platformScript, /"windows"/);
   assert.match(generated, /"defaultAssetId": "windows"/);
   assert.match(appScript, /제품키는 설치한 앱의 제품키 입력란에서만 사용합니다/);
   assert.match(generated, /설치 인증코드와 별도로 전달받은 일회용 제품키/);
