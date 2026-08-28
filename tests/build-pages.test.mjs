@@ -37,6 +37,14 @@ test("requires an app-specific activation note", () => {
   assert.throws(() => validateCatalog(invalid), /invalid app metadata/);
 });
 
+test("requires the default asset to reference an allowlisted installer", () => {
+  const valid = structuredClone(catalog);
+  assert.equal(validateCatalog(valid).apps[0].defaultAssetId, "windows");
+  const invalid = structuredClone(catalog);
+  invalid.apps[0].defaultAssetId = "android";
+  assert.throws(() => validateCatalog(invalid), /valid default asset/);
+});
+
 test("the published catalog includes the AutoTrip workflow GIF", () => {
   assert.equal(catalog.apps[0].demoGif, "./assets/autotrip-workflow.gif");
   assert.match(catalog.apps[0].demoAlt, /실제 AutoTrip 프로그램/);
@@ -72,6 +80,8 @@ test("build creates catalog, detail, and installation routes without an authenti
   assert.match(installRoute, /<base href="\.\.\/\.\.\/"/);
   assert.match(appScript, /설치 인증코드/);
   assert.match(appScript, /설치 인증코드 필요/);
+  assert.match(appScript, /asset\.value = app\.defaultAssetId/);
+  assert.match(generated, /"defaultAssetId": "windows"/);
   assert.match(appScript, /제품키는 설치한 앱의 제품키 입력란에서만 사용합니다/);
   assert.match(generated, /설치 인증코드와 별도로 전달받은 일회용 제품키/);
   assert.doesNotMatch(generated, /\/admin\/|product-keys|ADMIN_API_KEY/);

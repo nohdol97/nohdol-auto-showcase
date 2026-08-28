@@ -19,6 +19,7 @@ export function validateCatalog(catalog) {
     if (app.demoGif !== null && !SAFE_DEMO_PATH.test(app.demoGif)) throw new Error(`invalid demo GIF path: ${app.id}`);
     if (app.demoGif && (!app.demoAlt || !app.demoCaption)) throw new Error(`demo GIF requires alt text and caption: ${app.id}`);
     if (!Array.isArray(app.assets) || app.assets.length === 0 || app.assets.some((asset) => !SAFE_ID.test(asset.id) || !asset.label)) throw new Error(`app ${app.id} must define valid assets`);
+    if (!SAFE_ID.test(app.defaultAssetId) || !app.assets.some((asset) => asset.id === app.defaultAssetId)) throw new Error(`app ${app.id} must define a valid default asset`);
   }
   return catalog;
 }

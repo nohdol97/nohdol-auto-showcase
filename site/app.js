@@ -55,6 +55,7 @@ function renderInstallForm(app, card) {
     option.value = item.id;
     asset.append(option);
   }
+  asset.value = app.defaultAssetId;
   assetLabel.append(asset);
 
   const codeLabel = element("label", "field-label", "설치 인증코드");
