@@ -8,6 +8,7 @@ function element(tag, className, text) {
 function renderDemo(app, card) {
   if (!app.demoGif) return;
   const figure = element("figure", "workflow-demo");
+  figure.append(element("span", "demo-label", "TEST-ONLY WORKFLOW"));
   const image = element("img", "workflow-image");
   image.src = app.demoGif;
   image.alt = app.demoAlt;
@@ -19,8 +20,10 @@ function renderDemo(app, card) {
 
 function renderInstallForm(app, card) {
   const form = element("form", "access-panel");
-  const title = element("strong", "", "인증코드로 설치 파일 받기");
-  const description = element("p", "", "공유받은 프로그램 전용 인증코드를 입력하세요. 코드는 이 페이지에 저장되지 않습니다.");
+  const copy = element("div", "access-copy");
+  const title = element("strong", "", "최신 버전 설치하기");
+  const description = element("p", "", "프로그램별 인증코드는 브라우저에 저장하지 않습니다.");
+  copy.append(title, description);
   const assetLabel = element("label", "field-label", "운영체제");
   const asset = element("select", "field-control");
   asset.name = "assetId";
@@ -43,7 +46,7 @@ function renderInstallForm(app, card) {
   const status = element("p", "form-status", app.authEndpoint ? "" : "인증 서버 배포 후 다운로드가 활성화됩니다.");
   status.role = "status";
   submit.disabled = !app.authEndpoint;
-  form.append(title, description, assetLabel, codeLabel, submit, status);
+  form.append(copy, assetLabel, codeLabel, submit, status);
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     submit.disabled = true;
@@ -69,8 +72,12 @@ function renderApp(app) {
   const card = element("article", "app-card");
   const header = element("div", "app-header");
   const heading = element("div");
-  heading.append(element("h3", "", app.name), element("p", "app-description", app.description));
-  header.append(heading);
+  heading.append(
+    element("span", "app-kicker", "DESKTOP AUTOMATION"),
+    element("h3", "", app.name),
+    element("p", "app-description", app.description),
+  );
+  header.append(heading, element("span", "app-status", "배포 준비됨"));
   card.append(header);
   renderDemo(app, card);
   renderInstallForm(app, card);

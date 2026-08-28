@@ -26,7 +26,15 @@ test("accepts only an HTTPS authorize endpoint", () => {
 test("requires accessible text for a demo GIF", () => {
   const invalid = structuredClone(catalog);
   invalid.apps[0].demoGif = "./assets/autotrip-workflow.gif";
+  invalid.apps[0].demoAlt = null;
+  invalid.apps[0].demoCaption = null;
   assert.throws(() => validateCatalog(invalid), /alt text and caption/);
+});
+
+test("the published catalog includes the AutoTrip workflow GIF", () => {
+  assert.equal(catalog.apps[0].demoGif, "./assets/autotrip-workflow.gif");
+  assert.match(catalog.apps[0].demoAlt, /예약 화면에 가짜 탑승객 정보를 자동 입력/);
+  assert.match(catalog.apps[0].demoCaption, /가짜 항공편/);
 });
 
 test("build writes only public app metadata and never an authentication code", async () => {
@@ -35,6 +43,8 @@ test("build writes only public app metadata and never an authentication code", a
   await buildPages({ catalog: path.join(root, "apps.json"), site: path.join(root, "site"), output });
   const html = await readFile(path.join(output, "index.html"), "utf8");
   const generated = await readFile(path.join(output, "apps.json"), "utf8");
+  const demoGif = await readFile(path.join(output, "assets", "autotrip-workflow.gif"));
   assert.match(html, /프로그램별 인증코드/);
   assert.doesNotMatch(generated, /INSTALL_ACCESS_CODE|releases\/download|browser_download_url/);
+  assert.equal(demoGif.subarray(0, 6).toString("ascii"), "GIF89a");
 });
