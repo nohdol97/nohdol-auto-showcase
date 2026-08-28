@@ -77,7 +77,7 @@ function renderApp(app) {
     element("h3", "", app.name),
     element("p", "app-description", app.description),
   );
-  header.append(heading, element("span", "app-status", "배포 준비됨"));
+  header.append(heading, element("span", "app-status", "인증코드 필요"));
   card.append(header);
   renderDemo(app, card);
   renderInstallForm(app, card);

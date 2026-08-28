@@ -42,9 +42,12 @@ test("build writes only public app metadata and never an authentication code", a
   const output = path.join(temporary, "site");
   await buildPages({ catalog: path.join(root, "apps.json"), site: path.join(root, "site"), output });
   const html = await readFile(path.join(output, "index.html"), "utf8");
+  const appScript = await readFile(path.join(output, "app.js"), "utf8");
   const generated = await readFile(path.join(output, "apps.json"), "utf8");
   const demoGif = await readFile(path.join(output, "assets", "autotrip-workflow.gif"));
   assert.match(html, /프로그램별 인증코드/);
+  assert.match(appScript, /인증코드 필요/);
+  assert.doesNotMatch(appScript, /배포 준비됨/);
   assert.doesNotMatch(generated, /INSTALL_ACCESS_CODE|releases\/download|browser_download_url/);
   assert.equal(demoGif.subarray(0, 6).toString("ascii"), "GIF89a");
 });
