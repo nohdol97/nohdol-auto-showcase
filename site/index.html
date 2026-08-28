@@ -5,95 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="nohdol-auto 데스크톱 자동화 도구의 안전한 동작 방식과 승인 사용자용 설치 경로를 안내합니다."
+      content="nohdol auto 데스크톱 자동화 프로그램의 설명, 실제 동작 데모, 승인 사용자용 설치 경로를 제공합니다."
     />
     <meta name="theme-color" content="#07111f" />
-    <title>nohdol auto — 안전한 데스크톱 자동화</title>
+    <title>nohdol auto — 데스크톱 자동화 카탈로그</title>
     <link rel="stylesheet" href="./styles.css" />
     <script src="./app.js" defer></script>
   </head>
-  <body>
+  <body data-page="catalog">
     <div class="ambient ambient-one" aria-hidden="true"></div>
     <div class="ambient ambient-two" aria-hidden="true"></div>
 
     <header class="site-header">
-      <a class="brand" href="#top" aria-label="nohdol auto 처음으로">
+      <a class="brand" href="./" aria-label="nohdol auto 홈">
         <span class="brand-mark">N</span>
         <span>nohdol auto</span>
       </a>
-      <a class="header-link" href="#programs">프로그램 보기 <span aria-hidden="true">↘</span></a>
+      <nav class="site-nav" aria-label="주요 메뉴">
+        <a class="header-link" href="./#programs">프로그램</a>
+        <a class="header-link" href="./install/">설치</a>
+      </nav>
     </header>
 
-    <main id="top">
-      <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-copy">
-          <p class="eyebrow"><span></span> PRIVATE AUTOMATION · PUBLIC SHOWCASE</p>
-          <h1 id="hero-title">반복은 자동으로.<br /><em>마지막 결정은 안전하게.</em></h1>
-          <p class="intro">
-            복잡한 브라우저 작업을 데스크톱 앱 하나로 정리했습니다. 실제 계정과 결제 없이 만든
-            데모로 흐름을 먼저 확인하고, 승인된 사용자만 설치할 수 있습니다.
-          </p>
-          <div class="hero-actions">
-            <a class="primary-action" href="#programs">AutoTrip 살펴보기</a>
-            <span class="availability"><i></i> 최신 버전만 안전하게 제공</span>
-          </div>
-        </div>
+    <main id="page" aria-busy="true"></main>
 
-        <div class="hero-visual" aria-label="자동화가 안전 경계까지 진행되는 흐름">
-          <div class="visual-glow"></div>
-          <div class="route-card">
-            <div class="route-card-top">
-              <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-              <span>AUTOTRIP / SAFE MODE</span>
-            </div>
-            <div class="route-line" aria-hidden="true">
-              <span class="airport">GMP</span>
-              <span class="flight-path"><i>✦</i></span>
-              <span class="airport">CJU</span>
-            </div>
-            <div class="route-labels"><span>서울 · 김포</span><span>제주</span></div>
-            <div class="progress-stack">
-              <div><span>01</span><p><strong>조건 확인</strong>노선·시간·가격 검증</p><b>완료</b></div>
-              <div><span>02</span><p><strong>항공편 비교</strong>조건에 맞는 결과 탐색</p><b>자동</b></div>
-              <div class="safe-step"><span>03</span><p><strong>안전 경계</strong>최종 구매 전에 정지</p><b>보호</b></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="trust-strip" aria-label="주요 안전 기능">
-        <div><strong>01</strong><span>로컬 데스크톱 실행</span></div>
-        <div><strong>02</strong><span>최종 구매 기본 차단</span></div>
-        <div><strong>03</strong><span>일회용 제품키 활성화</span></div>
-        <div><strong>04</strong><span>최신 설치 파일만 제공</span></div>
-      </section>
-
-      <aside class="notice" aria-label="설치 전 안내">
-        <span class="notice-icon" aria-hidden="true">⌁</span>
-        <div>
-          <strong>설명은 공개하고, 설치 파일은 보호합니다.</strong>
-          <p>
-            이 페이지에는 프로그램별 인증코드 검증 UI만 있습니다. 코드는 서버에서 확인하며,
-            성공한 경우에만 60초 동안 유효한 최신 설치 파일 링크를 발급합니다.
-          </p>
-        </div>
-      </aside>
-
-      <section id="programs" class="programs" aria-labelledby="apps-title">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow"><span></span> AVAILABLE PROGRAMS</p>
-            <h2 id="apps-title">자동화의 실제 흐름을 확인하세요</h2>
-          </div>
-          <p id="catalog-status" role="status" aria-live="polite">목록을 불러오는 중입니다.</p>
-        </div>
-        <div id="app-list" class="app-list" aria-busy="true"></div>
-      </section>
-    </main>
+    <noscript>
+      <p class="noscript">프로그램 목록과 설치 페이지를 보려면 JavaScript를 활성화하세요.</p>
+    </noscript>
 
     <footer>
-      <a class="brand footer-brand" href="#top"><span class="brand-mark">N</span><span>nohdol auto</span></a>
-      <p>인증코드는 브라우저에 저장하지 않으며 설치 파일은 비공개 저장소에서 전달됩니다.</p>
+      <a class="brand footer-brand" href="./"><span class="brand-mark">N</span><span>nohdol auto</span></a>
+      <p>설명은 공개하고, 최신 설치 파일은 프로그램별 인증코드로 보호합니다.</p>
     </footer>
   </body>
 </html>

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -31,6 +31,12 @@ test("requires accessible text for a demo GIF", () => {
   assert.throws(() => validateCatalog(invalid), /alt text and caption/);
 });
 
+test("requires an app-specific activation note", () => {
+  const invalid = structuredClone(catalog);
+  delete invalid.apps[0].activationNote;
+  assert.throws(() => validateCatalog(invalid), /invalid app metadata/);
+});
+
 test("the published catalog includes the AutoTrip workflow GIF", () => {
   assert.equal(catalog.apps[0].demoGif, "./assets/autotrip-workflow.gif");
   assert.match(catalog.apps[0].demoAlt, /실제 AutoTrip 프로그램/);
@@ -47,17 +53,49 @@ test("Pages deployment uses the current Node 24 action runtimes", async () => {
   assert.match(workflow, /actions\/deploy-pages@v5/);
 });
 
-test("build writes only public app metadata and never an authentication code", async () => {
+test("build creates catalog, detail, and installation routes without an authentication code", async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "showcase-pages-"));
   const output = path.join(temporary, "site");
   await buildPages({ catalog: path.join(root, "apps.json"), site: path.join(root, "site"), output });
   const html = await readFile(path.join(output, "index.html"), "utf8");
+  const installIndex = await readFile(path.join(output, "install", "index.html"), "utf8");
+  const detailRoute = await readFile(path.join(output, "apps", "autotrip", "index.html"), "utf8");
+  const installRoute = await readFile(path.join(output, "install", "autotrip", "index.html"), "utf8");
   const appScript = await readFile(path.join(output, "app.js"), "utf8");
   const generated = await readFile(path.join(output, "apps.json"), "utf8");
   const demoGif = await readFile(path.join(output, "assets", "autotrip-workflow.gif"));
-  assert.match(html, /프로그램별 인증코드/);
+  assert.match(html, /data-page="catalog"/);
+  assert.match(installIndex, /data-page="install-index"/);
+  assert.match(installIndex, /<base href="\.\.\/"/);
+  assert.match(detailRoute, /data-page="detail" data-app-id="autotrip"/);
+  assert.match(installRoute, /data-page="install" data-app-id="autotrip"/);
+  assert.match(installRoute, /<base href="\.\.\/\.\.\/"/);
+  assert.match(appScript, /설치 인증코드/);
   assert.match(appScript, /인증코드 필요/);
   assert.doesNotMatch(appScript, /배포 준비됨/);
+  assert.doesNotMatch(html, /AUTOTRIP \/ SAFE MODE|AutoTrip 살펴보기/);
   assert.doesNotMatch(generated, /INSTALL_ACCESS_CODE|releases\/download|browser_download_url/);
   assert.equal(demoGif.subarray(0, 6).toString("ascii"), "GIF89a");
+});
+
+test("adding catalog metadata automatically creates routes for another program", async () => {
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "showcase-multi-app-"));
+  const source = structuredClone(catalog);
+  source.apps.push({
+    ...source.apps[0],
+    id: "sample-monitor",
+    name: "Sample Monitor",
+    demoGif: null,
+    demoAlt: null,
+    demoCaption: null,
+  });
+  const catalogPath = path.join(temporary, "apps.json");
+  const output = path.join(temporary, "site");
+  await writeFile(catalogPath, JSON.stringify(source));
+  await buildPages({ catalog: catalogPath, site: path.join(root, "site"), output });
+  const detailRoute = await readFile(path.join(output, "apps", "sample-monitor", "index.html"), "utf8");
+  const installRoute = await readFile(path.join(output, "install", "sample-monitor", "index.html"), "utf8");
+  assert.match(detailRoute, /data-app-id="sample-monitor"/);
+  assert.match(detailRoute, /Sample Monitor — nohdol auto/);
+  assert.match(installRoute, /Sample Monitor 설치 — nohdol auto/);
 });
