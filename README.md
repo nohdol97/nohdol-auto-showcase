@@ -6,6 +6,8 @@ GitHub Pages is only the UI. A Cloudflare Worker validates the code and streams 
 
 Installer authorization and product activation are separate. The public install route collects only the installer code. It tells the user to enter the independently delivered one-time product key inside the installed Electron app; Pages never issues, lists, revokes, or validates product keys.
 
+The public UI follows the shared `nohdol-clean` visual profile: a light neutral canvas, one low-saturation accent, compact native typography, border-led depth, and no decorative gradients, glows, glass effects, or oversized hero treatment. The route hierarchy and responsive/accessibility behavior are recorded in [`docs/showcase-ux-contract.md`](docs/showcase-ux-contract.md).
+
 ## Local verification
 
 ```bash

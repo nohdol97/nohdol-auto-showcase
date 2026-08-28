@@ -29,7 +29,7 @@ function statusBadge(text = "설치 인증코드 필요") {
 function renderDemo(app, card) {
   if (!app.demoGif) return;
   const figure = element("figure", "workflow-demo");
-  figure.append(element("span", "demo-label", "REAL PROGRAM · ACTUAL SITE · SAFE STOP"));
+  figure.append(element("span", "demo-label", "실제 프로그램 · 실제 사이트 · 결제 전 안전 정지"));
   const image = element("img", "workflow-image");
   image.src = app.demoGif;
   image.alt = app.demoAlt;
@@ -81,6 +81,7 @@ function renderInstallForm(app, card) {
     app.authEndpoint ? "" : "인증 서버 배포 후 다운로드가 활성화됩니다.",
   );
   status.role = "status";
+  status.dataset.state = app.authEndpoint ? "ready" : "blocked";
   submit.disabled = !app.authEndpoint;
   form.append(copy, assetLabel, codeLabel, submit, status);
 
@@ -88,6 +89,7 @@ function renderInstallForm(app, card) {
     event.preventDefault();
     submit.disabled = true;
     status.textContent = "인증 중입니다…";
+    status.dataset.state = "busy";
     try {
       const response = await fetch(app.authEndpoint, {
         method: "POST",
@@ -98,10 +100,12 @@ function renderInstallForm(app, card) {
       if (!response.ok) throw new Error("authorization failed");
       const result = await response.json();
       status.textContent = "인증되었습니다. 다운로드를 시작합니다.";
+      status.dataset.state = "success";
       window.location.assign(result.url);
     } catch {
       code.value = "";
       status.textContent = "인증에 실패했습니다. 코드와 네트워크 상태를 확인하세요.";
+      status.dataset.state = "error";
       submit.disabled = false;
       code.focus();
     }
@@ -114,16 +118,24 @@ function renderCatalogCard(app, index) {
   const number = element("span", "catalog-number", String(index + 1).padStart(2, "0"));
   const copy = element("div", "catalog-copy");
   copy.append(
-    element("span", "app-kicker", "DESKTOP AUTOMATION"),
+    element("span", "app-kicker", "데스크톱 자동화"),
     element("h3", "", app.name),
     element("p", "app-description", app.description),
+  );
+  const flow = element("p", "program-flow");
+  flow.append(
+    element("span", "", "공개 설명"),
+    element("i", "", "→"),
+    element("span", "", "실제 흐름"),
+    element("i", "", "→"),
+    element("span", "", "인증 설치"),
   );
   const actions = element("div", "catalog-actions");
   actions.append(
     link("primary-action", "프로그램 보기", routeHref("apps", app.id)),
     link("secondary-action", "설치 페이지", routeHref("install", app.id)),
   );
-  copy.append(actions);
+  copy.append(flow, actions);
   card.append(number, copy, statusBadge("설치 가능"));
   return card;
 }
@@ -133,35 +145,31 @@ function renderCatalog(catalog, page) {
   const hero = element("section", "hero");
   hero.setAttribute("aria-labelledby", "hero-title");
   const heroCopy = element("div", "hero-copy");
-  heroCopy.append(eyebrow("DESKTOP AUTOMATION CATALOG"));
-  const title = element("h1", "", "반복 작업은 프로그램으로.");
+  heroCopy.append(eyebrow("데스크톱 자동화 카탈로그"));
+  const title = element("h1", "", "자동화 프로그램을");
   title.id = "hero-title";
-  title.append(document.createElement("br"), element("em", "", "설치와 실행은 안전하게."));
+  title.append(document.createElement("br"), element("em", "", "확인하고 설치하세요."));
   const intro = element(
     "p",
     "intro",
-    "여러 자동화 프로그램의 실제 동작을 한곳에서 확인하세요. 각 프로그램은 독립적으로 관리되며 승인된 사용자에게 최신 설치 파일만 제공합니다.",
+    "프로그램이 실제로 어디까지 동작하는지 먼저 확인하고, 승인된 사용자는 프로그램별 인증코드로 현재 설치 파일을 받을 수 있습니다.",
   );
   const heroActions = element("div", "hero-actions");
   heroActions.append(
-    link("primary-action", "프로그램 카탈로그 보기", "#programs"),
+    link("primary-action", "프로그램 보기", "#programs"),
     element("span", "availability", `${catalog.apps.length}개 프로그램 등록`),
   );
   heroCopy.append(title, intro, heroActions);
 
   const visual = element("div", "hero-visual");
   visual.setAttribute("aria-label", "프로그램별 자동화와 안전한 설치 흐름");
-  visual.append(element("div", "visual-glow"));
   const consoleCard = element("div", "route-card catalog-console");
   const top = element("div", "route-card-top");
-  const dots = element("span", "window-dots");
-  dots.setAttribute("aria-hidden", "true");
-  dots.append(element("i"), element("i"), element("i"));
-  top.append(dots, element("span", "", "NOHDOL AUTO / PROGRAM HUB"));
+  top.append(element("span", "", "제공 방식"), element("b", "path-state", "운영 중"));
   const consoleTitle = element("div", "console-title");
   consoleTitle.append(
-    element("span", "console-count", String(catalog.apps.length).padStart(2, "0")),
-    element("p", "", "독립 프로그램\n하나의 안전한 배포 흐름"),
+    element("h2", "", "확인부터 설치까지"),
+    element("p", "", "공개 정보와 보호된 다운로드 경계를 분명히 유지합니다."),
   );
   const progress = element("div", "progress-stack");
   for (const [step, name, detail, state] of [
@@ -183,9 +191,9 @@ function renderCatalog(catalog, page) {
   trust.setAttribute("aria-label", "공통 제공 원칙");
   for (const [number, text] of [
     ["01", "프로그램별 독립 관리"],
-    ["02", "실제 동작 GIF 공개"],
-    ["03", "인증코드 설치 보호"],
-    ["04", "최신 버전만 제공"],
+    ["02", "실제 흐름 공개"],
+    ["03", "인증코드 다운로드"],
+    ["04", "현재 버전만 제공"],
   ]) {
     const item = element("div");
     item.append(element("strong", "", number), element("span", "", text));
@@ -195,10 +203,10 @@ function renderCatalog(catalog, page) {
   const notice = element("aside", "notice");
   notice.id = "delivery";
   notice.setAttribute("aria-label", "설치 방식 안내");
-  notice.append(element("span", "notice-icon", "⌁"));
+  notice.append(element("span", "notice-icon", "i"));
   const noticeCopy = element("div");
   noticeCopy.append(
-    element("strong", "", "설명 페이지와 설치 페이지를 분리했습니다."),
+    element("strong", "", "공개 설명과 설치 권한은 분리되어 있습니다."),
     element(
       "p",
       "",
@@ -212,8 +220,8 @@ function renderCatalog(catalog, page) {
   programs.setAttribute("aria-labelledby", "apps-title");
   const heading = element("div", "section-heading");
   const headingCopy = element("div");
-  headingCopy.append(eyebrow("AVAILABLE PROGRAMS"));
-  const appsTitle = element("h2", "", "필요한 자동화를 선택하세요");
+  headingCopy.append(eyebrow("프로그램"));
+  const appsTitle = element("h2", "", "사용할 자동화를 선택하세요");
   appsTitle.id = "apps-title";
   headingCopy.append(appsTitle);
   heading.append(headingCopy, element("p", "", `${catalog.apps.length}개 앱`));
@@ -224,7 +232,7 @@ function renderCatalog(catalog, page) {
     catalog.apps.forEach((app, index) => list.append(renderCatalogCard(app, index)));
   }
   programs.append(heading, list);
-  page.append(hero, trust, notice, programs);
+  page.append(hero, trust, programs, notice);
 }
 
 function renderDetail(app, page) {
@@ -233,7 +241,7 @@ function renderDetail(app, page) {
   const breadcrumb = element("nav", "breadcrumb");
   breadcrumb.setAttribute("aria-label", "현재 위치");
   breadcrumb.append(link("", "프로그램", new URL("./#programs", document.baseURI).href), element("span", "", "/"), element("span", "", app.name));
-  hero.append(breadcrumb, element("span", "app-kicker", "DESKTOP AUTOMATION"));
+  hero.append(breadcrumb, element("span", "app-kicker", "데스크톱 자동화"));
   const header = element("div", "route-title-row");
   const copy = element("div");
   copy.append(element("h1", "", app.name), element("p", "intro", app.description));
@@ -265,7 +273,7 @@ function renderDetail(app, page) {
 function renderInstallIndex(catalog, page) {
   document.title = "프로그램 설치 — nohdol auto";
   const hero = element("section", "route-hero compact-route-hero");
-  hero.append(eyebrow("AUTHORIZED INSTALLATION"), element("h1", "", "설치할 프로그램을 선택하세요"));
+  hero.append(eyebrow("인증 설치"), element("h1", "", "설치할 프로그램을 선택하세요"));
   hero.append(
     element(
       "p",
@@ -277,7 +285,7 @@ function renderInstallIndex(catalog, page) {
   catalog.apps.forEach((app) => {
     const card = element("article", "app-card install-index-card");
     const copy = element("div");
-    copy.append(element("span", "app-kicker", "LATEST RELEASE"), element("h2", "", app.name), element("p", "app-description", app.description));
+    copy.append(element("span", "app-kicker", "현재 버전"), element("h2", "", app.name), element("p", "app-description", app.description));
     card.append(copy, link("primary-action", `${app.name} 설치`, routeHref("install", app.id)));
     list.append(card);
   });
@@ -290,7 +298,7 @@ function renderInstall(app, page) {
   const breadcrumb = element("nav", "breadcrumb");
   breadcrumb.setAttribute("aria-label", "현재 위치");
   breadcrumb.append(link("", "설치", routeHref("install")), element("span", "", "/"), element("span", "", app.name));
-  hero.append(breadcrumb, eyebrow("CODE-GATED INSTALLATION"), element("h1", "", `${app.name} 설치`));
+  hero.append(breadcrumb, eyebrow("인증 설치"), element("h1", "", `${app.name} 설치`));
   hero.append(
     element(
       "p",
@@ -321,7 +329,7 @@ function renderInstall(app, page) {
   const card = element("div", "app-card install-card");
   const heading = element("div", "install-card-heading");
   heading.append(element("div", "brand-mark", app.name.slice(0, 1).toUpperCase()), element("div", ""));
-  heading.lastElementChild.append(element("span", "app-kicker", "CURRENT RELEASE"), element("h2", "", app.name));
+  heading.lastElementChild.append(element("span", "app-kicker", "현재 버전"), element("h2", "", app.name));
   card.append(heading);
   renderInstallForm(app, card);
   if (app.warning) card.append(element("p", "warning", app.warning));
@@ -333,7 +341,7 @@ function renderInstall(app, page) {
 function renderMissing(page) {
   document.title = "프로그램을 찾을 수 없음 — nohdol auto";
   const panel = element("section", "route-hero missing-route");
-  panel.append(eyebrow("NOT FOUND"), element("h1", "", "프로그램을 찾을 수 없습니다."));
+  panel.append(eyebrow("찾을 수 없음"), element("h1", "", "프로그램을 찾을 수 없습니다."));
   panel.append(link("primary-action", "전체 프로그램으로", new URL("./#programs", document.baseURI).href));
   page.append(panel);
 }

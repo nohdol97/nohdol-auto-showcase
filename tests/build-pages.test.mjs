@@ -74,6 +74,21 @@ test("Pages deployment uses the current Node 24 action runtimes", async () => {
   assert.match(workflow, /actions\/deploy-pages@v5/);
 });
 
+test("the public UI follows the restrained nohdol-clean profile", async () => {
+  const template = await readFile(path.join(root, "site", "index.html"), "utf8");
+  const styles = await readFile(path.join(root, "site", "styles.css"), "utf8");
+  const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
+  assert.match(template, /name="theme-color" content="#F5F7FA"/);
+  assert.doesNotMatch(template, /class="ambient/);
+  assert.match(styles, /--canvas: #f5f7fa/);
+  assert.match(styles, /--accent: #315e9e/);
+  assert.match(styles, /border-radius: 6px/);
+  assert.doesNotMatch(styles, /gradient|backdrop-filter|filter: blur|transition: all/i);
+  assert.match(appScript, /실제 프로그램 · 실제 사이트 · 결제 전 안전 정지/);
+  assert.match(appScript, /status\.dataset\.state = "busy"/);
+  assert.match(appScript, /status\.dataset\.state = "error"/);
+});
+
 test("build creates catalog, detail, and installation routes without an authentication code", async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "showcase-pages-"));
   const output = path.join(temporary, "site");
@@ -98,6 +113,8 @@ test("build creates catalog, detail, and installation routes without an authenti
   assert.match(platformScript, /"windows"/);
   assert.match(generated, /"defaultAssetId": "windows"/);
   assert.match(appScript, /제품키는 설치한 앱의 제품키 입력란에서만 사용합니다/);
+  assert.match(appScript, /공개 설명/);
+  assert.match(appScript, /인증 설치/);
   assert.match(generated, /설치 인증코드와 별도로 전달받은 일회용 제품키/);
   assert.doesNotMatch(generated, /\/admin\/|product-keys|ADMIN_API_KEY/);
   assert.doesNotMatch(appScript, /배포 준비됨/);
