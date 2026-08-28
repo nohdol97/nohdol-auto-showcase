@@ -5,11 +5,11 @@
       "id": "autotrip",
       "name": "AutoTrip",
       "description": "마이리얼트립 국내선 항공편을 감시하고 예약 정보 입력을 보조하는 데스크톱 자동화 도구입니다.",
-      "authEndpoint": null,
+      "authEndpoint": "https://nohdol-auto-downloads.nohdol-auto-download-gateway.workers.dev/authorize",
       "demoGif": null,
       "demoAlt": null,
       "demoCaption": null,
-      "warning": "현재 설치 파일은 코드 서명 및 macOS 공증이 완료되지 않아 운영체제 보안 경고가 표시될 수 있습니다.",
+      "warning": "최신 설치 파일만 제공됩니다. 설치 후 같은 인증코드를 일회용 제품키로 활성화해야 하며, 자동화 실행 전 인터넷 검증이 필요합니다. 현재 설치 파일은 코드 서명 및 macOS 공증이 완료되지 않아 운영체제 보안 경고가 표시될 수 있습니다.",
       "assets": [
         { "id": "macos", "label": "macOS" },
         { "id": "windows", "label": "Windows" },

@@ -9,7 +9,9 @@ const root = path.resolve(import.meta.dirname, "..");
 const catalog = JSON.parse(await readFile(path.join(root, "apps.json"), "utf8"));
 
 test("accepts a disabled endpoint until the authorization Worker is deployed", () => {
-  assert.equal(validateCatalog(catalog).apps[0].authEndpoint, null);
+  const disabled = structuredClone(catalog);
+  disabled.apps[0].authEndpoint = null;
+  assert.equal(validateCatalog(disabled).apps[0].authEndpoint, null);
 });
 
 test("accepts only an HTTPS authorize endpoint", () => {
