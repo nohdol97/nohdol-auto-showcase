@@ -22,7 +22,7 @@ function eyebrow(text) {
   return node;
 }
 
-function statusBadge(text = "인증코드 필요") {
+function statusBadge(text = "설치 인증코드 필요") {
   return element("span", "app-status", text);
 }
 
@@ -304,6 +304,13 @@ function renderInstall(app, page) {
     step.append(element("span", "", number), element("strong", "", title), element("p", "", text));
     guide.append(step);
   }
+  guide.append(
+    element(
+      "p",
+      "warning",
+      "제품키는 설치한 앱의 제품키 입력란에서만 사용합니다. 이 공개 페이지에는 제품키 발급·조회·폐기 같은 관리자 기능이 없습니다.",
+    ),
+  );
   const card = element("div", "app-card install-card");
   const heading = element("div", "install-card-heading");
   heading.append(element("div", "brand-mark", app.name.slice(0, 1).toUpperCase()), element("div", ""));

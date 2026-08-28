@@ -1,8 +1,10 @@
 # nohdol-auto showcase
 
-Public GitHub Pages showcase for `nohdol-auto` desktop automations. It contains static descriptions, reviewed workflow GIFs that begin in the real program UI and continue on the actual site with obvious fake values, and an authorization-code form. It contains no installer binaries, raw codes, source application secrets, browser profiles, or user configuration.
+Public GitHub Pages showcase for `nohdol-auto` desktop automations. It contains static descriptions, reviewed workflow GIFs that begin in the real program UI and continue on the actual site with obvious fake values, and an installer-authorization-code form. It contains no installer binaries, raw codes, source application secrets, browser profiles, user configuration, or product-key administrator surface.
 
 GitHub Pages is only the UI. A Cloudflare Worker validates the code and streams a time-limited private R2 object. Until an application's verified HTTPS `/authorize` endpoint is recorded in `apps.json`, its download button remains disabled.
+
+Installer authorization and product activation are separate. The public install route collects only the installer code. It tells the user to enter the independently delivered one-time product key inside the installed Electron app; Pages never issues, lists, revokes, or validates product keys.
 
 ## Local verification
 

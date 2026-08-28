@@ -71,7 +71,10 @@ test("build creates catalog, detail, and installation routes without an authenti
   assert.match(installRoute, /data-page="install" data-app-id="autotrip"/);
   assert.match(installRoute, /<base href="\.\.\/\.\.\/"/);
   assert.match(appScript, /설치 인증코드/);
-  assert.match(appScript, /인증코드 필요/);
+  assert.match(appScript, /설치 인증코드 필요/);
+  assert.match(appScript, /제품키는 설치한 앱의 제품키 입력란에서만 사용합니다/);
+  assert.match(generated, /설치 인증코드와 별도로 전달받은 일회용 제품키/);
+  assert.doesNotMatch(generated, /\/admin\/|product-keys|ADMIN_API_KEY/);
   assert.doesNotMatch(appScript, /배포 준비됨/);
   assert.doesNotMatch(html, /AUTOTRIP \/ SAFE MODE|AutoTrip 살펴보기/);
   assert.doesNotMatch(generated, /INSTALL_ACCESS_CODE|releases\/download|browser_download_url/);
