@@ -37,6 +37,13 @@ test("the published catalog includes the AutoTrip workflow GIF", () => {
   assert.match(catalog.apps[0].demoCaption, /가짜 항공편/);
 });
 
+test("Pages deployment uses the current Node 24 action runtimes", async () => {
+  const workflow = await readFile(path.join(root, ".github", "workflows", "pages.yml"), "utf8");
+  assert.match(workflow, /actions\/configure-pages@v6/);
+  assert.match(workflow, /actions\/upload-pages-artifact@v5/);
+  assert.match(workflow, /actions\/deploy-pages@v5/);
+});
+
 test("build writes only public app metadata and never an authentication code", async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "showcase-pages-"));
   const output = path.join(temporary, "site");
