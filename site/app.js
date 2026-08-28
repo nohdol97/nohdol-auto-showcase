@@ -26,10 +26,14 @@ function statusBadge(text = "설치 인증코드 필요") {
   return element("span", "app-status", text);
 }
 
+function isPrototype(app) {
+  return app.kind === "prototype";
+}
+
 function renderDemo(app, card) {
   if (!app.demoGif) return;
   const figure = element("figure", "workflow-demo");
-  figure.append(element("span", "demo-label", "실제 프로그램 · 실제 사이트 · 결제 전 안전 정지"));
+  figure.append(element("span", "demo-label", app.demoLabel ?? "실제 프로그램 · 실제 사이트 · 결제 전 안전 정지"));
   const image = element("img", "workflow-image");
   image.src = app.demoGif;
   image.alt = app.demoAlt;
@@ -118,25 +122,25 @@ function renderCatalogCard(app, index) {
   const number = element("span", "catalog-number", String(index + 1).padStart(2, "0"));
   const copy = element("div", "catalog-copy");
   copy.append(
-    element("span", "app-kicker", "데스크톱 자동화"),
+    element("span", "app-kicker", isPrototype(app) ? `${app.audience} · ${app.sector}` : "데스크톱 자동화"),
     element("h3", "", app.name),
     element("p", "app-description", app.description),
   );
   const flow = element("p", "program-flow");
-  flow.append(
-    element("span", "", "공개 설명"),
-    element("i", "", "→"),
-    element("span", "", "실제 흐름"),
-    element("i", "", "→"),
-    element("span", "", "인증 설치"),
-  );
+  const flowSteps = isPrototype(app)
+    ? ["업무 문제", "화면 흐름", "UI 프로토타입"]
+    : ["공개 설명", "실제 흐름", "인증 설치"];
+  flowSteps.forEach((step, flowIndex) => {
+    if (flowIndex > 0) flow.append(element("i", "", "→"));
+    flow.append(element("span", "", step));
+  });
   const actions = element("div", "catalog-actions");
-  actions.append(
-    link("primary-action", "프로그램 보기", routeHref("apps", app.id)),
-    link("secondary-action", "설치 페이지", routeHref("install", app.id)),
-  );
+  actions.append(link("primary-action", isPrototype(app) ? "UI 사례 보기" : "프로그램 보기", routeHref("apps", app.id)));
+  if (!isPrototype(app)) actions.append(link("secondary-action", "설치 페이지", routeHref("install", app.id)));
   copy.append(flow, actions);
-  card.append(number, copy, statusBadge("설치 가능"));
+  const badge = statusBadge(isPrototype(app) ? "UI 프로토타입" : "설치 가능");
+  if (isPrototype(app)) badge.classList.add("prototype-status");
+  card.append(number, copy, badge);
   return card;
 }
 
@@ -148,11 +152,11 @@ function renderCatalog(catalog, page) {
   heroCopy.append(eyebrow("데스크톱 자동화 카탈로그"));
   const title = element("h1", "", "자동화 프로그램을");
   title.id = "hero-title";
-  title.append(document.createElement("br"), element("em", "", "확인하고 설치하세요."));
+  title.append(document.createElement("br"), element("em", "", "확인하고 비교하세요."));
   const intro = element(
     "p",
     "intro",
-    "프로그램이 실제로 어디까지 동작하는지 먼저 확인하고, 승인된 사용자는 프로그램별 인증코드로 현재 설치 파일을 받을 수 있습니다.",
+    "실제 배포 프로그램과 다양한 업무의 UI 프로토타입을 함께 살펴보세요. 프로토타입은 실제 연동이나 설치 없이 화면 흐름만 공개합니다.",
   );
   const heroActions = element("div", "hero-actions");
   heroActions.append(
@@ -241,32 +245,40 @@ function renderDetail(app, page) {
   const breadcrumb = element("nav", "breadcrumb");
   breadcrumb.setAttribute("aria-label", "현재 위치");
   breadcrumb.append(link("", "프로그램", new URL("./#programs", document.baseURI).href), element("span", "", "/"), element("span", "", app.name));
-  hero.append(breadcrumb, element("span", "app-kicker", "데스크톱 자동화"));
+  hero.append(breadcrumb, element("span", "app-kicker", isPrototype(app) ? `${app.audience} · ${app.sector}` : "데스크톱 자동화"));
   const header = element("div", "route-title-row");
   const copy = element("div");
   copy.append(element("h1", "", app.name), element("p", "intro", app.description));
-  header.append(copy, statusBadge());
+  const badge = statusBadge(isPrototype(app) ? "UI 프로토타입 · 실제 연동 없음" : "설치 인증코드 필요");
+  if (isPrototype(app)) badge.classList.add("prototype-status");
+  header.append(copy, badge);
   const actions = element("div", "hero-actions");
-  actions.append(
-    link("primary-action", "설치 페이지로 이동", routeHref("install", app.id)),
-    link("secondary-action", "전체 프로그램", new URL("./#programs", document.baseURI).href),
-  );
+  if (!isPrototype(app)) actions.append(link("primary-action", "설치 페이지로 이동", routeHref("install", app.id)));
+  actions.append(link(isPrototype(app) ? "primary-action" : "secondary-action", "전체 프로그램", new URL("./#programs", document.baseURI).href));
   hero.append(header, actions);
 
   const detail = element("section", "detail-shell");
   renderDemo(app, detail);
   const infoGrid = element("div", "info-grid");
-  for (const [title, text] of [
-    ["실제 흐름 확인", "프로그램 실행부터 실제 사이트의 안전 정지 지점까지 공개 데모로 확인합니다."],
-    ["최신 버전만", "설치 페이지는 해당 프로그램의 현재 배포 버전만 선택할 수 있습니다."],
-    ["프로그램별 권한", "다른 프로그램의 인증코드나 설치 파일과 섞이지 않는 앱별 경계를 사용합니다."],
-  ]) {
+  const detailPoints = isPrototype(app)
+    ? [
+        ["UI 흐름 확인", "업무 담당자가 보게 될 정보 구조와 상태 변화를 결정적 데모로 확인합니다."],
+        ["연동 없는 콘셉트", "외부 시스템·계정·실데이터·자동화 워커를 전혀 사용하지 않는 화면 프로토타입입니다."],
+        ["향후 교체 예정", "실제 프로젝트 포트폴리오가 축적되면 이 임시 콘셉트 사례는 순차적으로 내려갑니다."],
+      ]
+    : [
+        ["실제 흐름 확인", "프로그램 실행부터 실제 사이트의 안전 정지 지점까지 공개 데모로 확인합니다."],
+        ["최신 버전만", "설치 페이지는 해당 프로그램의 현재 배포 버전만 선택할 수 있습니다."],
+        ["프로그램별 권한", "다른 프로그램의 인증코드나 설치 파일과 섞이지 않는 앱별 경계를 사용합니다."],
+      ];
+  for (const [title, text] of detailPoints) {
     const item = element("article", "info-card");
     item.append(element("strong", "", title), element("p", "", text));
     infoGrid.append(item);
   }
   detail.append(infoGrid);
-  if (app.warning) detail.append(element("p", "warning route-warning", app.warning));
+  if (isPrototype(app)) detail.append(element("p", "prototype-notice", app.prototypeNotice));
+  else if (app.warning) detail.append(element("p", "warning route-warning", app.warning));
   page.append(hero, detail);
 }
 
@@ -282,7 +294,7 @@ function renderInstallIndex(catalog, page) {
     ),
   );
   const list = element("div", "install-index-list");
-  catalog.apps.forEach((app) => {
+  catalog.apps.filter((app) => !isPrototype(app)).forEach((app) => {
     const card = element("article", "app-card install-index-card");
     const copy = element("div");
     copy.append(element("span", "app-kicker", "현재 버전"), element("h2", "", app.name), element("p", "app-description", app.description));
@@ -359,7 +371,7 @@ async function loadPage() {
     else if (pageType === "install-index") renderInstallIndex(catalog, page);
     else if (!app) renderMissing(page);
     else if (pageType === "detail") renderDetail(app, page);
-    else if (pageType === "install") renderInstall(app, page);
+    else if (pageType === "install" && !isPrototype(app)) renderInstall(app, page);
     else renderMissing(page);
   } catch {
     page.append(element("p", "empty-message route-error", "프로그램 목록을 불러오지 못했습니다."));

@@ -12,6 +12,7 @@
   --accent: #315e9e;
   --accent-hover: #274d83;
   --accent-contrast: #ffffff;
+  --accent-soft: #eaf0f8;
   --success: #287a52;
   --success-soft: #edf8f2;
   --warning: #8a5a12;
@@ -530,6 +531,23 @@ h1 em {
   border-radius: 50%;
   background: currentColor;
   content: "";
+}
+
+.app-status.prototype-status {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.prototype-notice {
+  margin: 28px 0 0;
+  padding: 16px;
+  border: 1px solid rgb(49 94 158 / 20%);
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 550;
+  line-height: 1.65;
 }
 
 .notice {

@@ -10,8 +10,16 @@ export function validateCatalog(catalog) {
   if (catalog?.schemaVersion !== 3 || !Array.isArray(catalog.apps)) throw new Error("apps.json must use schemaVersion 3 and define apps");
   const ids = new Set();
   for (const app of catalog.apps) {
-    if (!SAFE_ID.test(app.id) || ids.has(app.id) || !app.name || !app.description || !app.activationNote) throw new Error(`invalid app metadata: ${app.id}`);
+    const kind = app.kind ?? "product";
+    if (!SAFE_ID.test(app.id) || ids.has(app.id) || !app.name || !app.description || !["product", "prototype"].includes(kind)) throw new Error(`invalid app metadata: ${app.id}`);
     ids.add(app.id);
+    if (kind === "prototype") {
+      if (app.authEndpoint !== null || !app.demoGif || !app.demoAlt || !app.demoCaption || !app.demoLabel || !app.prototypeNotice || !app.audience || !app.sector) throw new Error(`prototype ${app.id} must disclose its UI-only boundary`);
+      if (app.assets !== undefined || app.defaultAssetId !== undefined || app.activationNote !== undefined) throw new Error(`prototype ${app.id} must not define install metadata`);
+      if (!SAFE_DEMO_PATH.test(app.demoGif)) throw new Error(`invalid demo GIF path: ${app.id}`);
+      continue;
+    }
+    if (!app.activationNote) throw new Error(`invalid app metadata: ${app.id}`);
     if (app.authEndpoint !== null) {
       const endpoint = new URL(app.authEndpoint);
       if (endpoint.protocol !== "https:" || endpoint.pathname !== "/authorize") throw new Error(`invalid authorization endpoint: ${app.id}`);
@@ -70,9 +78,7 @@ export async function buildPages(options) {
   );
   for (const app of catalog.apps) {
     const detailDirectory = path.join(options.output, "apps", app.id);
-    const installDirectory = path.join(options.output, "install", app.id);
     await mkdir(detailDirectory, { recursive: true });
-    await mkdir(installDirectory, { recursive: true });
     await writeFile(
       path.join(detailDirectory, "index.html"),
       routeDocument(template, {
@@ -82,15 +88,19 @@ export async function buildPages(options) {
         title: `${app.name} — nohdol auto`,
       }),
     );
-    await writeFile(
-      path.join(installDirectory, "index.html"),
-      routeDocument(template, {
-        page: "install",
-        appId: app.id,
-        baseHref: "../../",
-        title: `${app.name} 설치 — nohdol auto`,
-      }),
-    );
+    if ((app.kind ?? "product") === "product") {
+      const installDirectory = path.join(options.output, "install", app.id);
+      await mkdir(installDirectory, { recursive: true });
+      await writeFile(
+        path.join(installDirectory, "index.html"),
+        routeDocument(template, {
+          page: "install",
+          appId: app.id,
+          baseHref: "../../",
+          title: `${app.name} 설치 — nohdol auto`,
+        }),
+      );
+    }
   }
   return catalog;
 }

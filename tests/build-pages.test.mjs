@@ -144,3 +144,42 @@ test("adding catalog metadata automatically creates routes for another program",
   assert.match(detailRoute, /Sample Monitor — nohdol auto/);
   assert.match(installRoute, /Sample Monitor 설치 — nohdol auto/);
 });
+
+test("the temporary portfolio contains ten disclosed UI-only prototypes across three audiences", () => {
+  const prototypes = catalog.apps.filter((app) => app.kind === "prototype");
+  assert.equal(prototypes.length, 10);
+  assert.deepEqual(new Set(prototypes.map((app) => app.audience)), new Set(["개인 업무", "대기업", "전문직"]));
+  for (const app of prototypes) {
+    assert.equal(app.authEndpoint, null);
+    assert.match(app.demoLabel, /UI 프로토타입/);
+    assert.match(app.demoLabel, /실제 연동 없음/);
+    assert.match(app.prototypeNotice, /설치 파일은 제공하지 않습니다/);
+    assert.equal("assets" in app, false);
+    assert.equal("defaultAssetId" in app, false);
+    assert.equal("activationNote" in app, false);
+  }
+});
+
+test("prototype validation rejects install metadata and working-product claims", () => {
+  const prototype = structuredClone(catalog.apps.find((app) => app.kind === "prototype"));
+  prototype.assets = [{ id: "windows", label: "Windows" }];
+  prototype.defaultAssetId = "windows";
+  assert.throws(() => validateCatalog({ schemaVersion: 3, apps: [prototype] }), /must not define install metadata/);
+
+  const connected = structuredClone(catalog.apps.find((app) => app.kind === "prototype"));
+  connected.authEndpoint = "https://downloads.example/authorize";
+  assert.throws(() => validateCatalog({ schemaVersion: 3, apps: [connected] }), /must disclose its UI-only boundary/);
+});
+
+test("prototype entries generate public detail routes and GIFs but no install routes", async () => {
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "showcase-prototypes-"));
+  const output = path.join(temporary, "site");
+  await buildPages({ catalog: path.join(root, "apps.json"), site: path.join(root, "site"), output });
+  for (const app of catalog.apps.filter((item) => item.kind === "prototype")) {
+    const detailRoute = await readFile(path.join(output, "apps", app.id, "index.html"), "utf8");
+    const demoGif = await readFile(path.join(output, "assets", `${app.id}-workflow.gif`));
+    assert.match(detailRoute, new RegExp(`data-app-id="${app.id}"`));
+    assert.equal(demoGif.subarray(0, 6).toString("ascii"), "GIF89a");
+    await assert.rejects(readFile(path.join(output, "install", app.id, "index.html")), /ENOENT/);
+  }
+});
