@@ -1,6 +1,6 @@
 # nohdol-auto showcase
 
-Public GitHub Pages showcase for `nohdol-auto` desktop automations. It contains static descriptions, reviewed actual-site workflow GIFs made with obvious fake values, and an authorization-code form. It contains no installer binaries, raw codes, source application secrets, browser profiles, or user configuration.
+Public GitHub Pages showcase for `nohdol-auto` desktop automations. It contains static descriptions, reviewed workflow GIFs that begin in the real program UI and continue on the actual site with obvious fake values, and an authorization-code form. It contains no installer binaries, raw codes, source application secrets, browser profiles, or user configuration.
 
 GitHub Pages is only the UI. A Cloudflare Worker validates the code and streams a time-limited private R2 object. Until an application's verified HTTPS `/authorize` endpoint is recorded in `apps.json`, its download button remains disabled.
 
