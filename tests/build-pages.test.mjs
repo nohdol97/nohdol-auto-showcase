@@ -33,8 +33,9 @@ test("requires accessible text for a demo GIF", () => {
 
 test("the published catalog includes the AutoTrip workflow GIF", () => {
   assert.equal(catalog.apps[0].demoGif, "./assets/autotrip-workflow.gif");
-  assert.match(catalog.apps[0].demoAlt, /예약 화면에 가짜 탑승객 정보를 자동 입력/);
-  assert.match(catalog.apps[0].demoCaption, /가짜 항공편/);
+  assert.match(catalog.apps[0].demoAlt, /실제 마이리얼트립 국내선 페이지/);
+  assert.match(catalog.apps[0].demoAlt, /결제 전에 멈추는 과정/);
+  assert.match(catalog.apps[0].demoCaption, /실제 결제 버튼은 누르지 않았습니다/);
 });
 
 test("Pages deployment uses the current Node 24 action runtimes", async () => {

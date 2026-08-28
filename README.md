@@ -1,6 +1,6 @@
 # nohdol-auto showcase
 
-Public GitHub Pages showcase for `nohdol-auto` desktop automations. It contains static descriptions, safe fake-data workflow GIFs, and an authorization-code form. It contains no installer binaries, raw codes, source application secrets, browser profiles, or user configuration.
+Public GitHub Pages showcase for `nohdol-auto` desktop automations. It contains static descriptions, reviewed actual-site workflow GIFs made with obvious fake values, and an authorization-code form. It contains no installer binaries, raw codes, source application secrets, browser profiles, or user configuration.
 
 GitHub Pages is only the UI. A Cloudflare Worker validates the code and streams a time-limited private R2 object. Until an application's verified HTTPS `/authorize` endpoint is recorded in `apps.json`, its download button remains disabled.
 
@@ -12,4 +12,4 @@ node scripts/build-pages.mjs
 python3 -m http.server --directory _site 8080
 ```
 
-Workflow GIFs use deterministic fake data and must not show production accounts, credentials, personal data, payment fields, or final actions.
+Workflow GIFs use ephemeral browser contexts and obvious fake identity/contact values. They must not show production accounts, credentials, personal data, entered payment values, booking confirmation, or a final action; the visible payment control remains untouched.

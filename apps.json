@@ -7,8 +7,8 @@
       "description": "마이리얼트립 국내선 항공편을 감시하고 예약 정보 입력을 보조하는 데스크톱 자동화 도구입니다.",
       "authEndpoint": "https://nohdol-auto-downloads.nohdol-auto-download-gateway.workers.dev/authorize",
       "demoGif": "./assets/autotrip-workflow.gif",
-      "demoAlt": "AutoTrip이 김포에서 제주로 가는 가짜 항공편을 비교하고 테스트 예약 화면에 가짜 탑승객 정보를 자동 입력한 뒤 최종 구매 전에 멈추는 과정",
-      "demoCaption": "가짜 항공편 비교와 예약정보 자동 입력을 담은 약 8초 데모입니다. 실제 계정, 예약, 결제 또는 운영 사이트는 사용하지 않았습니다.",
+      "demoAlt": "AutoTrip이 실제 마이리얼트립 국내선 페이지에서 김포발 제주행 항공편을 찾고 선택한 뒤 비회원 예약 화면에 가짜 탑승객 정보를 입력하고 결제 전에 멈추는 과정",
+      "demoCaption": "실제 마이리얼트립 페이지에서 항공편 검색·선택·비회원 예약정보 입력을 진행한 11초 데모입니다. 명백한 가짜 정보만 사용했고 실제 결제 버튼은 누르지 않았습니다.",
       "warning": "최신 설치 파일만 제공됩니다. 설치 후 같은 인증코드를 일회용 제품키로 활성화해야 하며, 자동화 실행 전 인터넷 검증이 필요합니다. 현재 설치 파일은 코드 서명 및 macOS 공증이 완료되지 않아 운영체제 보안 경고가 표시될 수 있습니다.",
       "assets": [
         { "id": "macos", "label": "macOS" },

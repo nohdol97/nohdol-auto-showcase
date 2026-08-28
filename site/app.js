@@ -8,7 +8,7 @@ function element(tag, className, text) {
 function renderDemo(app, card) {
   if (!app.demoGif) return;
   const figure = element("figure", "workflow-demo");
-  figure.append(element("span", "demo-label", "TEST-ONLY WORKFLOW"));
+  figure.append(element("span", "demo-label", "ACTUAL SITE · SAFE STOP"));
   const image = element("img", "workflow-image");
   image.src = app.demoGif;
   image.alt = app.demoAlt;
