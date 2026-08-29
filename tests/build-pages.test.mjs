@@ -101,7 +101,7 @@ test("the catalog presents product-specific workflows in plain Korean", async ()
   assert.match(appScript, /도구로 끝내지 않습니다/);
   assert.match(appScript, /프로그램 소개/);
   assert.match(appScript, /화면 데모/);
-  assert.match(appScript, /설치 준비/);
+  assert.match(appScript, /설치 페이지 제공/);
   assert.doesNotMatch(`${template}\n${appScript}`, /nohdol auto|데스크톱 자동화|자동화 프로그램|사용할 자동화/i);
   assert.doesNotMatch(appScript, /UI 콘셉트|UI 프로토타입|임시 포트폴리오|향후 교체/);
   assert.doesNotMatch(appScript, /PyInstaller|Electron|React|TypeScript|프레임워크/);
@@ -172,7 +172,8 @@ test("the catalog contains ten disclosed standalone program demos across three a
     assert.equal(app.installPreview, true);
     assert.match(app.demoLabel, /기능 시연 화면/);
     assert.match(app.demoLabel, /외부 시스템 미연동/);
-    assert.match(app.availabilityNote, /배포 준비 중/);
+    assert.match(app.availabilityNote, /설치 페이지를 제공/);
+    assert.match(app.availabilityNote, /설치 파일과 인증코드는 현재 제공되지 않습니다/);
     assert.equal(app.defaultAssetId, "windows");
     assert.deepEqual(app.assets.map((asset) => asset.id), ["macos", "windows", "linux"]);
     assert.doesNotMatch(JSON.stringify(app), /UI 콘셉트|UI 프로토타입|임시 UI 포트폴리오/);
@@ -204,4 +205,6 @@ test("demo entries generate detail, GIF, and non-downloadable install preview ro
   const appScript = await readFile(path.join(output, "app.js"), "utf8");
   assert.match(appScript, /if \(!app\.authEndpoint\) return/);
   assert.match(appScript, /submit\.disabled = !app\.authEndpoint/);
+  assert.match(appScript, /설치 페이지 제공/);
+  assert.doesNotMatch(appScript, /설치 준비 중|배포 준비 중/);
 });

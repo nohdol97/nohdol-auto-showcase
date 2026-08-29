@@ -2,7 +2,7 @@
 
 Public GitHub Pages catalog branded as `한결`. It contains product descriptions, reviewed workflow GIFs, and a dedicated installation route for every listed program. AutoTrip demonstrates the verified program-to-site flow; the other program GIFs use deterministic demo data and continuously disclose that external systems are not connected. The site contains no installer binaries, raw codes, source application secrets, browser profiles, user configuration, or product-key administrator surface.
 
-GitHub Pages is only the UI. A Cloudflare Worker validates the code and streams a time-limited private R2 object. Until an application's verified HTTPS `/authorize` endpoint and installer manifest exist, its install route remains visible but the download button is disabled with a `배포 준비 중` state.
+GitHub Pages is only the UI. A Cloudflare Worker validates the code and streams a time-limited private R2 object. Until an application's verified HTTPS `/authorize` endpoint and installer manifest exist, its install route may be labeled `설치 페이지 제공`, but the same surface states that files and codes are not currently provided and keeps the download button disabled.
 
 For distributed products, installer authorization and product activation are separate. The public install route collects only the installer code. It tells the user to enter the independently delivered one-time product key inside the installed Electron app; Pages never issues, lists, revokes, or validates product keys.
 

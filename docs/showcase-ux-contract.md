@@ -8,9 +8,9 @@ The primary visitor has been told about a desktop program and wants to answer th
 
 1. What does the program do?
 2. Is the recording a verified external workflow or a disclosed local demonstration?
-3. Is the installer available now or still being prepared?
+3. Does the page provide a downloadable installer or installation information only?
 
-The catalog's primary action is choosing a program. A detail route leads with its reviewed workflow recording. An install route leads with the operating-system choice and installer-code control. Verified products may authorize a download; demo-only programs keep that control disabled and state `배포 준비 중` without attempting a request.
+The catalog's primary action is choosing a program. A detail route leads with its reviewed workflow recording. An install route leads with the operating-system choice and installer-code control. Verified products may authorize a download; demo-only programs may say `설치 페이지 제공` while the same surface clearly states that the installer and code are not currently provided, keeps the control disabled, and attempts no request.
 
 The catalog also explains the day-to-day program experience in plain Korean. It promises a clear screen, a natural order of use, visible progress, and understandable recovery guidance without naming implementation tools or asking visitors to understand development terminology.
 

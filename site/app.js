@@ -133,7 +133,7 @@ function renderCatalogCard(app, index) {
   );
   const flow = element("p", "program-flow");
   const flowSteps = isPrototype(app)
-    ? ["프로그램 소개", "화면 데모", "설치 준비"]
+    ? ["프로그램 소개", "화면 데모", "설치 페이지"]
     : ["공개 설명", "실제 흐름", "인증 설치"];
   flowSteps.forEach((step, flowIndex) => {
     if (flowIndex > 0) flow.append(element("i", "", "→"));
@@ -143,7 +143,7 @@ function renderCatalogCard(app, index) {
   actions.append(link("primary-action", "프로그램 보기", routeHref("apps", app.id)));
   if (hasInstallRoute(app)) actions.append(link("secondary-action", "설치 페이지", routeHref("install", app.id)));
   copy.append(flow, actions);
-  const badge = statusBadge(isPrototype(app) ? "설치 준비 중" : "설치 가능");
+  const badge = statusBadge(isPrototype(app) ? "설치 페이지 제공" : "설치 가능");
   if (isPrototype(app)) badge.classList.add("prototype-status");
   card.append(number, copy, badge);
   return card;
@@ -283,7 +283,7 @@ function renderDetail(app, page) {
   const header = element("div", "route-title-row");
   const copy = element("div");
   copy.append(element("h1", "", app.name), element("p", "intro", app.description));
-  const badge = statusBadge(isPrototype(app) ? "설치 준비 중" : "설치 인증코드 필요");
+  const badge = statusBadge(isPrototype(app) ? "설치 페이지 제공" : "설치 인증코드 필요");
   if (isPrototype(app)) badge.classList.add("prototype-status");
   header.append(copy, badge);
   const actions = element("div", "hero-actions");
@@ -298,7 +298,7 @@ function renderDetail(app, page) {
     ? [
         ["화면 흐름 확인", "업무 담당자가 보게 될 전용 입력, 실행 상태, 결과 화면을 데모로 확인합니다."],
         ["지원 환경", "Windows, macOS, Linux용 설치 페이지 구성을 확인할 수 있습니다."],
-        ["배포 상태", "현재 설치 파일과 인증코드는 아직 발급되지 않았으며 배포 준비가 완료되면 활성화됩니다."],
+        ["설치 페이지", "지원 운영체제와 설치 절차를 확인할 수 있습니다. 설치 파일과 인증코드는 현재 제공되지 않습니다."],
       ]
     : [
         ["실제 흐름 확인", "프로그램 실행부터 실제 사이트의 안전 정지 지점까지 공개 데모로 확인합니다."],
@@ -331,7 +331,7 @@ function renderInstallIndex(catalog, page) {
   catalog.apps.filter(hasInstallRoute).forEach((app) => {
     const card = element("article", "app-card install-index-card");
     const copy = element("div");
-    copy.append(element("span", "app-kicker", isPrototype(app) ? "배포 준비 중" : "현재 버전"), element("h2", "", app.name), element("p", "app-description", app.description));
+    copy.append(element("span", "app-kicker", isPrototype(app) ? "설치 페이지 제공" : "현재 버전"), element("h2", "", app.name), element("p", "app-description", app.description));
     card.append(copy, link("primary-action", isPrototype(app) ? `${app.name} 설치 정보` : `${app.name} 설치`, routeHref("install", app.id)));
     list.append(card);
   });
@@ -350,19 +350,19 @@ function renderInstall(app, page) {
       "p",
       "intro",
       isPrototype(app)
-        ? "지원 운영체제를 확인할 수 있습니다. 설치 파일 배포가 시작되면 전용 인증코드 입력과 다운로드가 활성화됩니다."
+        ? "지원 운영체제와 설치 절차를 확인할 수 있습니다. 설치 파일과 인증코드는 현재 제공되지 않습니다."
         : "운영체제를 선택하고 공유받은 설치 인증코드를 입력하면 현재 최신 설치 파일만 전달됩니다.",
     ),
   );
 
   const layout = element("section", "install-layout");
   const guide = element("div", "install-guide");
-  guide.append(element("h2", "", isPrototype(app) ? "배포 준비 상태" : "설치와 활성화 순서"));
+  guide.append(element("h2", "", isPrototype(app) ? "설치 제공 상태" : "설치와 활성화 순서"));
   const installSteps = isPrototype(app)
     ? [
         ["01", "지원 운영체제 확인", "Windows, macOS, Linux 설치 페이지 구성을 제공합니다."],
-        ["02", "설치 파일 배포", "현재 설치 파일은 준비 중이며 다운로드는 아직 활성화되지 않았습니다."],
-        ["03", "인증코드 안내", "배포가 시작되면 프로그램별 설치 인증코드로 최신 파일을 받을 수 있습니다."],
+        ["02", "설치 파일", "현재 다운로드 파일은 제공되지 않습니다."],
+        ["03", "인증코드", "현재 프로그램별 설치 인증코드는 발급되지 않습니다."],
       ]
     : [
         ["01", "최신 설치 파일 받기", "이 페이지에서 프로그램별 설치 인증코드를 서버로 검증합니다."],
@@ -384,7 +384,7 @@ function renderInstall(app, page) {
   const card = element("div", "app-card install-card");
   const heading = element("div", "install-card-heading");
   heading.append(element("div", "brand-mark", app.name.slice(0, 1).toUpperCase()), element("div", ""));
-  heading.lastElementChild.append(element("span", "app-kicker", isPrototype(app) ? "배포 준비 중" : "현재 버전"), element("h2", "", app.name));
+  heading.lastElementChild.append(element("span", "app-kicker", isPrototype(app) ? "설치 페이지 제공" : "현재 버전"), element("h2", "", app.name));
   card.append(heading);
   renderInstallForm(app, card);
   if (app.warning) card.append(element("p", "warning", app.warning));
