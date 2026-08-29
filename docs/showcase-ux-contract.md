@@ -10,6 +10,8 @@ The primary visitor has been told about a nohdol-auto desktop automation and wan
 
 The catalog's primary action is choosing a program. A detail route leads with the real workflow recording. An install route leads with the operating-system choice, installer code, and the distinction between download authorization and in-app activation.
 
+The catalog also explains the day-to-day program experience in plain Korean. It promises a clear screen, a natural order of use, visible progress, and understandable recovery guidance without naming implementation tools or asking visitors to understand development terminology.
+
 ## Visual direction
 
 - Feel like a calm product directory and distribution guide: operational, readable, and quietly polished.

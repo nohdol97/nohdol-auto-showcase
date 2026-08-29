@@ -204,6 +204,34 @@ function renderCatalog(catalog, page) {
     trust.append(item);
   }
 
+  const experience = element("section", "experience");
+  experience.setAttribute("aria-labelledby", "experience-title");
+  const experienceCopy = element("div", "experience-copy");
+  experienceCopy.append(eyebrow("매일 쓰는 프로그램"));
+  const experienceTitle = element("h2", "", "기능만 되는 투박한 도구로 끝내지 않습니다.");
+  experienceTitle.id = "experience-title";
+  experienceCopy.append(
+    experienceTitle,
+    element(
+      "p",
+      "",
+      "자동화가 정확해도 매일 쓰기 어렵다면 좋은 프로그램이 아닙니다. 처음 쓰는 사람도 헤매지 않도록 화면과 순서를 다듬고, 업무에 필요한 정보만 또렷하게 보여드립니다.",
+    ),
+  );
+  const experienceList = element("div", "experience-list");
+  for (const [number, title, text] of [
+    ["01", "한눈에 이해되는 화면", "자주 쓰는 기능은 앞에 두고, 설정과 결과는 보기 쉽게 나눕니다."],
+    ["02", "막히지 않는 사용 순서", "무엇을 입력하고 언제 실행하며 다음에 무엇을 해야 하는지 자연스럽게 이어집니다."],
+    ["03", "문제가 생겨도 분명하게", "진행 상황과 멈춘 이유, 다시 시작하는 방법을 알아보기 쉬운 말로 안내합니다."],
+  ]) {
+    const item = element("article", "experience-item");
+    const itemCopy = element("div");
+    itemCopy.append(element("strong", "", title), element("p", "", text));
+    item.append(element("span", "", number), itemCopy);
+    experienceList.append(item);
+  }
+  experience.append(experienceCopy, experienceList);
+
   const notice = element("aside", "notice");
   notice.id = "delivery";
   notice.setAttribute("aria-label", "설치 방식 안내");
@@ -236,7 +264,7 @@ function renderCatalog(catalog, page) {
     catalog.apps.forEach((app, index) => list.append(renderCatalogCard(app, index)));
   }
   programs.append(heading, list);
-  page.append(hero, trust, programs, notice);
+  page.append(hero, trust, experience, programs, notice);
 }
 
 function renderDetail(app, page) {
@@ -268,7 +296,7 @@ function renderDetail(app, page) {
       ]
     : [
         ["실제 흐름 확인", "프로그램 실행부터 실제 사이트의 안전 정지 지점까지 공개 데모로 확인합니다."],
-        ["최신 버전만", "설치 페이지는 해당 프로그램의 현재 배포 버전만 선택할 수 있습니다."],
+        ["편하게 쓰는 화면", "자주 쓰는 기능과 필요한 정보를 한눈에 찾고, 진행 상태와 다음 행동을 쉽게 알 수 있도록 다듬었습니다."],
         ["프로그램별 권한", "다른 프로그램의 인증코드나 설치 파일과 섞이지 않는 앱별 경계를 사용합니다."],
       ];
   for (const [title, text] of detailPoints) {

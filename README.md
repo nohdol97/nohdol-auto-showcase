@@ -8,6 +8,8 @@ Installer authorization and product activation are separate. The public install 
 
 The public UI follows the shared `nohdol-clean` visual profile: a light neutral canvas, one low-saturation accent, compact native typography, border-led depth, and no decorative gradients, glows, glass effects, or oversized hero treatment. The route hierarchy and responsive/accessibility behavior are recorded in [`docs/showcase-ux-contract.md`](docs/showcase-ux-contract.md).
 
+The public catalog describes the everyday experience in plain Korean: clear screens, a natural order of use, visible progress, and understandable recovery guidance. Customer-facing copy does not rely on implementation terminology to explain that quality.
+
 ## Local verification
 
 ```bash

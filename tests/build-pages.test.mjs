@@ -89,6 +89,15 @@ test("the public UI follows the restrained nohdol-clean profile", async () => {
   assert.match(appScript, /status\.dataset\.state = "error"/);
 });
 
+test("the catalog explains the everyday program experience in plain Korean", async () => {
+  const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
+  assert.match(appScript, /기능만 되는 투박한 도구로 끝내지 않습니다/);
+  assert.match(appScript, /처음 쓰는 사람도 헤매지 않도록/);
+  assert.match(appScript, /막히지 않는 사용 순서/);
+  assert.match(appScript, /다시 시작하는 방법/);
+  assert.doesNotMatch(appScript, /PyInstaller|Electron|React|TypeScript|프레임워크/);
+});
+
 test("build creates catalog, detail, and installation routes without an authentication code", async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "showcase-pages-"));
   const output = path.join(temporary, "site");
