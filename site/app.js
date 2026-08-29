@@ -213,8 +213,9 @@ function renderCatalog(catalog, page) {
   experience.setAttribute("aria-labelledby", "experience-title");
   const experienceCopy = element("div", "experience-copy");
   experienceCopy.append(eyebrow("매일 쓰는 프로그램"));
-  const experienceTitle = element("h2", "", "기능만 되는 투박한 도구로 끝내지 않습니다.");
+  const experienceTitle = element("h2", "", "기능만 되는 투박한");
   experienceTitle.id = "experience-title";
+  experienceTitle.append(document.createElement("br"), document.createTextNode("도구로 끝내지 않습니다."));
   experienceCopy.append(
     experienceTitle,
     element(

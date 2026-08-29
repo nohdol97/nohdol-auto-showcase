@@ -92,6 +92,9 @@ test("the public UI follows the restrained nohdol-clean profile", async () => {
 test("the catalog presents product-specific workflows in plain Korean", async () => {
   const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
   assert.match(appScript, /업무별로 독립된 프로그램/);
+  assert.match(appScript, /기능만 되는 투박한/);
+  assert.match(appScript, /experienceTitle\.append\(document\.createElement\("br"\)/);
+  assert.match(appScript, /도구로 끝내지 않습니다/);
   assert.match(appScript, /프로그램 소개/);
   assert.match(appScript, /화면 데모/);
   assert.match(appScript, /설치 준비/);
