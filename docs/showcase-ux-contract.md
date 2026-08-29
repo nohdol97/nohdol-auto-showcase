@@ -2,7 +2,7 @@
 
 ## User and job
 
-The public name is `일덜기`. Its promise is to reduce recurring work so people can focus on the work that matters. Customer-facing brand and general-purpose copy do not use `nohdol auto`, `자동화`, or implementation terminology; existing product proper names and operational identifiers remain unchanged when renaming them would break truthful product or installation continuity.
+The public name is `한결`. Its promise is to make recurring work feel lighter so people can focus on the work that matters. Customer-facing brand and general-purpose copy do not use `nohdol auto`, `자동화`, or implementation terminology; existing product proper names and operational identifiers remain unchanged when renaming them would break truthful product or installation continuity.
 
 The primary visitor has been told about a desktop program and wants to answer three questions without reading a campaign page:
 

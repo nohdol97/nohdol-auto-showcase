@@ -92,10 +92,10 @@ test("the public UI follows the restrained nohdol-clean profile", async () => {
 test("the catalog presents product-specific workflows in plain Korean", async () => {
   const template = await readFile(path.join(root, "site", "index.html"), "utf8");
   const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
-  assert.match(template, /일덜기/);
-  assert.match(appScript, /반복은 줄이고/);
-  assert.match(appScript, /중요한 일에 집중하세요/);
-  assert.match(appScript, /되풀이하는 일을 줄여 주는 프로그램/);
+  assert.match(template, /한결/);
+  assert.match(appScript, /매일의 반복은/);
+  assert.match(appScript, /한결 가볍게/);
+  assert.match(appScript, /되풀이하는 일을 줄여 중요한 업무에 집중/);
   assert.match(appScript, /기능만 되는 투박한/);
   assert.match(appScript, /experienceTitle\.append\(document\.createElement\("br"\)/);
   assert.match(appScript, /도구로 끝내지 않습니다/);
@@ -159,8 +159,8 @@ test("adding catalog metadata automatically creates routes for another program",
   const detailRoute = await readFile(path.join(output, "apps", "sample-monitor", "index.html"), "utf8");
   const installRoute = await readFile(path.join(output, "install", "sample-monitor", "index.html"), "utf8");
   assert.match(detailRoute, /data-app-id="sample-monitor"/);
-  assert.match(detailRoute, /Sample Monitor — 일덜기/);
-  assert.match(installRoute, /Sample Monitor 설치 — 일덜기/);
+  assert.match(detailRoute, /Sample Monitor — 한결/);
+  assert.match(installRoute, /Sample Monitor 설치 — 한결/);
 });
 
 test("the catalog contains ten disclosed standalone program demos across three audiences", () => {

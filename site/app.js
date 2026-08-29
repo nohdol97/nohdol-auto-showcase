@@ -150,18 +150,18 @@ function renderCatalogCard(app, index) {
 }
 
 function renderCatalog(catalog, page) {
-  document.title = "일덜기 — 반복 업무 프로그램";
+  document.title = "한결 — 반복 업무 프로그램";
   const hero = element("section", "hero");
   hero.setAttribute("aria-labelledby", "hero-title");
   const heroCopy = element("div", "hero-copy");
   heroCopy.append(eyebrow("반복 업무 프로그램"));
-  const title = element("h1", "", "반복은 줄이고");
+  const title = element("h1", "", "매일의 반복은");
   title.id = "hero-title";
-  title.append(document.createElement("br"), element("em", "", "중요한 일에 집중하세요."));
+  title.append(document.createElement("br"), element("em", "", "한결 가볍게."));
   const intro = element(
     "p",
     "intro",
-    "되풀이하는 일을 줄여 주는 프로그램의 용도와 화면 흐름을 살펴보세요. 준비된 프로그램은 전용 설치 페이지에서 인증 후 받을 수 있습니다.",
+    "되풀이하는 일을 줄여 중요한 업무에 집중할 수 있도록 돕는 프로그램의 용도와 화면 흐름을 살펴보세요. 준비된 프로그램은 전용 설치 페이지에서 인증 후 받을 수 있습니다.",
   );
   const heroActions = element("div", "hero-actions");
   heroActions.append(
@@ -274,7 +274,7 @@ function renderCatalog(catalog, page) {
 }
 
 function renderDetail(app, page) {
-  document.title = `${app.name} — 일덜기`;
+  document.title = `${app.name} — 한결`;
   const hero = element("section", "route-hero");
   const breadcrumb = element("nav", "breadcrumb");
   breadcrumb.setAttribute("aria-label", "현재 위치");
@@ -317,7 +317,7 @@ function renderDetail(app, page) {
 }
 
 function renderInstallIndex(catalog, page) {
-  document.title = "프로그램 설치 — 일덜기";
+  document.title = "프로그램 설치 — 한결";
   const hero = element("section", "route-hero compact-route-hero");
   hero.append(eyebrow("인증 설치"), element("h1", "", "설치할 프로그램을 선택하세요"));
   hero.append(
@@ -339,7 +339,7 @@ function renderInstallIndex(catalog, page) {
 }
 
 function renderInstall(app, page) {
-  document.title = `${app.name} 설치 — 일덜기`;
+  document.title = `${app.name} 설치 — 한결`;
   const hero = element("section", "route-hero compact-route-hero");
   const breadcrumb = element("nav", "breadcrumb");
   breadcrumb.setAttribute("aria-label", "현재 위치");
@@ -394,7 +394,7 @@ function renderInstall(app, page) {
 }
 
 function renderMissing(page) {
-  document.title = "프로그램을 찾을 수 없음 — 일덜기";
+  document.title = "프로그램을 찾을 수 없음 — 한결";
   const panel = element("section", "route-hero missing-route");
   panel.append(eyebrow("찾을 수 없음"), element("h1", "", "프로그램을 찾을 수 없습니다."));
   panel.append(link("primary-action", "전체 프로그램으로", new URL("./#programs", document.baseURI).href));

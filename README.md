@@ -1,6 +1,6 @@
-# 일덜기 showcase
+# 한결 showcase
 
-Public GitHub Pages catalog branded as `일덜기`. It contains product descriptions, reviewed workflow GIFs, and a dedicated installation route for every listed program. AutoTrip demonstrates the verified program-to-site flow; the other program GIFs use deterministic demo data and continuously disclose that external systems are not connected. The site contains no installer binaries, raw codes, source application secrets, browser profiles, user configuration, or product-key administrator surface.
+Public GitHub Pages catalog branded as `한결`. It contains product descriptions, reviewed workflow GIFs, and a dedicated installation route for every listed program. AutoTrip demonstrates the verified program-to-site flow; the other program GIFs use deterministic demo data and continuously disclose that external systems are not connected. The site contains no installer binaries, raw codes, source application secrets, browser profiles, user configuration, or product-key administrator surface.
 
 GitHub Pages is only the UI. A Cloudflare Worker validates the code and streams a time-limited private R2 object. Until an application's verified HTTPS `/authorize` endpoint and installer manifest exist, its install route remains visible but the download button is disabled with a `배포 준비 중` state.
 
