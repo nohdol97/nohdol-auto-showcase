@@ -89,12 +89,13 @@ test("the public UI follows the restrained nohdol-clean profile", async () => {
   assert.match(appScript, /status\.dataset\.state = "error"/);
 });
 
-test("the catalog explains the everyday program experience in plain Korean", async () => {
+test("the catalog presents product-specific workflows in plain Korean", async () => {
   const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
-  assert.match(appScript, /기능만 되는 투박한 도구로 끝내지 않습니다/);
-  assert.match(appScript, /처음 쓰는 사람도 헤매지 않도록/);
-  assert.match(appScript, /막히지 않는 사용 순서/);
-  assert.match(appScript, /다시 시작하는 방법/);
+  assert.match(appScript, /업무별로 독립된 프로그램/);
+  assert.match(appScript, /프로그램 소개/);
+  assert.match(appScript, /화면 데모/);
+  assert.match(appScript, /설치 준비/);
+  assert.doesNotMatch(appScript, /UI 콘셉트|UI 프로토타입|임시 포트폴리오|향후 교체/);
   assert.doesNotMatch(appScript, /PyInstaller|Electron|React|TypeScript|프레임워크/);
 });
 
@@ -154,41 +155,45 @@ test("adding catalog metadata automatically creates routes for another program",
   assert.match(installRoute, /Sample Monitor 설치 — nohdol auto/);
 });
 
-test("the temporary portfolio contains ten disclosed UI-only prototypes across three audiences", () => {
+test("the catalog contains ten disclosed standalone program demos across three audiences", () => {
   const prototypes = catalog.apps.filter((app) => app.kind === "prototype");
   assert.equal(prototypes.length, 10);
   assert.deepEqual(new Set(prototypes.map((app) => app.audience)), new Set(["개인 업무", "대기업", "전문직"]));
   for (const app of prototypes) {
     assert.equal(app.authEndpoint, null);
-    assert.match(app.demoLabel, /UI 프로토타입/);
-    assert.match(app.demoLabel, /실제 연동 없음/);
-    assert.match(app.prototypeNotice, /설치 파일은 제공하지 않습니다/);
-    assert.equal("assets" in app, false);
-    assert.equal("defaultAssetId" in app, false);
-    assert.equal("activationNote" in app, false);
+    assert.equal(app.installPreview, true);
+    assert.match(app.demoLabel, /기능 시연 화면/);
+    assert.match(app.demoLabel, /외부 시스템 미연동/);
+    assert.match(app.availabilityNote, /배포 준비 중/);
+    assert.equal(app.defaultAssetId, "windows");
+    assert.deepEqual(app.assets.map((asset) => asset.id), ["macos", "windows", "linux"]);
+    assert.doesNotMatch(JSON.stringify(app), /UI 콘셉트|UI 프로토타입|임시 UI 포트폴리오/);
   }
 });
 
-test("prototype validation rejects install metadata and working-product claims", () => {
+test("demo validation requires a disabled install preview and rejects a live endpoint", () => {
   const prototype = structuredClone(catalog.apps.find((app) => app.kind === "prototype"));
-  prototype.assets = [{ id: "windows", label: "Windows" }];
-  prototype.defaultAssetId = "windows";
-  assert.throws(() => validateCatalog({ schemaVersion: 3, apps: [prototype] }), /must not define install metadata/);
+  delete prototype.availabilityNote;
+  assert.throws(() => validateCatalog({ schemaVersion: 3, apps: [prototype] }), /truthful disabled install preview/);
 
   const connected = structuredClone(catalog.apps.find((app) => app.kind === "prototype"));
   connected.authEndpoint = "https://downloads.example/authorize";
-  assert.throws(() => validateCatalog({ schemaVersion: 3, apps: [connected] }), /must disclose its UI-only boundary/);
+  assert.throws(() => validateCatalog({ schemaVersion: 3, apps: [connected] }), /truthful disabled install preview/);
 });
 
-test("prototype entries generate public detail routes and GIFs but no install routes", async () => {
+test("demo entries generate detail, GIF, and non-downloadable install preview routes", async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "showcase-prototypes-"));
   const output = path.join(temporary, "site");
   await buildPages({ catalog: path.join(root, "apps.json"), site: path.join(root, "site"), output });
   for (const app of catalog.apps.filter((item) => item.kind === "prototype")) {
     const detailRoute = await readFile(path.join(output, "apps", app.id, "index.html"), "utf8");
+    const installRoute = await readFile(path.join(output, "install", app.id, "index.html"), "utf8");
     const demoGif = await readFile(path.join(output, "assets", `${app.id}-workflow.gif`));
     assert.match(detailRoute, new RegExp(`data-app-id="${app.id}"`));
+    assert.match(installRoute, new RegExp(`data-page="install" data-app-id="${app.id}"`));
     assert.equal(demoGif.subarray(0, 6).toString("ascii"), "GIF89a");
-    await assert.rejects(readFile(path.join(output, "install", app.id, "index.html")), /ENOENT/);
   }
+  const appScript = await readFile(path.join(output, "app.js"), "utf8");
+  assert.match(appScript, /if \(!app\.authEndpoint\) return/);
+  assert.match(appScript, /submit\.disabled = !app\.authEndpoint/);
 });

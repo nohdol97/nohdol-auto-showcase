@@ -5,10 +5,10 @@
 The primary visitor has been told about a nohdol-auto desktop automation and wants to answer three questions without reading a campaign page:
 
 1. What does the program do?
-2. Where does the real workflow stop safely?
-3. How does an approved user obtain the current installer?
+2. Is the recording a verified external workflow or a disclosed local demonstration?
+3. Is the installer available now or still being prepared?
 
-The catalog's primary action is choosing a program. A detail route leads with the real workflow recording. An install route leads with the operating-system choice, installer code, and the distinction between download authorization and in-app activation.
+The catalog's primary action is choosing a program. A detail route leads with its reviewed workflow recording. An install route leads with the operating-system choice and installer-code control. Verified products may authorize a download; demo-only programs keep that control disabled and state `배포 준비 중` without attempting a request.
 
 The catalog also explains the day-to-day program experience in plain Korean. It promises a clear screen, a natural order of use, visible progress, and understandable recovery guidance without naming implementation tools or asking visitors to understand development terminology.
 
@@ -36,7 +36,8 @@ The site does not use gradients, glows, glass/blur, decorative background textur
 ## State and safety contract
 
 - Catalog: loading, populated, empty, and load-failure states remain visible.
-- Detail: the reviewed GIF and caption describe the actual program-to-site flow and untouched final action.
+- Detail: each reviewed GIF and caption identifies either the verified program-to-site flow or the deterministic demo-data boundary. Public copy does not use `UI 콘셉트`, `UI 프로토타입`, temporary-portfolio, or removal-plan language.
 - Install: ready, authorizing, disabled-until-endpoint, success, and recoverable failure states remain distinct in text, not color alone.
+- A disabled install preview may show the same route, platform selector, and code field as a distributed product, but it has `authEndpoint: null`, a disabled submit button, an early request guard, and an explicit not-yet-available message.
 - The public site never contains or validates raw installer codes, product keys, verifiers, private object URLs, administrator controls, or direct installer URLs.
 - Visual changes must not change route generation, platform fallback, the `/authorize` request shape, code clearing, or the 60-second server-side delivery boundary.
