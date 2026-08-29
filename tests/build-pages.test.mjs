@@ -90,14 +90,19 @@ test("the public UI follows the restrained nohdol-clean profile", async () => {
 });
 
 test("the catalog presents product-specific workflows in plain Korean", async () => {
+  const template = await readFile(path.join(root, "site", "index.html"), "utf8");
   const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
-  assert.match(appScript, /업무별로 독립된 프로그램/);
+  assert.match(template, /일덜기/);
+  assert.match(appScript, /반복은 줄이고/);
+  assert.match(appScript, /중요한 일에 집중하세요/);
+  assert.match(appScript, /되풀이하는 일을 줄여 주는 프로그램/);
   assert.match(appScript, /기능만 되는 투박한/);
   assert.match(appScript, /experienceTitle\.append\(document\.createElement\("br"\)/);
   assert.match(appScript, /도구로 끝내지 않습니다/);
   assert.match(appScript, /프로그램 소개/);
   assert.match(appScript, /화면 데모/);
   assert.match(appScript, /설치 준비/);
+  assert.doesNotMatch(`${template}\n${appScript}`, /nohdol auto|데스크톱 자동화|자동화 프로그램|사용할 자동화/i);
   assert.doesNotMatch(appScript, /UI 콘셉트|UI 프로토타입|임시 포트폴리오|향후 교체/);
   assert.doesNotMatch(appScript, /PyInstaller|Electron|React|TypeScript|프레임워크/);
 });
@@ -154,8 +159,8 @@ test("adding catalog metadata automatically creates routes for another program",
   const detailRoute = await readFile(path.join(output, "apps", "sample-monitor", "index.html"), "utf8");
   const installRoute = await readFile(path.join(output, "install", "sample-monitor", "index.html"), "utf8");
   assert.match(detailRoute, /data-app-id="sample-monitor"/);
-  assert.match(detailRoute, /Sample Monitor — nohdol auto/);
-  assert.match(installRoute, /Sample Monitor 설치 — nohdol auto/);
+  assert.match(detailRoute, /Sample Monitor — 일덜기/);
+  assert.match(installRoute, /Sample Monitor 설치 — 일덜기/);
 });
 
 test("the catalog contains ten disclosed standalone program demos across three audiences", () => {

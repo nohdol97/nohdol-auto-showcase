@@ -2,7 +2,9 @@
 
 ## User and job
 
-The primary visitor has been told about a nohdol-auto desktop automation and wants to answer three questions without reading a campaign page:
+The public name is `일덜기`. Its promise is to reduce recurring work so people can focus on the work that matters. Customer-facing brand and general-purpose copy do not use `nohdol auto`, `자동화`, or implementation terminology; existing product proper names and operational identifiers remain unchanged when renaming them would break truthful product or installation continuity.
+
+The primary visitor has been told about a desktop program and wants to answer three questions without reading a campaign page:
 
 1. What does the program do?
 2. Is the recording a verified external workflow or a disclosed local demonstration?

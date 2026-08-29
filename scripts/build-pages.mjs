@@ -39,7 +39,7 @@ function escapeHtml(value) {
 
 function routeDocument(template, { page, appId = "", baseHref, title }) {
   return template
-    .replace("<title>nohdol auto — 데스크톱 자동화 카탈로그</title>", `<base href="${escapeHtml(baseHref)}" />\n    <title>${escapeHtml(title)}</title>`)
+    .replace("<title>일덜기 — 반복 업무 프로그램</title>", `<base href="${escapeHtml(baseHref)}" />\n    <title>${escapeHtml(title)}</title>`)
     .replace('<body data-page="catalog">', `<body data-page="${escapeHtml(page)}"${appId ? ` data-app-id="${escapeHtml(appId)}"` : ""}>`);
 }
 
@@ -70,7 +70,7 @@ export async function buildPages(options) {
     routeDocument(template, {
       page: "install-index",
       baseHref: "../",
-      title: "프로그램 설치 — nohdol auto",
+      title: "프로그램 설치 — 일덜기",
     }),
   );
   for (const app of catalog.apps) {
@@ -82,7 +82,7 @@ export async function buildPages(options) {
         page: "detail",
         appId: app.id,
         baseHref: "../../",
-        title: `${app.name} — nohdol auto`,
+        title: `${app.name} — 일덜기`,
       }),
     );
     if ((app.kind ?? "product") === "product" || app.installPreview === true) {
@@ -94,7 +94,7 @@ export async function buildPages(options) {
           page: "install",
           appId: app.id,
           baseHref: "../../",
-          title: `${app.name} 설치 — nohdol auto`,
+          title: `${app.name} 설치 — 일덜기`,
         }),
       );
     }

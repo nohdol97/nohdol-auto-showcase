@@ -127,7 +127,7 @@ function renderCatalogCard(app, index) {
   const number = element("span", "catalog-number", String(index + 1).padStart(2, "0"));
   const copy = element("div", "catalog-copy");
   copy.append(
-    element("span", "app-kicker", isPrototype(app) ? `${app.audience} · ${app.sector}` : "데스크톱 자동화"),
+    element("span", "app-kicker", isPrototype(app) ? `${app.audience} · ${app.sector}` : "반복 업무 프로그램"),
     element("h3", "", app.name),
     element("p", "app-description", app.description),
   );
@@ -150,18 +150,18 @@ function renderCatalogCard(app, index) {
 }
 
 function renderCatalog(catalog, page) {
-  document.title = "nohdol auto — 데스크톱 자동화 카탈로그";
+  document.title = "일덜기 — 반복 업무 프로그램";
   const hero = element("section", "hero");
   hero.setAttribute("aria-labelledby", "hero-title");
   const heroCopy = element("div", "hero-copy");
-  heroCopy.append(eyebrow("데스크톱 자동화 카탈로그"));
-  const title = element("h1", "", "자동화 프로그램을");
+  heroCopy.append(eyebrow("반복 업무 프로그램"));
+  const title = element("h1", "", "반복은 줄이고");
   title.id = "hero-title";
-  title.append(document.createElement("br"), element("em", "", "확인하고 비교하세요."));
+  title.append(document.createElement("br"), element("em", "", "중요한 일에 집중하세요."));
   const intro = element(
     "p",
     "intro",
-    "업무별로 독립된 프로그램의 용도와 화면 흐름을 살펴보세요. 배포된 프로그램은 전용 설치 페이지에서 인증 후 받을 수 있습니다.",
+    "되풀이하는 일을 줄여 주는 프로그램의 용도와 화면 흐름을 살펴보세요. 준비된 프로그램은 전용 설치 페이지에서 인증 후 받을 수 있습니다.",
   );
   const heroActions = element("div", "hero-actions");
   heroActions.append(
@@ -171,7 +171,7 @@ function renderCatalog(catalog, page) {
   heroCopy.append(title, intro, heroActions);
 
   const visual = element("div", "hero-visual");
-  visual.setAttribute("aria-label", "프로그램별 자동화와 안전한 설치 흐름");
+  visual.setAttribute("aria-label", "프로그램별 업무 흐름과 안전한 설치 과정");
   const consoleCard = element("div", "route-card catalog-console");
   const top = element("div", "route-card-top");
   top.append(element("span", "", "제공 방식"), element("b", "path-state", "프로그램별 현황"));
@@ -221,7 +221,7 @@ function renderCatalog(catalog, page) {
     element(
       "p",
       "",
-      "자동화가 정확해도 매일 쓰기 어렵다면 좋은 프로그램이 아닙니다. 처음 쓰는 사람도 헤매지 않도록 화면과 순서를 다듬고, 업무에 필요한 정보만 또렷하게 보여드립니다.",
+      "일을 빠르게 처리해도 매일 쓰기 어렵다면 좋은 프로그램이 아닙니다. 처음 쓰는 사람도 헤매지 않도록 화면과 순서를 다듬고, 업무에 필요한 정보만 또렷하게 보여드립니다.",
     ),
   );
   const experienceList = element("div", "experience-list");
@@ -259,7 +259,7 @@ function renderCatalog(catalog, page) {
   const heading = element("div", "section-heading");
   const headingCopy = element("div");
   headingCopy.append(eyebrow("프로그램"));
-  const appsTitle = element("h2", "", "사용할 자동화를 선택하세요");
+  const appsTitle = element("h2", "", "줄이고 싶은 반복 업무를 선택하세요");
   appsTitle.id = "apps-title";
   headingCopy.append(appsTitle);
   heading.append(headingCopy, element("p", "", `${catalog.apps.length}개 앱`));
@@ -274,12 +274,12 @@ function renderCatalog(catalog, page) {
 }
 
 function renderDetail(app, page) {
-  document.title = `${app.name} — nohdol auto`;
+  document.title = `${app.name} — 일덜기`;
   const hero = element("section", "route-hero");
   const breadcrumb = element("nav", "breadcrumb");
   breadcrumb.setAttribute("aria-label", "현재 위치");
   breadcrumb.append(link("", "프로그램", new URL("./#programs", document.baseURI).href), element("span", "", "/"), element("span", "", app.name));
-  hero.append(breadcrumb, element("span", "app-kicker", isPrototype(app) ? `${app.audience} · ${app.sector}` : "데스크톱 자동화"));
+  hero.append(breadcrumb, element("span", "app-kicker", isPrototype(app) ? `${app.audience} · ${app.sector}` : "반복 업무 프로그램"));
   const header = element("div", "route-title-row");
   const copy = element("div");
   copy.append(element("h1", "", app.name), element("p", "intro", app.description));
@@ -317,7 +317,7 @@ function renderDetail(app, page) {
 }
 
 function renderInstallIndex(catalog, page) {
-  document.title = "프로그램 설치 — nohdol auto";
+  document.title = "프로그램 설치 — 일덜기";
   const hero = element("section", "route-hero compact-route-hero");
   hero.append(eyebrow("인증 설치"), element("h1", "", "설치할 프로그램을 선택하세요"));
   hero.append(
@@ -339,7 +339,7 @@ function renderInstallIndex(catalog, page) {
 }
 
 function renderInstall(app, page) {
-  document.title = `${app.name} 설치 — nohdol auto`;
+  document.title = `${app.name} 설치 — 일덜기`;
   const hero = element("section", "route-hero compact-route-hero");
   const breadcrumb = element("nav", "breadcrumb");
   breadcrumb.setAttribute("aria-label", "현재 위치");
@@ -394,7 +394,7 @@ function renderInstall(app, page) {
 }
 
 function renderMissing(page) {
-  document.title = "프로그램을 찾을 수 없음 — nohdol auto";
+  document.title = "프로그램을 찾을 수 없음 — 일덜기";
   const panel = element("section", "route-hero missing-route");
   panel.append(eyebrow("찾을 수 없음"), element("h1", "", "프로그램을 찾을 수 없습니다."));
   panel.append(link("primary-action", "전체 프로그램으로", new URL("./#programs", document.baseURI).href));
