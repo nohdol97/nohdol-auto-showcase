@@ -46,6 +46,15 @@ function required(env, name) {
   return value;
 }
 
+function internalErrorClass(error) {
+  const name = String(error?.name ?? "");
+  const message = String(error?.message ?? "");
+  if (message.includes("D1_")) return "D1_ERROR";
+  if (message.includes("mail provider status")) return "MAIL_PROVIDER_ERROR";
+  if (name === "OperationError" || name === "DataError") return "CRYPTO_ERROR";
+  return "UNEXPECTED_ERROR";
+}
+
 async function readJson(request) {
   const length = Number(request.headers.get("Content-Length") ?? 0);
   if (length > JSON_LIMIT) throw new HttpError(413, "REQUEST_TOO_LARGE", "입력 내용이 너무 깁니다.");
@@ -579,6 +588,9 @@ export default {
       if (url.pathname.startsWith("/api/")) return await api(request, env, ctx);
       return required(env, "ASSETS").fetch(request);
     } catch (error) {
+      if (!(error instanceof HttpError)) {
+        console.error(JSON.stringify({ event: "worker_request_failed", path: new URL(request.url).pathname, method: request.method, errorClass: internalErrorClass(error) }));
+      }
       return errorResponse(error);
     }
   },

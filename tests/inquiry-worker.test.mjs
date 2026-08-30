@@ -150,6 +150,8 @@ test("[REG:inquiry.delivery_retry] completion is durable before operator mail an
   assert.match(workerSource, /Idempotency-Key/);
   assert.match(workerSource, /attempts < 5/);
   assert.match(workerSource, /delivery: "queued"/);
+  assert.match(workerSource, /worker_request_failed/);
+  assert.doesNotMatch(workerSource, /console\.error\([^\n]*error\.message/);
 });
 
 test("[REG:inquiry.retention_cleanup] schema and scheduled cleanup enforce finite retention", () => {
