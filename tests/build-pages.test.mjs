@@ -347,6 +347,20 @@ test("[REG:seo.static_discovery] generated routes expose crawlable initial HTML,
   for (const match of home.matchAll(/<script type="application\/ld\+json">([^<]+)<\/script>/g)) JSON.parse(match[1]);
 });
 
+test("[REG:seo.naver_site_ownership] homepage publishes the exact Naver verification meta", async () => {
+  const template = await readFile(path.join(root, "site", "index.html"), "utf8");
+  const expected = '<meta name="naver-site-verification" content="f803f7dcf0277c0a4616bb36c12e4215b00e541a" />';
+  const head = template.slice(template.indexOf("<head>"), template.indexOf("</head>"));
+  assert.match(head, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "showcase-naver-verification-"));
+  const output = path.join(temporary, "site");
+  await buildSite({ catalog: path.join(root, "apps.json"), site: path.join(root, "site"), output });
+  const generated = await readFile(path.join(output, "index.html"), "utf8");
+  const generatedHead = generated.slice(generated.indexOf("<head>"), generated.indexOf("</head>"));
+  assert.match(generatedHead, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+});
+
 test("[REG:legal.public_notices] privacy, terms, and consent surfaces match the implemented inquiry lifecycle", async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "showcase-legal-"));
   const output = path.join(temporary, "site");
