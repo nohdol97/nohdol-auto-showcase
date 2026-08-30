@@ -24,14 +24,14 @@ When the assistant considers the brief ready, the visitor can expand and review 
 ## Visual direction
 
 - Feel close to real work and calm about complexity: operational, readable, truthful, and quietly polished.
-- Keep `nohdol-clean` as the functional base and map the separate Abalone layer to `brand.canvas #F4F6F5`, `brand.ink #17211F`, `brand.accent #1F5E5B`, solid `brand.focus #1F5E5B`, and independent semantic status colors.
+- Keep `nohdol-clean` as the functional base and map the separate Abalone layer to warm `brand.canvas #F8F3EB`, deep `brand.ink #18312D`, action/focus `brand.accent #0B6F68`, and warm identity `brand.signature #E45F3F`; semantic status colors remain independent.
 - Use a 4px spacing grid, 6px controls, 8px grouped surfaces, and 10px floating or emphasized surfaces.
-- Use borders and small surface shifts for depth. Ordinary content has no drop shadow.
+- Use borders and small surface shifts for depth. The public hero and route introductions may use bounded deep-ink and warm-signature solid fields for identity, while ordinary content has no drop shadow.
 - Use the native Korean-capable font stack and a compact type scale. Weight and tone create hierarchy before size.
 - The signature structure is one visible `업무 이해 -> 작은 검증 -> 적용과 개선` path. Do not repeat the same sequence as a trust strip and another feature list.
 - Keep the verified product group ahead of the deterministic demo group. Both may use cards because each program is independently selectable, but their headings, counts, badges, and availability language remain distinct.
 
-The site does not use gradients, glows, glass/blur, decorative background textures, rotated mockups, oversized hero type, or ambient animation. Cards exist only for an independently selectable program, the workflow recording, and the installation form.
+The site does not use gradients, glows, glass/blur, decorative background textures, rotated mockups, oversized hero type, or ambient animation. Color energy comes from a few contiguous solid fields, stronger type contrast, and varied section rhythm—not multicolor controls. Cards exist only for an independently selectable program, the workflow recording, and the installation form.
 
 ## Responsive and accessibility contract
 
@@ -40,7 +40,7 @@ The site does not use gradients, glows, glass/blur, decorative background textur
 - The site remains responsive because it is a public web surface; the desktop-only application-renderer constraint does not apply to this repository.
 - All routes prevent horizontal overflow, preserve readable long Korean copy, and expose visible `:focus-visible` treatment.
 - Native links, buttons, labels, select, and password input remain keyboard operable.
-- The inquiry dialog uses a labeled native dialog, keyboard-operable close and choice controls, an `aria-live` message region, announced busy/error/success states, and visible focus treatment. At mobile width it becomes a full-viewport surface without hiding the inquiry action.
+- The inquiry dialog uses a labeled native dialog, keyboard-operable close and choice controls, an `aria-live` message region, announced busy/error/success states, visible focus treatment, and focus recovery to the invoking inquiry control. At mobile width it becomes a full-viewport surface without hiding the inquiry action.
 - The installation form keeps the code after neither success nor failure, blocks duplicate submission while authorizing, restores focus to the code field after recoverable failure, and announces status changes.
 - Reduced-motion preferences remove smooth scrolling and non-essential movement.
 - Reduced-motion preferences replace each animated workflow GIF with its first-frame poster; CSS transition overrides alone are not sufficient.

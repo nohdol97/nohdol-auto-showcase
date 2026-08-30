@@ -150,7 +150,23 @@ function renderCatalogCard(app, index) {
   copy.append(flow, actions);
   const badge = statusBadge(isPrototype(app) ? "기능 데모 · 파일 없음" : "설치 가능");
   if (isPrototype(app)) badge.classList.add("prototype-status");
-  card.append(number, copy, badge);
+  if (!isPrototype(app) && app.demoGif) {
+    card.classList.add("evidence-card");
+    copy.prepend(badge);
+    const evidence = link("catalog-evidence", "", routeHref("apps", app.id));
+    evidence.setAttribute("aria-label", `${app.name} 실제 사용 흐름 보기`);
+    const preview = element("img", "catalog-evidence-image");
+    preview.src = app.demoGif.replace(/\.gif$/i, "-poster.png");
+    preview.alt = `${app.name} 실제 사용 흐름 미리보기`;
+    preview.loading = "lazy";
+    preview.decoding = "async";
+    preview.width = 960;
+    preview.height = 608;
+    evidence.append(preview, element("span", "catalog-evidence-label", "실제 흐름 미리보기 →"));
+    card.append(number, copy, evidence);
+  } else {
+    card.append(number, copy, badge);
+  }
   return card;
 }
 
@@ -162,7 +178,7 @@ function renderCatalog(catalog, page) {
   heroCopy.append(eyebrow("업무 가까이에서 만드는 프로그램"));
   const title = element("h1", "", "복잡한 일을 이해하고");
   title.id = "hero-title";
-  title.append(document.createElement("br"), element("em", "", "쓸 수 있는 흐름으로 정리합니다."));
+  title.append(document.createElement("br"), element("em", "", "쓸 수 있는 흐름을 만듭니다."));
   const intro = element(
     "p",
     "intro",
