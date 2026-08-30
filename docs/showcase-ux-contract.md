@@ -24,9 +24,9 @@ When the assistant considers the brief ready, the visitor can expand and review 
 ## Visual direction
 
 - Feel close to real work and calm about complexity: operational, readable, truthful, and quietly polished.
-- Keep `nohdol-clean` as the functional base and map the separate Abalone layer to warm `brand.canvas #F8F3EB`, deep `brand.ink #18312D`, action/focus `brand.accent #0B6F68`, and warm identity `brand.signature #E45F3F`; semantic status colors remain independent.
+- Keep `nohdol-clean` as the functional base and map the separate Abalone layer to warm `brand.canvas #F7F2EA`, deep `brand.ink #16312D`, action/focus `brand.accent #0D6B64`, and burnished identity `brand.signature #C85A3F`; semantic status colors remain independent.
 - Use a 4px spacing grid, 6px controls, 8px grouped surfaces, and 10px floating or emphasized surfaces.
-- Use borders and small surface shifts for depth. The public hero and route introductions may use bounded deep-ink and warm-signature solid fields for identity, while ordinary content has no drop shadow.
+- Use borders and small surface shifts for depth. The public hero and route introductions use a restrained warm surface, asymmetric whitespace, a deep-ink process field, and thin signature rails rather than a large pastel wash; ordinary content has no drop shadow.
 - Use the native Korean-capable font stack and a compact type scale. Weight and tone create hierarchy before size.
 - The signature structure is one visible `업무 이해 -> 작은 검증 -> 적용과 개선` path. Do not repeat the same sequence as a trust strip and another feature list.
 - Keep the verified product group ahead of the deterministic demo group. Both may use cards because each program is independently selectable, but their headings, counts, badges, and availability language remain distinct.
