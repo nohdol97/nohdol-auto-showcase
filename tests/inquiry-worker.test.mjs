@@ -85,15 +85,6 @@ test("[REG:inquiry.session_ownership] every conversation route authenticates and
   assert.doesNotMatch(workerSource, /localStorage|sessionStorage/);
 });
 
-test("[REG:inquiry.keyboard_recovery] closing the inquiry dialog restores focus to its opener", () => {
-  assert.match(client, /dialogReturnFocus = byId\("inquiry-open"\)/);
-  assert.match(client, /dialog\.addEventListener\("cancel", \(event\) =>/);
-  assert.match(client, /event\.preventDefault\(\);[\s\S]*closeInquiry\(\)/);
-  assert.match(client, /returnTarget\?\.isConnected/);
-  assert.match(client, /requestAnimationFrame\(\(\) => window\.requestAnimationFrame\(\(\) => returnTarget\.focus\(\)\)\)/);
-  assert.match(client, /querySelector\('a\[href\*="\?inquiry=open"\]'/);
-});
-
 test("[REG:inquiry.choice_options] the strict state tool supports two to four plain-language options", () => {
   assert.equal(INQUIRY_STATE_TOOL.strict, true);
   assert.equal(INQUIRY_STATE_TOOL.parameters.additionalProperties, false);

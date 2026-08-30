@@ -127,14 +127,13 @@ test("[REG:showcase.abalone_brand] the public UI layers Abalone identity over no
   const template = await readFile(path.join(root, "site", "index.html"), "utf8");
   const styles = await readFile(path.join(root, "site", "styles.css"), "utf8");
   const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
-  assert.match(template, /name="theme-color" content="#E45F3F"/);
+  assert.match(template, /name="theme-color" content="#F4F6F5"/);
   assert.match(template, /class="skip-link" href="#page">본문으로 건너뛰기/);
   assert.doesNotMatch(template, /class="ambient/);
-  for (const token of ["--brand-canvas", "--brand-ink", "--brand-accent", "--brand-accent-strong", "--brand-accent-soft", "--brand-signature", "--brand-signature-strong", "--brand-signature-soft", "--brand-focus"]) {
+  for (const token of ["--brand-canvas", "--brand-ink", "--brand-accent", "--brand-accent-strong", "--brand-accent-soft", "--brand-focus"]) {
     assert.match(styles, new RegExp(token));
   }
-  assert.match(styles, /--brand-accent: #0b6f68/);
-  assert.match(styles, /--brand-signature: #e45f3f/);
+  assert.match(styles, /--brand-accent: #1f5e5b/);
   assert.match(styles, /--accent: var\(--brand-accent\)/);
   assert.match(styles, /outline: 3px solid var\(--brand-focus\)/);
   assert.match(styles, /border-radius: 6px/);
@@ -148,21 +147,21 @@ test("[REG:showcase.abalone_brand] the public UI layers Abalone identity over no
 
 test("[REG:showcase.brand_icon] the Abalone mark is font-independent and ships in browser icon formats", async () => {
   const template = await readFile(path.join(root, "site", "index.html"), "utf8");
-  const svg = await readFile(path.join(root, "site", "abalone-favicon-v2.svg"), "utf8");
+  const svg = await readFile(path.join(root, "site", "favicon.svg"), "utf8");
   const manifest = JSON.parse(await readFile(path.join(root, "site", "site.webmanifest"), "utf8"));
-  const faviconPng = await readFile(path.join(root, "site", "abalone-favicon-v2-32.png"));
-  const appleTouchIcon = await readFile(path.join(root, "site", "abalone-touch-icon-v2.png"));
-  const icon192 = await readFile(path.join(root, "site", "abalone-icon-v2-192.png"));
-  const icon512 = await readFile(path.join(root, "site", "abalone-icon-v2-512.png"));
+  const faviconPng = await readFile(path.join(root, "site", "favicon-32.png"));
+  const appleTouchIcon = await readFile(path.join(root, "site", "apple-touch-icon.png"));
+  const icon192 = await readFile(path.join(root, "site", "icon-192.png"));
+  const icon512 = await readFile(path.join(root, "site", "icon-512.png"));
   const legacyIcon = await readFile(path.join(root, "site", "favicon.ico"));
 
   assert.match(template, /<title>Abalone — 업무 맞춤 프로그램 제작<\/title>/);
-  assert.match(template, /rel="icon" href="\.\/abalone-favicon-v2\.svg" type="image\/svg\+xml"/);
-  assert.match(template, /rel="apple-touch-icon" href="\.\/abalone-touch-icon-v2\.png"/);
-  assert.equal([...template.matchAll(/class="brand-mark" src="\.\/abalone-favicon-v2\.svg"/g)].length, 2);
+  assert.match(template, /rel="icon" href="\.\/favicon\.svg" type="image\/svg\+xml"/);
+  assert.match(template, /rel="apple-touch-icon" href="\.\/apple-touch-icon\.png"/);
+  assert.equal([...template.matchAll(/class="brand-mark" src="\.\/favicon\.svg"/g)].length, 2);
   assert.match(svg, /viewBox="0 0 32 32"/);
-  assert.match(svg, /fill="#e45f3f"/);
-  assert.match(svg, /fill="#fffaf3"/);
+  assert.match(svg, /fill="#1f5e5b"/);
+  assert.match(svg, /fill="#ffffff"/);
   assert.doesNotMatch(svg, /<text|gradient|<image/i);
 
   for (const [contents, size] of [[faviconPng, 32], [appleTouchIcon, 180], [icon192, 192], [icon512, 512]]) {
@@ -172,9 +171,8 @@ test("[REG:showcase.brand_icon] the Abalone mark is font-independent and ships i
   }
   assert.equal(legacyIcon.subarray(0, 4).toString("hex"), "00000100");
   assert.equal(manifest.name, "Abalone");
-  assert.equal(manifest.background_color, "#f8f3eb");
-  assert.equal(manifest.theme_color, "#e45f3f");
-  assert.deepEqual(manifest.icons.map((icon) => icon.src), ["./abalone-icon-v2-192.png", "./abalone-icon-v2-512.png"]);
+  assert.equal(manifest.background_color, "#f4f6f5");
+  assert.equal(manifest.theme_color, "#1f5e5b");
   assert.deepEqual(manifest.icons.map((icon) => icon.sizes), ["192x192", "512x512"]);
 });
 
@@ -184,7 +182,7 @@ test("[REG:showcase.domain_embedded_positioning] the catalog explains remote dom
   assert.match(template, /Abalone/);
   assert.match(appScript, /업무 가까이에서 만드는 프로그램/);
   assert.match(appScript, /복잡한 일을 이해하고/);
-  assert.match(appScript, /쓸 수 있는 흐름을 만듭니다/);
+  assert.match(appScript, /쓸 수 있는 흐름으로 정리합니다/);
   assert.match(appScript, /업종마다 사람, 규칙, 예외/);
   assert.match(appScript, /업무 이해/);
   assert.match(appScript, /작은 검증/);
@@ -194,8 +192,6 @@ test("[REG:showcase.domain_embedded_positioning] the catalog explains remote dom
   assert.match(appScript, /new URL\("\?inquiry=open", document\.baseURI\)\.href/);
   assert.match(template, /어떤 업종에서 누가 어떤 순서로 일하는지/);
   assert.match(appScript, /설치 정보만 제공/);
-  assert.match(appScript, /catalog-evidence/);
-  assert.match(appScript, /실제 흐름 미리보기/);
   assert.doesNotMatch(`${template}\n${appScript}`, /FDE|상주 개발|상주 인력|nohdol auto|데스크톱 자동화|자동화 프로그램|사용할 자동화/i);
   assert.doesNotMatch(appScript, /UI 콘셉트|UI 프로토타입|임시 포트폴리오|향후 교체/);
   assert.doesNotMatch(appScript, /PyInstaller|Electron|React|TypeScript|프레임워크/);

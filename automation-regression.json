@@ -45,9 +45,6 @@
     "inquiry.session_ownership": {
       "testFiles": ["tests/inquiry-worker.test.mjs"]
     },
-    "inquiry.keyboard_recovery": {
-      "testFiles": ["tests/inquiry-worker.test.mjs"]
-    },
     "inquiry.sse_persistence": {
       "testFiles": ["tests/inquiry-worker.test.mjs"]
     },

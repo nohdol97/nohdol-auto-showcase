@@ -16,7 +16,6 @@ import { renderMarkdown } from "./markdown.js";
   const authStatus = byId("inquiry-auth-status");
   const chatStatus = byId("inquiry-chat-status");
   const sendButton = byId("inquiry-send");
-  let dialogReturnFocus = null;
   const state = { challengeId: null, email: null, conversationId: null, attachmentIds: [], busy: false, retryMessageId: null, retryContent: null, formStartedAt: Date.now() };
 
   function setStatus(node, message, kind = "") {
@@ -41,19 +40,6 @@ import { renderMarkdown } from "./markdown.js";
   function showAuth() {
     auth.hidden = false;
     chat.hidden = true;
-  }
-
-  function restoreDialogFocus() {
-    const returnTarget = dialogReturnFocus;
-    dialogReturnFocus = null;
-    if (returnTarget?.isConnected) {
-      window.requestAnimationFrame(() => window.requestAnimationFrame(() => returnTarget.focus()));
-    }
-  }
-
-  function closeInquiry() {
-    dialog.close();
-    restoreDialogFocus();
   }
 
   function showChat(email) {
@@ -386,21 +372,15 @@ import { renderMarkdown } from "./markdown.js";
   });
 
   byId("inquiry-open").addEventListener("click", () => {
-    dialogReturnFocus = byId("inquiry-open");
     dialog.showModal();
     state.formStartedAt = Date.now();
     restoreSession();
   });
-  byId("inquiry-close").addEventListener("click", closeInquiry);
+  byId("inquiry-close").addEventListener("click", () => dialog.close());
   dialog.addEventListener("click", (event) => {
-    if (event.target === dialog) closeInquiry();
-  });
-  dialog.addEventListener("cancel", (event) => {
-    event.preventDefault();
-    closeInquiry();
+    if (event.target === dialog) dialog.close();
   });
   if (new URLSearchParams(window.location.search).get("inquiry") === "open") {
-    dialogReturnFocus = document.querySelector('a[href*="?inquiry=open"]');
     dialog.showModal();
     state.formStartedAt = Date.now();
     restoreSession();
