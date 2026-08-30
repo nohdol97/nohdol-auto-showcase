@@ -29,7 +29,7 @@ The site does not use gradients, glows, glass/blur, decorative background textur
 
 - Minimum verification viewport: `360 x 800`.
 - Nominal verification viewport: `1440 x 1000`.
-- The site remains responsive because it is a public Pages surface; the desktop-only application-renderer constraint does not apply to this repository.
+- The site remains responsive because it is a public web surface; the desktop-only application-renderer constraint does not apply to this repository.
 - All routes prevent horizontal overflow, preserve readable long Korean copy, and expose visible `:focus-visible` treatment.
 - Native links, buttons, labels, select, and password input remain keyboard operable.
 - The installation form keeps the code after neither success nor failure, blocks duplicate submission while authorizing, restores focus to the code field after recoverable failure, and announces status changes.

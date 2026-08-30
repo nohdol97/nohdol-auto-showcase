@@ -1,13 +1,13 @@
 # Multi-app, code-gated distribution contract
 
-The public Pages site is a multi-application catalog. Its build reads `apps.json` and creates these static routes automatically:
+The public static showcase is a multi-application catalog. Its build reads `apps.json` and creates these routes automatically:
 
 - `/` — the application catalog
 - `/apps/<appId>/` — the public description and real-workflow demo
 - `/install/` — the installation chooser
 - `/install/<appId>/` — the protected latest-installer form or a disabled install preview
 
-Adding a valid catalog entry is sufficient to create both app-specific routes. Each entry declares a `defaultAssetId` that must reference one of its allowlisted installer assets. The install form maps the browser-reported desktop platform to an allowlisted asset and uses the declared default when the platform is mobile, unknown, or unavailable for that application. A distributed product posts the application ID, asset ID, and program-specific authorization code over HTTPS to a separate Worker and clears the code after each attempt. An explicitly requested install preview keeps `authEndpoint: null`, disables submission, and makes no request. No raw code or verifier is emitted into Pages.
+Adding a valid catalog entry is sufficient to create both app-specific routes. Each entry declares a `defaultAssetId` that must reference one of its allowlisted installer assets. The install form maps the browser-reported desktop platform to an allowlisted asset and uses the declared default when the platform is mobile, unknown, or unavailable for that application. A distributed product posts the application ID, asset ID, and program-specific authorization code over HTTPS to a separate Worker and clears the code after each attempt. An explicitly requested install preview keeps `authEndpoint: null`, disables submission, and makes no request. No raw code or verifier is emitted into the static host.
 
 Each private application repository owns an `INSTALL_ACCESS_CODE` Actions secret containing a randomly generated high-entropy installer code. The release workflow hashes that code, temporarily disables the current manifest, overwrites the complete audited release in app-specific `latest` R2 slots, and publishes only `code:<appId>` and the completed `release:<appId>` manifest in Workers KV. Raw codes must not be committed, printed, placed in GIFs, or copied into the showcase repository. The public installer path exposes only the current release; private source Releases may retain audit history.
 

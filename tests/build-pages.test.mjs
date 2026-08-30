@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import vm from "node:vm";
-import { buildPages, validateCatalog } from "../scripts/build-pages.mjs";
+import { buildSite, validateCatalog } from "../scripts/build-site.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const catalog = JSON.parse(await readFile(path.join(root, "apps.json"), "utf8"));
@@ -67,11 +67,44 @@ test("the published catalog includes the AutoTrip workflow GIF", () => {
   assert.match(catalog.apps[0].demoCaption, /실제 결제 버튼은 누르지 않았습니다/);
 });
 
-test("Pages deployment uses the current Node 24 action runtimes", async () => {
+test("[REG:hosting.cloudflare_static_assets] Cloudflare deploys the generated site as static assets", async () => {
+  const config = JSON.parse(await readFile(path.join(root, "wrangler.jsonc"), "utf8"));
+  assert.equal(config.name, "nohdol-auto-showcase");
+  assert.equal(config.assets.directory, "./_site");
+  assert.equal(config.assets.not_found_handling, "404-page");
+  assert.equal(config.main, undefined);
+});
+
+test("the legacy GitHub Pages bridge uses current action runtimes", async () => {
   const workflow = await readFile(path.join(root, ".github", "workflows", "pages.yml"), "utf8");
   assert.match(workflow, /actions\/configure-pages@v6/);
   assert.match(workflow, /actions\/upload-pages-artifact@v5/);
   assert.match(workflow, /actions\/deploy-pages@v5/);
+});
+
+test("[REG:hosting.legacy_redirect] legacy GitHub Pages routes preserve path, query, and hash on Cloudflare", async () => {
+  const source = await readFile(path.join(root, "site", "legacy-redirect.js"), "utf8");
+  const replacements = [];
+  const context = {
+    window: {
+      location: {
+        origin: "https://nohdol97.github.io",
+        pathname: "/nohdol-auto-showcase/install/autotrip/",
+        search: "?from=legacy",
+        hash: "#download",
+        replace(value) { replacements.push(value); },
+      },
+    },
+    URL,
+  };
+  vm.runInNewContext(source, context);
+  assert.deepEqual(replacements, [
+    "https://nohdol-auto-showcase.nohdol-auto-download-gateway.workers.dev/install/autotrip/?from=legacy#download",
+  ]);
+
+  context.window.location.origin = "https://nohdol-auto-showcase.nohdol-auto-download-gateway.workers.dev";
+  vm.runInNewContext(source, context);
+  assert.equal(replacements.length, 1);
 });
 
 test("the public UI follows the restrained nohdol-clean profile", async () => {
@@ -107,10 +140,10 @@ test("the catalog presents product-specific workflows in plain Korean", async ()
   assert.doesNotMatch(appScript, /PyInstaller|Electron|React|TypeScript|프레임워크/);
 });
 
-test("build creates catalog, detail, and installation routes without an authentication code", async () => {
+test("[REG:hosting.generated_routes] build creates catalog, detail, and installation routes without an authentication code", async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "showcase-pages-"));
   const output = path.join(temporary, "site");
-  await buildPages({ catalog: path.join(root, "apps.json"), site: path.join(root, "site"), output });
+  await buildSite({ catalog: path.join(root, "apps.json"), site: path.join(root, "site"), output });
   const html = await readFile(path.join(output, "index.html"), "utf8");
   const installIndex = await readFile(path.join(output, "install", "index.html"), "utf8");
   const detailRoute = await readFile(path.join(output, "apps", "autotrip", "index.html"), "utf8");
@@ -155,7 +188,7 @@ test("adding catalog metadata automatically creates routes for another program",
   const catalogPath = path.join(temporary, "apps.json");
   const output = path.join(temporary, "site");
   await writeFile(catalogPath, JSON.stringify(source));
-  await buildPages({ catalog: catalogPath, site: path.join(root, "site"), output });
+  await buildSite({ catalog: catalogPath, site: path.join(root, "site"), output });
   const detailRoute = await readFile(path.join(output, "apps", "sample-monitor", "index.html"), "utf8");
   const installRoute = await readFile(path.join(output, "install", "sample-monitor", "index.html"), "utf8");
   assert.match(detailRoute, /data-app-id="sample-monitor"/);
@@ -193,7 +226,7 @@ test("demo validation requires a disabled install preview and rejects a live end
 test("demo entries generate detail, GIF, and non-downloadable install preview routes", async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "showcase-prototypes-"));
   const output = path.join(temporary, "site");
-  await buildPages({ catalog: path.join(root, "apps.json"), site: path.join(root, "site"), output });
+  await buildSite({ catalog: path.join(root, "apps.json"), site: path.join(root, "site"), output });
   for (const app of catalog.apps.filter((item) => item.kind === "prototype")) {
     const detailRoute = await readFile(path.join(output, "apps", app.id, "index.html"), "utf8");
     const installRoute = await readFile(path.join(output, "install", app.id, "index.html"), "utf8");

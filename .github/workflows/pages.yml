@@ -1,4 +1,4 @@
-name: Deploy automation showcase
+name: Verify showcase and publish legacy bridge
 
 on:
   workflow_dispatch:
@@ -6,6 +6,10 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/pages.yml'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'wrangler.jsonc'
+      - 'automation-regression.json'
       - 'apps.json'
       - 'scripts/**'
       - 'site/**'
@@ -26,9 +30,11 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-      - run: node --test
-      - name: Build public showcase
-        run: node scripts/build-pages.mjs
+          cache: npm
+      - run: npm ci
+      - run: npm run verify
+      - name: Build legacy Pages bridge artifact
+        run: npm run build
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:

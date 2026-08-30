@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "liveCanary": {
+    "mode": "manual",
+    "safeStop": "PUBLIC_ROUTES_AND_INSTALL_GATE_VERIFIED",
+    "realAction": false
+  },
+  "scenarios": {
+    "hosting.cloudflare_static_assets": {
+      "testFiles": ["tests/build-pages.test.mjs"]
+    },
+    "hosting.generated_routes": {
+      "testFiles": ["tests/build-pages.test.mjs"]
+    },
+    "hosting.legacy_redirect": {
+      "testFiles": ["tests/build-pages.test.mjs"]
+    }
+  }
+}

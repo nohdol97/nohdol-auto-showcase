@@ -56,7 +56,7 @@ function parseArguments(argv) {
   return options;
 }
 
-export async function buildPages(options) {
+export async function buildSite(options) {
   const catalog = validateCatalog(JSON.parse(await readFile(options.catalog, "utf8")));
   await rm(options.output, { recursive: true, force: true });
   await mkdir(options.output, { recursive: true });
@@ -103,5 +103,5 @@ export async function buildPages(options) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  buildPages(parseArguments(process.argv.slice(2))).catch((error) => { console.error(error.message); process.exitCode = 1; });
+  buildSite(parseArguments(process.argv.slice(2))).catch((error) => { console.error(error.message); process.exitCode = 1; });
 }
