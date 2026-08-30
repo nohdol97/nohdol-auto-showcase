@@ -124,20 +124,26 @@ test("the public UI follows the restrained nohdol-clean profile", async () => {
   assert.match(appScript, /status\.dataset\.state = "error"/);
 });
 
-test("the catalog presents product-specific workflows in plain Korean", async () => {
+test("[REG:showcase.domain_embedded_positioning] the catalog explains remote domain-shaped delivery in plain Korean", async () => {
   const template = await readFile(path.join(root, "site", "index.html"), "utf8");
   const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
   assert.match(template, /한결/);
-  assert.match(appScript, /매일의 반복은/);
-  assert.match(appScript, /한결 가볍게/);
-  assert.match(appScript, /되풀이하는 일을 줄여 중요한 업무에 집중/);
-  assert.match(appScript, /기능만 되는 투박한/);
+  assert.match(appScript, /원격 업무 맞춤 프로그램 제작/);
+  assert.match(appScript, /업무를 먼저 배우고/);
+  assert.match(appScript, /그에 맞게 만듭니다/);
+  assert.match(appScript, /업종마다 사람, 규칙, 예외/);
+  assert.match(appScript, /프로그램보다/);
   assert.match(appScript, /experienceTitle\.append\(document\.createElement\("br"\)/);
-  assert.match(appScript, /도구로 끝내지 않습니다/);
-  assert.match(appScript, /프로그램 소개/);
-  assert.match(appScript, /화면 데모/);
+  assert.match(appScript, /업무를 먼저 봅니다/);
+  assert.match(appScript, /업무 이해/);
+  assert.match(appScript, /작은 검증/);
+  assert.match(appScript, /적용과 개선/);
+  assert.match(appScript, /원격 밀착 협업/);
+  assert.match(appScript, /프로그램 상담 시작/);
+  assert.match(appScript, /new URL\("\?inquiry=open", document\.baseURI\)\.href/);
+  assert.match(template, /어떤 업종에서 누가 어떤 순서로 일하는지/);
   assert.match(appScript, /설치 페이지 제공/);
-  assert.doesNotMatch(`${template}\n${appScript}`, /nohdol auto|데스크톱 자동화|자동화 프로그램|사용할 자동화/i);
+  assert.doesNotMatch(`${template}\n${appScript}`, /FDE|상주 개발|상주 인력|nohdol auto|데스크톱 자동화|자동화 프로그램|사용할 자동화/i);
   assert.doesNotMatch(appScript, /UI 콘셉트|UI 프로토타입|임시 포트폴리오|향후 교체/);
   assert.doesNotMatch(appScript, /PyInstaller|Electron|React|TypeScript|프레임워크/);
 });

@@ -127,21 +127,21 @@ function renderCatalogCard(app, index) {
   const number = element("span", "catalog-number", String(index + 1).padStart(2, "0"));
   const copy = element("div", "catalog-copy");
   copy.append(
-    element("span", "app-kicker", isPrototype(app) ? `${app.audience} · ${app.sector}` : "반복 업무 프로그램"),
+    element("span", "app-kicker", isPrototype(app) ? `${app.audience} · ${app.sector}` : "실제 제작 프로그램"),
     element("h3", "", app.name),
     element("p", "app-description", app.description),
   );
   const flow = element("p", "program-flow");
   const flowSteps = isPrototype(app)
-    ? ["프로그램 소개", "화면 데모", "설치 페이지"]
-    : ["공개 설명", "실제 흐름", "인증 설치"];
+    ? ["문제와 대상", "화면 흐름", "제공 상태"]
+    : ["문제와 대상", "실제 사용 흐름", "설치 정보"];
   flowSteps.forEach((step, flowIndex) => {
     if (flowIndex > 0) flow.append(element("i", "", "→"));
     flow.append(element("span", "", step));
   });
   const actions = element("div", "catalog-actions");
-  actions.append(link("primary-action", "프로그램 보기", routeHref("apps", app.id)));
-  if (hasInstallRoute(app)) actions.append(link("secondary-action", "설치 페이지", routeHref("install", app.id)));
+  actions.append(link("primary-action", "사례 보기", routeHref("apps", app.id)));
+  if (hasInstallRoute(app)) actions.append(link("secondary-action", "설치 정보", routeHref("install", app.id)));
   copy.append(flow, actions);
   const badge = statusBadge(isPrototype(app) ? "설치 페이지 제공" : "설치 가능");
   if (isPrototype(app)) badge.classList.add("prototype-status");
@@ -150,43 +150,44 @@ function renderCatalogCard(app, index) {
 }
 
 function renderCatalog(catalog, page) {
-  document.title = "한결 — 반복 업무 프로그램";
+  document.title = "한결 — 업무 맞춤 프로그램 제작";
   const hero = element("section", "hero");
   hero.setAttribute("aria-labelledby", "hero-title");
   const heroCopy = element("div", "hero-copy");
-  heroCopy.append(eyebrow("반복 업무 프로그램"));
-  const title = element("h1", "", "매일의 반복은");
+  heroCopy.append(eyebrow("원격 업무 맞춤 프로그램 제작"));
+  const title = element("h1", "", "업무를 먼저 배우고");
   title.id = "hero-title";
-  title.append(document.createElement("br"), element("em", "", "한결 가볍게."));
+  title.append(document.createElement("br"), element("em", "", "그에 맞게 만듭니다."));
   const intro = element(
     "p",
     "intro",
-    "되풀이하는 일을 줄여 중요한 업무에 집중할 수 있도록 돕는 프로그램의 용도와 화면 흐름을 살펴보세요. 준비된 프로그램은 전용 설치 페이지에서 인증 후 받을 수 있습니다.",
+    "업종마다 사람, 규칙, 예외와 쓰는 도구가 다릅니다. 화면 공유와 대화로 실제 업무를 이해한 뒤, 가장 필요한 프로그램을 작은 범위부터 검증하고 원격으로 적용합니다.",
   );
   const heroActions = element("div", "hero-actions");
   heroActions.append(
-    link("primary-action", "프로그램 보기", "#programs"),
-    element("span", "availability", `${catalog.apps.length}개 프로그램 등록`),
+    link("primary-action", "제작 사례 보기", "#programs"),
+    link("secondary-action", "프로그램 상담 시작", new URL("?inquiry=open", document.baseURI).href),
+    element("span", "availability", `${catalog.apps.length}개 제작 사례`),
   );
   heroCopy.append(title, intro, heroActions);
 
   const visual = element("div", "hero-visual");
-  visual.setAttribute("aria-label", "프로그램별 업무 흐름과 안전한 설치 과정");
+  visual.setAttribute("aria-label", "원격 맞춤 프로그램 제작 과정");
   const consoleCard = element("div", "route-card catalog-console");
   const top = element("div", "route-card-top");
-  top.append(element("span", "", "제공 방식"), element("b", "path-state", "프로그램별 현황"));
+  top.append(element("span", "", "진행 방식"), element("b", "path-state", "원격 밀착 협업"));
   const consoleTitle = element("div", "console-title");
   consoleTitle.append(
-    element("h2", "", "확인부터 설치까지"),
-    element("p", "", "공개 정보와 보호된 다운로드 경계를 분명히 유지합니다."),
+    element("h2", "", "이해부터 실제 적용까지"),
+    element("p", "", "현업의 말과 화면을 바탕으로 필요한 범위를 함께 정합니다."),
   );
   const progress = element("div", "progress-stack");
   for (const [step, name, detail, state] of [
-    ["01", "프로그램 선택", "용도와 실제 동작 확인", "공개"],
-    ["02", "설치 인증", "프로그램별 코드 검증", "보호"],
-    ["03", "안전 실행", "최종 동작 전 명시적 경계", "제어"],
+    ["01", "업무 이해", "사람·순서·규칙·예외 확인", "발견"],
+    ["02", "작은 검증", "중요한 흐름부터 실제 화면으로 확인", "검증"],
+    ["03", "적용과 개선", "사용 결과를 보고 합의한 범위에서 보완", "개선"],
   ]) {
-    const row = element("div", state === "제어" ? "safe-step" : "");
+    const row = element("div", state === "개선" ? "safe-step" : "");
     const description = element("p");
     description.append(element("strong", "", name), document.createTextNode(detail));
     row.append(element("span", "", step), description, element("b", "", state));
@@ -199,10 +200,10 @@ function renderCatalog(catalog, page) {
   const trust = element("section", "trust-strip");
   trust.setAttribute("aria-label", "공통 제공 원칙");
   for (const [number, text] of [
-    ["01", "프로그램별 독립 관리"],
-    ["02", "화면 흐름 공개"],
-    ["03", "인증코드 다운로드"],
-    ["04", "현재 버전만 제공"],
+    ["01", "업종과 용어부터 이해"],
+    ["02", "실제 업무 흐름 반영"],
+    ["03", "작은 범위부터 검증"],
+    ["04", "원격 협업과 개선"],
   ]) {
     const item = element("div");
     item.append(element("strong", "", number), element("span", "", text));
@@ -212,23 +213,23 @@ function renderCatalog(catalog, page) {
   const experience = element("section", "experience");
   experience.setAttribute("aria-labelledby", "experience-title");
   const experienceCopy = element("div", "experience-copy");
-  experienceCopy.append(eyebrow("매일 쓰는 프로그램"));
-  const experienceTitle = element("h2", "", "기능만 되는 투박한");
+  experienceCopy.append(eyebrow("업무 밀착형 제작"));
+  const experienceTitle = element("h2", "", "프로그램보다");
   experienceTitle.id = "experience-title";
-  experienceTitle.append(document.createElement("br"), document.createTextNode("도구로 끝내지 않습니다."));
+  experienceTitle.append(document.createElement("br"), document.createTextNode("업무를 먼저 봅니다."));
   experienceCopy.append(
     experienceTitle,
     element(
       "p",
       "",
-      "일을 빠르게 처리해도 매일 쓰기 어렵다면 좋은 프로그램이 아닙니다. 처음 쓰는 사람도 헤매지 않도록 화면과 순서를 다듬고, 업무에 필요한 정보만 또렷하게 보여드립니다.",
+      "같은 업종에서도 팀마다 일하는 순서와 중요한 예외가 다릅니다. 정해진 제품을 억지로 끼워 맞추지 않고, 실제 담당자의 설명과 자료를 바탕으로 필요한 범위를 함께 정합니다.",
     ),
   );
   const experienceList = element("div", "experience-list");
   for (const [number, title, text] of [
-    ["01", "한눈에 이해되는 화면", "자주 쓰는 기능은 앞에 두고, 설정과 결과는 보기 쉽게 나눕니다."],
-    ["02", "막히지 않는 사용 순서", "무엇을 입력하고 언제 실행하며 다음에 무엇을 해야 하는지 자연스럽게 이어집니다."],
-    ["03", "문제가 생겨도 분명하게", "진행 상황과 멈춘 이유, 다시 시작하는 방법을 알아보기 쉬운 말로 안내합니다."],
+    ["01", "현업의 말로 이해", "화상 대화, 화면 공유와 참고 자료로 담당자·순서·규칙·예외를 확인합니다."],
+    ["02", "핵심 흐름부터 검증", "모든 기능을 한꺼번에 만들기보다 가치가 큰 흐름을 먼저 작동하는 화면으로 확인합니다."],
+    ["03", "사용 결과로 개선", "원격으로 적용한 뒤 실제 사용에서 확인된 문제를 합의한 범위 안에서 보완합니다."],
   ]) {
     const item = element("article", "experience-item");
     const itemCopy = element("div");
@@ -258,14 +259,14 @@ function renderCatalog(catalog, page) {
   programs.setAttribute("aria-labelledby", "apps-title");
   const heading = element("div", "section-heading");
   const headingCopy = element("div");
-  headingCopy.append(eyebrow("프로그램"));
-  const appsTitle = element("h2", "", "줄이고 싶은 반복 업무를 선택하세요");
+  headingCopy.append(eyebrow("제작 사례"));
+  const appsTitle = element("h2", "", "업종별 문제를 이렇게 풀 수 있습니다");
   appsTitle.id = "apps-title";
   headingCopy.append(appsTitle);
-  heading.append(headingCopy, element("p", "", `${catalog.apps.length}개 앱`));
+  heading.append(headingCopy, element("p", "", `${catalog.apps.length}개 사례`));
   const list = element("div", "app-list");
   if (catalog.apps.length === 0) {
-    list.append(element("p", "empty-message", "현재 공개된 프로그램이 없습니다."));
+    list.append(element("p", "empty-message", "현재 공개된 제작 사례가 없습니다."));
   } else {
     catalog.apps.forEach((app, index) => list.append(renderCatalogCard(app, index)));
   }
@@ -278,8 +279,8 @@ function renderDetail(app, page) {
   const hero = element("section", "route-hero");
   const breadcrumb = element("nav", "breadcrumb");
   breadcrumb.setAttribute("aria-label", "현재 위치");
-  breadcrumb.append(link("", "프로그램", new URL("./#programs", document.baseURI).href), element("span", "", "/"), element("span", "", app.name));
-  hero.append(breadcrumb, element("span", "app-kicker", isPrototype(app) ? `${app.audience} · ${app.sector}` : "반복 업무 프로그램"));
+  breadcrumb.append(link("", "제작 사례", new URL("./#programs", document.baseURI).href), element("span", "", "/"), element("span", "", app.name));
+  hero.append(breadcrumb, element("span", "app-kicker", isPrototype(app) ? `${app.audience} · ${app.sector}` : "실제 제작 프로그램"));
   const header = element("div", "route-title-row");
   const copy = element("div");
   copy.append(element("h1", "", app.name), element("p", "intro", app.description));
@@ -288,7 +289,7 @@ function renderDetail(app, page) {
   header.append(copy, badge);
   const actions = element("div", "hero-actions");
   if (hasInstallRoute(app)) actions.append(link("primary-action", "설치 페이지로 이동", routeHref("install", app.id)));
-  actions.append(link("secondary-action", "전체 프로그램", new URL("./#programs", document.baseURI).href));
+  actions.append(link("secondary-action", "전체 제작 사례", new URL("./#programs", document.baseURI).href));
   hero.append(header, actions);
 
   const detail = element("section", "detail-shell");
@@ -397,7 +398,7 @@ function renderMissing(page) {
   document.title = "프로그램을 찾을 수 없음 — 한결";
   const panel = element("section", "route-hero missing-route");
   panel.append(eyebrow("찾을 수 없음"), element("h1", "", "프로그램을 찾을 수 없습니다."));
-  panel.append(link("primary-action", "전체 프로그램으로", new URL("./#programs", document.baseURI).href));
+  panel.append(link("primary-action", "전체 제작 사례로", new URL("./#programs", document.baseURI).href));
   page.append(panel);
 }
 

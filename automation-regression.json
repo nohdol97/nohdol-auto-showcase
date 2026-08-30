@@ -15,6 +15,9 @@
     "hosting.legacy_redirect": {
       "testFiles": ["tests/build-pages.test.mjs"]
     },
+    "showcase.domain_embedded_positioning": {
+      "testFiles": ["tests/build-pages.test.mjs"]
+    },
     "inquiry.email_verification": {
       "testFiles": ["tests/inquiry-worker.test.mjs"]
     },

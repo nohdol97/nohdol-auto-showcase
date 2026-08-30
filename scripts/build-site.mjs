@@ -39,7 +39,7 @@ function escapeHtml(value) {
 
 function routeDocument(template, { page, appId = "", baseHref, title }) {
   return template
-    .replace("<title>한결 — 반복 업무 프로그램</title>", `<base href="${escapeHtml(baseHref)}" />\n    <title>${escapeHtml(title)}</title>`)
+    .replace("<title>한결 — 업무 맞춤 프로그램 제작</title>", `<base href="${escapeHtml(baseHref)}" />\n    <title>${escapeHtml(title)}</title>`)
     .replace('<body data-page="catalog">', `<body data-page="${escapeHtml(page)}"${appId ? ` data-app-id="${escapeHtml(appId)}"` : ""}>`);
 }
 

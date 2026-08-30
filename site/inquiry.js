@@ -62,7 +62,7 @@
 
   function emptyConversation() {
     messages.replaceChildren();
-    messageNode("assistant", "안녕하세요. 지금 반복해서 하는 일이나 새로 만들고 싶은 프로그램을 편하게 알려주세요. 무엇부터 설명해야 할지 모르겠다면, 가장 시간이 많이 드는 일부터 시작해도 좋아요.");
+    messageNode("assistant", "안녕하세요. 어떤 업종에서 어떤 일을 하고 계신가요? 지금 하는 순서, 자주 생기는 문제, 만들고 싶은 결과 중 편한 것부터 알려주세요. 화면이나 문서를 함께 보여주셔도 좋아요. 로그인 정보나 불필요한 개인정보는 적지 말아 주세요.");
     choices.replaceChildren();
     completion.hidden = true;
     state.attachmentIds = [];

@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="매일의 반복을 한결 가볍게 만드는 업무 프로그램과 다양한 화면 사례를 살펴보세요."
+      content="고객의 업종과 실제 업무 흐름을 이해한 뒤 필요한 프로그램을 설계하고 검증하는 원격 밀착형 서비스와 제작 사례를 살펴보세요."
     />
     <meta name="theme-color" content="#F5F7FA" />
-    <title>한결 — 반복 업무 프로그램</title>
+    <title>한결 — 업무 맞춤 프로그램 제작</title>
     <script src="./legacy-redirect.js"></script>
     <link rel="stylesheet" href="./styles.css" />
     <script src="./platform.js" defer></script>
@@ -22,7 +22,7 @@
         <span>한결</span>
       </a>
       <nav class="site-nav" aria-label="주요 메뉴">
-        <a class="header-link" href="./#programs">프로그램</a>
+        <a class="header-link" href="./#programs">제작 사례</a>
         <a class="header-link" href="./install/">설치</a>
         <button class="header-inquiry" id="inquiry-open" type="button">문의하기</button>
       </nav>
@@ -36,15 +36,15 @@
 
     <footer>
       <a class="brand footer-brand" href="./"><span class="brand-mark">한</span><span>한결</span></a>
-      <p>되풀이하는 일은 줄이고, 중요한 일에 집중할 여유를 만듭니다.</p>
+      <p>업무의 맥락을 이해하고, 실제로 쓸 수 있는 프로그램을 만듭니다.</p>
     </footer>
 
     <dialog class="inquiry-dialog" id="inquiry-dialog" aria-labelledby="inquiry-title">
       <div class="inquiry-shell">
         <header class="inquiry-header">
           <div>
-            <span class="inquiry-kicker">프로그램 상담</span>
-            <h2 id="inquiry-title">원하는 프로그램을 함께 정리해요</h2>
+            <span class="inquiry-kicker">맞춤 프로그램 상담</span>
+            <h2 id="inquiry-title">지금 하는 일부터 함께 살펴볼게요</h2>
           </div>
           <button class="icon-button" id="inquiry-close" type="button" aria-label="문의창 닫기">×</button>
         </header>
@@ -52,7 +52,7 @@
         <section class="inquiry-auth" id="inquiry-auth">
           <div class="inquiry-intro">
             <strong>어려운 개발 용어를 몰라도 괜찮습니다.</strong>
-            <p>지금 하는 일과 바라는 결과를 편하게 알려주시면, 필요한 선택지를 보여드리고 실제 제작을 검토할 수 있는 내용으로 정리해 드립니다.</p>
+            <p>어떤 업종에서 누가 어떤 순서로 일하는지, 어디에서 자주 막히는지 알려주세요. 필요한 선택지를 함께 살펴보고 실제 제작을 검토할 수 있는 내용으로 정리해 드립니다.</p>
           </div>
           <form id="inquiry-email-form" class="inquiry-form">
             <label class="field-label" for="inquiry-email">답변받을 이메일</label>
@@ -100,7 +100,7 @@
           <form class="composer" id="inquiry-message-form">
             <div class="attachment-list" id="inquiry-attachments"></div>
             <label class="sr-only" for="inquiry-message">메시지</label>
-            <textarea id="inquiry-message" rows="3" maxlength="8000" placeholder="지금 반복해서 하는 일이나 만들고 싶은 프로그램을 편하게 적어 주세요." required></textarea>
+            <textarea id="inquiry-message" rows="3" maxlength="8000" placeholder="업종, 지금 하는 일, 자주 생기는 문제 중 편한 것부터 적어 주세요." required></textarea>
             <div class="composer-actions">
               <label class="secondary-action file-action" for="inquiry-file">파일 추가</label>
               <input id="inquiry-file" type="file" accept=".pdf,.txt,.md,.json,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg" multiple hidden />

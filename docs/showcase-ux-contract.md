@@ -2,17 +2,18 @@
 
 ## User and job
 
-The public name is `한결`. Its promise is to make recurring work feel lighter so people can focus on the work that matters. Customer-facing brand and general-purpose copy do not use `nohdol auto`, `자동화`, or implementation terminology; existing product proper names and operational identifiers remain unchanged when renaming them would break truthful product or installation continuity.
+The public name remains `한결` until a separate brand is selected; the domain name does not need to explain the service. The public promise is broader than recurring-work automation: learn a customer's industry, people, rules, exceptions, and existing tools, then remotely shape and validate software around that real work. Customer-facing copy does not lead with `FDE`, `상주`, `nohdol auto`, `자동화`, or implementation terminology. It describes close remote collaboration in plain Korean without implying an employee placement, physical residency, instant build, or unlimited continuing support. Existing product proper names and operational identifiers remain unchanged when renaming them would break truthful product or installation continuity.
 
-The primary visitor has been told about a desktop program and wants to answer three questions without reading a campaign page:
+The primary visitor either wants a program shaped around their domain or has been told about an existing desktop program. They should answer these questions without reading a technical campaign page:
 
-1. What does the program do?
-2. Is the recording a verified external workflow or a disclosed local demonstration?
-3. Does the page provide a downloadable installer or installation information only?
+1. Will the service first understand how our work actually operates?
+2. How does remote discovery become a small, testable program and a controlled rollout?
+3. What do the existing program examples do, and are their recordings verified external workflows or disclosed local demonstrations?
+4. Does an example provide a downloadable installer or installation information only?
 
-The catalog's primary action is choosing a program. A detail route leads with its reviewed workflow recording. An install route leads with the operating-system choice and installer-code control. Verified products may authorize a download; demo-only programs may say `설치 페이지 제공` while the same surface clearly states that the installer and code are not currently provided, keeps the control disabled, and attempts no request.
+The home page first explains the service sequence as `업무 이해 -> 작은 검증 -> 적용과 개선`, states that collaboration is remote, and offers both `제작 사례 보기` and `프로그램 상담 시작`. The catalog remains the truthful evidence surface: a detail route leads with its reviewed workflow recording, and an install route leads with the operating-system choice and installer-code control. Verified products may authorize a download; demo-only programs may say `설치 페이지 제공` while the same surface clearly states that the installer and code are not currently provided, keeps the control disabled, and attempts no request.
 
-The catalog also explains the day-to-day program experience in plain Korean. It promises a clear screen, a natural order of use, visible progress, and understandable recovery guidance without naming implementation tools or asking visitors to understand development terminology.
+The catalog also explains the day-to-day program experience in plain Korean. It promises to learn domain language before choosing a solution, validate the highest-value workflow in a small scope, and improve within an agreed remote delivery scope using observed results. Programs still need a clear screen, a natural order of use, visible progress, and understandable recovery guidance without asking visitors to understand development terminology.
 
 The header exposes `문의하기` on every route. The dialog first explains the outcome in non-technical Korean, then separates required inquiry/privacy consent from optional marketing consent. Email input leads to a six-digit verification step, not directly to chat. A verified visitor resumes the newest incomplete inquiry, sees canonical server history, can add allowlisted private files, receives two-to-four-option choice cards when useful, and can always answer in their own words.
 

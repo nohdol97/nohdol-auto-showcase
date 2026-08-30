@@ -1,6 +1,6 @@
 # 한결 showcase
 
-Public Cloudflare Worker showcase branded as `한결`. It contains product descriptions, reviewed workflow GIFs, a dedicated installation route for every listed program, and an email-verified AI inquiry assistant. AutoTrip demonstrates the verified program-to-site flow; the other program GIFs use deterministic demo data and continuously disclose that external systems are not connected. The site contains no installer binaries, raw codes, source application secrets, browser profiles, user configuration, or product-key administrator surface.
+Public Cloudflare Worker showcase temporarily branded as `한결`. It presents a remote, domain-embedded custom software service: learn the customer's industry and real workflow, validate the most valuable slice, then apply and improve it within an agreed scope. It also contains reviewed program examples, a dedicated installation route for every listed program, and an email-verified AI inquiry assistant. AutoTrip demonstrates the verified program-to-site flow; the other program GIFs use deterministic demo data and continuously disclose that external systems are not connected. The site contains no installer binaries, raw codes, source application secrets, browser profiles, user configuration, or product-key administrator surface.
 
 The showcase Worker serves public static assets and owns only the `/api/*` inquiry boundary. Its dedicated D1 database stores verified sessions, consent history, conversations, specifications, and delivery state; its dedicated private R2 bucket stores inquiry attachments. The installer gateway remains an independent Cloudflare Worker that validates download codes and streams a time-limited installer object. No inquiry binding or secret is shared with that gateway.
 
@@ -10,7 +10,7 @@ For distributed products, installer authorization and product activation are sep
 
 The public UI follows the shared `nohdol-clean` visual profile: a light neutral canvas, one low-saturation accent, compact native typography, border-led depth, and no decorative gradients, glows, glass effects, or oversized hero treatment. The route hierarchy and responsive/accessibility behavior are recorded in [`docs/showcase-ux-contract.md`](docs/showcase-ux-contract.md).
 
-The public catalog describes the everyday experience in plain Korean: clear screens, a natural order of use, visible progress, and understandable recovery guidance. Customer-facing copy does not rely on implementation terminology to explain that quality.
+The public catalog describes the service in plain Korean as `업무 이해 -> 작은 검증 -> 적용과 개선`. It does not lead with `FDE`, imply physical residency, or rely on implementation terminology. Existing product and installation routes remain truthful evidence rather than narrowing the whole service to recurring-work automation.
 
 The inquiry assistant contract is recorded in [`docs/inquiry-assistant-contract.md`](docs/inquiry-assistant-contract.md). Email entry alone is not authentication: a six-digit code must be checked before a server session is issued. Required inquiry/privacy consent and optional marketing consent are separate. Incomplete inquiries expire after 90 days, completed inquiries after one year, and users can delete an inquiry earlier. OpenAI calls use the Responses API with `store: false`; canonical history remains in D1.
 
