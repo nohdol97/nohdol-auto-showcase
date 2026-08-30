@@ -1,18 +1,33 @@
 :root {
   color-scheme: light;
-  --canvas: #f5f7fa;
-  --surface: #ffffff;
-  --surface-subtle: #f9fafb;
-  --control: #eef2f6;
-  --text: #172033;
-  --text-secondary: #4c5a6d;
-  --text-muted: #667085;
-  --border: rgb(23 32 51 / 12%);
-  --border-strong: rgb(23 32 51 / 22%);
-  --accent: #315e9e;
-  --accent-hover: #274d83;
-  --accent-contrast: #ffffff;
-  --accent-soft: #eaf0f8;
+  --brand-canvas: #f4f6f5;
+  --brand-surface: #ffffff;
+  --brand-surface-subtle: #f8faf9;
+  --brand-control: #ebf0ee;
+  --brand-ink: #17211f;
+  --brand-ink-secondary: #485956;
+  --brand-ink-muted: #65746f;
+  --brand-border: rgb(23 33 31 / 12%);
+  --brand-border-strong: rgb(23 33 31 / 22%);
+  --brand-accent: #1f5e5b;
+  --brand-accent-strong: #174a48;
+  --brand-accent-soft: #e7f0ee;
+  --brand-on-accent: #ffffff;
+  --brand-focus: #1f5e5b;
+  --canvas: var(--brand-canvas);
+  --surface: var(--brand-surface);
+  --surface-subtle: var(--brand-surface-subtle);
+  --control: var(--brand-control);
+  --text: var(--brand-ink);
+  --text-primary: var(--brand-ink);
+  --text-secondary: var(--brand-ink-secondary);
+  --text-muted: var(--brand-ink-muted);
+  --border: var(--brand-border);
+  --border-strong: var(--brand-border-strong);
+  --accent: var(--brand-accent);
+  --accent-hover: var(--brand-accent-strong);
+  --accent-contrast: var(--brand-on-accent);
+  --accent-soft: var(--brand-accent-soft);
   --success: #287a52;
   --success-soft: #edf8f2;
   --warning: #8a5a12;
@@ -47,8 +62,28 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.skip-link {
+  position: fixed;
+  z-index: 10;
+  top: 8px;
+  left: 8px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: var(--brand-ink);
+  color: var(--brand-surface);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-160%);
+}
+
+.skip-link:focus-visible {
+  outline: 3px solid var(--brand-focus);
+  outline-offset: 3px;
+  transform: translateY(0);
+}
+
 ::selection {
-  background: rgb(49 94 158 / 18%);
+  background: var(--brand-accent-soft);
 }
 
 a,
@@ -123,6 +158,20 @@ footer {
   font-weight: 700;
 }
 
+.product-mark {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--brand-accent-soft);
+  color: var(--brand-accent);
+  font-size: 14px;
+  font-weight: 700;
+}
+
 .site-nav {
   display: flex;
   align-items: center;
@@ -192,7 +241,7 @@ h1 {
   font-size: clamp(36px, 4.2vw, 52px);
   font-weight: 650;
   line-height: 1.14;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.025em;
 }
 
 h1 em {
@@ -563,7 +612,7 @@ h1 em {
   margin-bottom: 8px;
   font-size: 24px;
   font-weight: 650;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.025em;
 }
 
 .app-description,
@@ -619,6 +668,42 @@ h1 em {
 .app-status.prototype-status {
   background: var(--accent-soft);
   color: var(--accent);
+}
+
+.program-group + .program-group {
+  margin-top: 48px;
+}
+
+.program-group-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-strong);
+}
+
+.program-group-heading h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.program-group-heading p {
+  max-width: 620px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.verified-program-list {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.verified-program-list .catalog-card {
+  min-height: 220px;
 }
 
 .prototype-notice,
@@ -745,9 +830,15 @@ h1 em {
 .workflow-image {
   display: block;
   width: 100%;
+  aspect-ratio: 30 / 19;
+  object-fit: contain;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--surface);
+}
+
+.workflow-media {
+  display: block;
 }
 
 .workflow-caption {
@@ -870,12 +961,6 @@ h1 em {
   margin-bottom: 24px;
 }
 
-.install-card-heading .brand-mark {
-  width: 40px;
-  height: 40px;
-  flex: none;
-}
-
 .install-card-heading .app-kicker {
   margin-bottom: 1px;
 }
@@ -945,7 +1030,7 @@ h1 em {
 .field-control:focus-visible {
   border-color: var(--accent);
   background: var(--surface);
-  outline: 3px solid rgb(49 94 158 / 18%);
+  outline: 3px solid var(--brand-focus);
   outline-offset: 1px;
 }
 
@@ -1015,7 +1100,7 @@ h1 em {
 .header-link:focus-visible,
 .brand:focus-visible,
 .breadcrumb a:focus-visible {
-  outline: 3px solid rgb(49 94 158 / 25%);
+  outline: 3px solid var(--brand-focus);
   outline-offset: 3px;
 }
 
@@ -1027,7 +1112,7 @@ h1 em {
 .composer textarea:focus-visible,
 .inquiry-form input:focus-visible,
 .check-row input:focus-visible {
-  outline: 3px solid rgb(49 94 158 / 25%);
+  outline: 3px solid var(--brand-focus);
   outline-offset: 3px;
 }
 
@@ -1045,8 +1130,8 @@ h1 em {
 .inquiry-dialog {
   width: min(760px, calc(100% - 32px));
   max-width: none;
-  height: min(840px, calc(100dvh - 32px));
-  max-height: none;
+  height: fit-content;
+  max-height: calc(100dvh - 32px);
   padding: 0;
   overflow: hidden;
   border: 1px solid var(--border-strong);
@@ -1056,15 +1141,22 @@ h1 em {
   box-shadow: 0 18px 50px rgb(23 32 51 / 18%);
 }
 
+.inquiry-dialog:has(.inquiry-chat:not([hidden])) {
+  height: min(840px, calc(100dvh - 32px));
+}
+
 .inquiry-dialog::backdrop {
   background: rgb(23 32 51 / 48%);
 }
 
 .inquiry-shell {
   display: flex;
-  height: 100%;
   min-height: 0;
   flex-direction: column;
+}
+
+.inquiry-dialog:has(.inquiry-chat:not([hidden])) .inquiry-shell {
+  height: 100%;
 }
 
 .inquiry-header {
@@ -1258,7 +1350,7 @@ h1 em {
 
 .chat-message.user {
   align-self: flex-end;
-  border-color: rgb(49 94 158 / 25%);
+  border-color: rgb(31 94 91 / 28%);
   background: var(--accent-soft);
 }
 
@@ -1598,6 +1690,18 @@ footer p {
     min-height: 60px;
   }
 
+  .brand,
+  .header-inquiry,
+  .icon-button,
+  .text-button,
+  .file-action,
+  .primary-action,
+  .secondary-action,
+  .download-link,
+  .field-control {
+    min-height: 44px;
+  }
+
   .brand-mark {
     width: 28px;
     height: 28px;
@@ -1661,6 +1765,7 @@ footer p {
 
   .hero-actions,
   .section-heading,
+  .program-group-heading,
   footer {
     align-items: stretch;
     flex-direction: column;

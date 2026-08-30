@@ -38,12 +38,17 @@ function renderDemo(app, card) {
   if (!app.demoGif) return;
   const figure = element("figure", "workflow-demo");
   figure.append(element("span", "demo-label", app.demoLabel ?? "실제 프로그램 · 실제 사이트 · 결제 전 안전 정지"));
+  const picture = element("picture", "workflow-media");
+  const reducedMotionSource = element("source");
+  reducedMotionSource.media = "(prefers-reduced-motion: reduce)";
+  reducedMotionSource.srcset = app.demoGif.replace(/\.gif$/i, "-poster.png");
   const image = element("img", "workflow-image");
   image.src = app.demoGif;
   image.alt = app.demoAlt;
-  image.loading = "lazy";
+  image.loading = card.classList.contains("detail-shell") ? "eager" : "lazy";
   image.decoding = "async";
-  figure.append(image, element("figcaption", "workflow-caption", app.demoCaption));
+  picture.append(reducedMotionSource, image);
+  figure.append(picture, element("figcaption", "workflow-caption", app.demoCaption));
   card.append(figure);
 }
 
@@ -141,9 +146,9 @@ function renderCatalogCard(app, index) {
   });
   const actions = element("div", "catalog-actions");
   actions.append(link("primary-action", "사례 보기", routeHref("apps", app.id)));
-  if (hasInstallRoute(app)) actions.append(link("secondary-action", "설치 정보", routeHref("install", app.id)));
+  if (hasInstallRoute(app)) actions.append(link("secondary-action", isPrototype(app) ? "제공 상태" : "설치 정보", routeHref("install", app.id)));
   copy.append(flow, actions);
-  const badge = statusBadge(isPrototype(app) ? "설치 페이지 제공" : "설치 가능");
+  const badge = statusBadge(isPrototype(app) ? "기능 데모 · 파일 없음" : "설치 가능");
   if (isPrototype(app)) badge.classList.add("prototype-status");
   card.append(number, copy, badge);
   return card;
@@ -154,20 +159,22 @@ function renderCatalog(catalog, page) {
   const hero = element("section", "hero");
   hero.setAttribute("aria-labelledby", "hero-title");
   const heroCopy = element("div", "hero-copy");
-  heroCopy.append(eyebrow("원격 업무 맞춤 프로그램 제작"));
-  const title = element("h1", "", "업무를 먼저 배우고");
+  heroCopy.append(eyebrow("업무 가까이에서 만드는 프로그램"));
+  const title = element("h1", "", "복잡한 일을 이해하고");
   title.id = "hero-title";
-  title.append(document.createElement("br"), element("em", "", "그에 맞게 만듭니다."));
+  title.append(document.createElement("br"), element("em", "", "쓸 수 있는 흐름으로 정리합니다."));
   const intro = element(
     "p",
     "intro",
-    "업종마다 사람, 규칙, 예외와 쓰는 도구가 다릅니다. 화면 공유와 대화로 실제 업무를 이해한 뒤, 가장 필요한 프로그램을 작은 범위부터 검증하고 원격으로 적용합니다.",
+    "업종마다 사람, 규칙, 예외와 쓰는 도구가 다릅니다. 실제 담당자의 말과 화면으로 업무를 이해한 뒤, 가장 필요한 흐름을 작은 범위부터 검증하고 원격으로 적용합니다.",
   );
+  const verifiedApps = catalog.apps.filter((app) => !isPrototype(app));
+  const demoApps = catalog.apps.filter(isPrototype);
   const heroActions = element("div", "hero-actions");
   heroActions.append(
     link("primary-action", "제작 사례 보기", "#programs"),
     link("secondary-action", "프로그램 상담 시작", new URL("?inquiry=open", document.baseURI).href),
-    element("span", "availability", `${catalog.apps.length}개 제작 사례`),
+    element("span", "availability", `실제 연동 ${verifiedApps.length} · 기능 데모 ${demoApps.length}`),
   );
   heroCopy.append(title, intro, heroActions);
 
@@ -197,48 +204,6 @@ function renderCatalog(catalog, page) {
   visual.append(consoleCard);
   hero.append(heroCopy, visual);
 
-  const trust = element("section", "trust-strip");
-  trust.setAttribute("aria-label", "공통 제공 원칙");
-  for (const [number, text] of [
-    ["01", "업종과 용어부터 이해"],
-    ["02", "실제 업무 흐름 반영"],
-    ["03", "작은 범위부터 검증"],
-    ["04", "원격 협업과 개선"],
-  ]) {
-    const item = element("div");
-    item.append(element("strong", "", number), element("span", "", text));
-    trust.append(item);
-  }
-
-  const experience = element("section", "experience");
-  experience.setAttribute("aria-labelledby", "experience-title");
-  const experienceCopy = element("div", "experience-copy");
-  experienceCopy.append(eyebrow("업무 밀착형 제작"));
-  const experienceTitle = element("h2", "", "프로그램보다");
-  experienceTitle.id = "experience-title";
-  experienceTitle.append(document.createElement("br"), document.createTextNode("업무를 먼저 봅니다."));
-  experienceCopy.append(
-    experienceTitle,
-    element(
-      "p",
-      "",
-      "같은 업종에서도 팀마다 일하는 순서와 중요한 예외가 다릅니다. 정해진 제품을 억지로 끼워 맞추지 않고, 실제 담당자의 설명과 자료를 바탕으로 필요한 범위를 함께 정합니다.",
-    ),
-  );
-  const experienceList = element("div", "experience-list");
-  for (const [number, title, text] of [
-    ["01", "현업의 말로 이해", "화상 대화, 화면 공유와 참고 자료로 담당자·순서·규칙·예외를 확인합니다."],
-    ["02", "핵심 흐름부터 검증", "모든 기능을 한꺼번에 만들기보다 가치가 큰 흐름을 먼저 작동하는 화면으로 확인합니다."],
-    ["03", "사용 결과로 개선", "원격으로 적용한 뒤 실제 사용에서 확인된 문제를 합의한 범위 안에서 보완합니다."],
-  ]) {
-    const item = element("article", "experience-item");
-    const itemCopy = element("div");
-    itemCopy.append(element("strong", "", title), element("p", "", text));
-    item.append(element("span", "", number), itemCopy);
-    experienceList.append(item);
-  }
-  experience.append(experienceCopy, experienceList);
-
   const notice = element("aside", "notice");
   notice.id = "delivery";
   notice.setAttribute("aria-label", "설치 방식 안내");
@@ -263,15 +228,27 @@ function renderCatalog(catalog, page) {
   const appsTitle = element("h2", "", "업종별 문제를 이렇게 풀 수 있습니다");
   appsTitle.id = "apps-title";
   headingCopy.append(appsTitle);
-  heading.append(headingCopy, element("p", "", `${catalog.apps.length}개 사례`));
-  const list = element("div", "app-list");
+  heading.append(headingCopy, element("p", "", `실제 연동 ${verifiedApps.length} · 기능 데모 ${demoApps.length}`));
+  const list = element("div", "program-groups");
   if (catalog.apps.length === 0) {
     list.append(element("p", "empty-message", "현재 공개된 제작 사례가 없습니다."));
   } else {
-    catalog.apps.forEach((app, index) => list.append(renderCatalogCard(app, index)));
+    for (const [groupName, groupDescription, apps, className] of [
+      ["실제 연동 프로그램", "실제 프로그램 화면에서 시작해 승인된 외부 흐름과 안전 정지 지점까지 확인한 사례입니다.", verifiedApps, "verified-program-list"],
+      ["기능 데모", "업무별 화면과 사용 순서를 살펴보는 데모입니다. 외부 시스템과 설치 파일은 연결되어 있지 않습니다.", demoApps, "demo-program-list"],
+    ]) {
+      if (apps.length === 0) continue;
+      const group = element("section", "program-group");
+      const groupHeading = element("div", "program-group-heading");
+      groupHeading.append(element("h3", "", `${groupName} ${apps.length}`), element("p", "", groupDescription));
+      const groupList = element("div", `app-list ${className}`);
+      apps.forEach((app) => groupList.append(renderCatalogCard(app, catalog.apps.indexOf(app))));
+      group.append(groupHeading, groupList);
+      list.append(group);
+    }
   }
   programs.append(heading, list);
-  page.append(hero, trust, experience, programs, notice);
+  page.append(hero, programs, notice);
 }
 
 function renderDetail(app, page) {
@@ -284,7 +261,7 @@ function renderDetail(app, page) {
   const header = element("div", "route-title-row");
   const copy = element("div");
   copy.append(element("h1", "", app.name), element("p", "intro", app.description));
-  const badge = statusBadge(isPrototype(app) ? "설치 페이지 제공" : "설치 인증코드 필요");
+  const badge = statusBadge(isPrototype(app) ? "기능 데모 · 파일 없음" : "설치 인증코드 필요");
   if (isPrototype(app)) badge.classList.add("prototype-status");
   header.append(copy, badge);
   const actions = element("div", "hero-actions");
@@ -332,7 +309,7 @@ function renderInstallIndex(catalog, page) {
   catalog.apps.filter(hasInstallRoute).forEach((app) => {
     const card = element("article", "app-card install-index-card");
     const copy = element("div");
-    copy.append(element("span", "app-kicker", isPrototype(app) ? "설치 페이지 제공" : "현재 버전"), element("h2", "", app.name), element("p", "app-description", app.description));
+    copy.append(element("span", "app-kicker", isPrototype(app) ? "설치 정보만 제공" : "현재 버전"), element("h2", "", app.name), element("p", "app-description", app.description));
     card.append(copy, link("primary-action", isPrototype(app) ? `${app.name} 설치 정보` : `${app.name} 설치`, routeHref("install", app.id)));
     list.append(card);
   });
@@ -384,8 +361,8 @@ function renderInstall(app, page) {
   );
   const card = element("div", "app-card install-card");
   const heading = element("div", "install-card-heading");
-  heading.append(element("div", "brand-mark", app.name.slice(0, 1).toUpperCase()), element("div", ""));
-  heading.lastElementChild.append(element("span", "app-kicker", isPrototype(app) ? "설치 페이지 제공" : "현재 버전"), element("h2", "", app.name));
+  heading.append(element("div", "product-mark", app.name.slice(0, 1).toUpperCase()), element("div", ""));
+  heading.lastElementChild.append(element("span", "app-kicker", isPrototype(app) ? "설치 정보만 제공" : "현재 버전"), element("h2", "", app.name));
   card.append(heading);
   renderInstallForm(app, card);
   if (app.warning) card.append(element("p", "warning", app.warning));
@@ -400,6 +377,23 @@ function renderMissing(page) {
   panel.append(eyebrow("찾을 수 없음"), element("h1", "", "프로그램을 찾을 수 없습니다."));
   panel.append(link("primary-action", "전체 제작 사례로", new URL("./#programs", document.baseURI).href));
   page.append(panel);
+}
+
+function renderLoadError(page) {
+  const panel = element("section", "route-error");
+  panel.setAttribute("role", "alert");
+  const title = element("h1", "", "프로그램 목록을 불러오지 못했습니다.");
+  title.tabIndex = -1;
+  panel.append(
+    title,
+    element("p", "app-description", "입력한 내용은 없습니다. 네트워크 상태를 확인한 뒤 다시 불러와 주세요."),
+  );
+  const retry = element("button", "primary-action", "다시 불러오기");
+  retry.type = "button";
+  retry.addEventListener("click", () => window.location.reload());
+  panel.append(retry);
+  page.append(panel);
+  title.focus();
 }
 
 async function loadPage() {
@@ -418,7 +412,7 @@ async function loadPage() {
     else if (pageType === "install" && hasInstallRoute(app)) renderInstall(app, page);
     else renderMissing(page);
   } catch {
-    page.append(element("p", "empty-message route-error", "프로그램 목록을 불러오지 못했습니다."));
+    renderLoadError(page);
   } finally {
     page.setAttribute("aria-busy", "false");
   }

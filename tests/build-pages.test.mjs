@@ -123,16 +123,23 @@ test("[REG:hosting.legacy_redirect] legacy GitHub Pages routes preserve path, qu
   assert.equal(replacements.length, 1);
 });
 
-test("the public UI follows the restrained nohdol-clean profile", async () => {
+test("[REG:showcase.abalone_brand] the public UI layers Abalone identity over nohdol-clean", async () => {
   const template = await readFile(path.join(root, "site", "index.html"), "utf8");
   const styles = await readFile(path.join(root, "site", "styles.css"), "utf8");
   const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
-  assert.match(template, /name="theme-color" content="#F5F7FA"/);
+  assert.match(template, /name="theme-color" content="#F4F6F5"/);
+  assert.match(template, /class="skip-link" href="#page">본문으로 건너뛰기/);
   assert.doesNotMatch(template, /class="ambient/);
-  assert.match(styles, /--canvas: #f5f7fa/);
-  assert.match(styles, /--accent: #315e9e/);
+  for (const token of ["--brand-canvas", "--brand-ink", "--brand-accent", "--brand-accent-strong", "--brand-accent-soft", "--brand-focus"]) {
+    assert.match(styles, new RegExp(token));
+  }
+  assert.match(styles, /--brand-accent: #1f5e5b/);
+  assert.match(styles, /--accent: var\(--brand-accent\)/);
+  assert.match(styles, /outline: 3px solid var\(--brand-focus\)/);
   assert.match(styles, /border-radius: 6px/);
   assert.doesNotMatch(styles, /gradient|backdrop-filter|filter: blur|transition: all/i);
+  assert.match(appScript, /"product-mark"/);
+  assert.doesNotMatch(appScript, /element\("div", "brand-mark", app\.name/);
   assert.match(appScript, /실제 프로그램 · 실제 사이트 · 결제 전 안전 정지/);
   assert.match(appScript, /status\.dataset\.state = "busy"/);
   assert.match(appScript, /status\.dataset\.state = "error"/);
@@ -153,7 +160,7 @@ test("[REG:showcase.brand_icon] the Abalone mark is font-independent and ships i
   assert.match(template, /rel="apple-touch-icon" href="\.\/apple-touch-icon\.png"/);
   assert.equal([...template.matchAll(/class="brand-mark" src="\.\/favicon\.svg"/g)].length, 2);
   assert.match(svg, /viewBox="0 0 32 32"/);
-  assert.match(svg, /fill="#315e9e"/);
+  assert.match(svg, /fill="#1f5e5b"/);
   assert.match(svg, /fill="#ffffff"/);
   assert.doesNotMatch(svg, /<text|gradient|<image/i);
 
@@ -164,6 +171,8 @@ test("[REG:showcase.brand_icon] the Abalone mark is font-independent and ships i
   }
   assert.equal(legacyIcon.subarray(0, 4).toString("hex"), "00000100");
   assert.equal(manifest.name, "Abalone");
+  assert.equal(manifest.background_color, "#f4f6f5");
+  assert.equal(manifest.theme_color, "#1f5e5b");
   assert.deepEqual(manifest.icons.map((icon) => icon.sizes), ["192x192", "512x512"]);
 });
 
@@ -171,13 +180,10 @@ test("[REG:showcase.domain_embedded_positioning] the catalog explains remote dom
   const template = await readFile(path.join(root, "site", "index.html"), "utf8");
   const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
   assert.match(template, /Abalone/);
-  assert.match(appScript, /원격 업무 맞춤 프로그램 제작/);
-  assert.match(appScript, /업무를 먼저 배우고/);
-  assert.match(appScript, /그에 맞게 만듭니다/);
+  assert.match(appScript, /업무 가까이에서 만드는 프로그램/);
+  assert.match(appScript, /복잡한 일을 이해하고/);
+  assert.match(appScript, /쓸 수 있는 흐름으로 정리합니다/);
   assert.match(appScript, /업종마다 사람, 규칙, 예외/);
-  assert.match(appScript, /프로그램보다/);
-  assert.match(appScript, /experienceTitle\.append\(document\.createElement\("br"\)/);
-  assert.match(appScript, /업무를 먼저 봅니다/);
   assert.match(appScript, /업무 이해/);
   assert.match(appScript, /작은 검증/);
   assert.match(appScript, /적용과 개선/);
@@ -185,10 +191,48 @@ test("[REG:showcase.domain_embedded_positioning] the catalog explains remote dom
   assert.match(appScript, /프로그램 상담 시작/);
   assert.match(appScript, /new URL\("\?inquiry=open", document\.baseURI\)\.href/);
   assert.match(template, /어떤 업종에서 누가 어떤 순서로 일하는지/);
-  assert.match(appScript, /설치 페이지 제공/);
+  assert.match(appScript, /설치 정보만 제공/);
   assert.doesNotMatch(`${template}\n${appScript}`, /FDE|상주 개발|상주 인력|nohdol auto|데스크톱 자동화|자동화 프로그램|사용할 자동화/i);
   assert.doesNotMatch(appScript, /UI 콘셉트|UI 프로토타입|임시 포트폴리오|향후 교체/);
   assert.doesNotMatch(appScript, /PyInstaller|Electron|React|TypeScript|프레임워크/);
+});
+
+test("[REG:showcase.availability_truth] verified products and no-integration demos have distinct evidence groups", async () => {
+  const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
+  assert.match(appScript, /실제 연동 프로그램/);
+  assert.match(appScript, /기능 데모/);
+  assert.match(appScript, /기능 데모 · 파일 없음/);
+  assert.match(appScript, /외부 시스템과 설치 파일은 연결되어 있지 않습니다/);
+  assert.match(appScript, /설치 정보만 제공/);
+  assert.doesNotMatch(appScript, /11개 제작 사례/);
+  assert.match(appScript, /submit\.disabled = !app\.authEndpoint/);
+  assert.match(appScript, /if \(!app\.authEndpoint\) return/);
+});
+
+test("[REG:showcase.reduced_motion] every workflow GIF has a reduced-motion poster", async () => {
+  const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
+  const styles = await readFile(path.join(root, "site", "styles.css"), "utf8");
+  assert.match(appScript, /prefers-reduced-motion: reduce/);
+  assert.match(appScript, /-poster\.png/);
+  assert.match(appScript, /contains\("detail-shell"\) \? "eager" : "lazy"/);
+  assert.match(styles, /aspect-ratio: 30 \/ 19/);
+  for (const app of catalog.apps.filter((item) => item.demoGif)) {
+    const poster = app.demoGif.replace(/^\.\//, "site/").replace(/\.gif$/i, "-poster.png");
+    const contents = await readFile(path.join(root, poster));
+    assert.equal(contents.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
+  }
+});
+
+test("[REG:showcase.recovery_states] catalog failure exposes a focused plain-Korean retry", async () => {
+  const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
+  const styles = await readFile(path.join(root, "site", "styles.css"), "utf8");
+  assert.match(appScript, /function renderLoadError/);
+  assert.match(appScript, /role", "alert"/);
+  assert.match(appScript, /프로그램 목록을 불러오지 못했습니다/);
+  assert.match(appScript, /다시 불러오기/);
+  assert.match(appScript, /window\.location\.reload/);
+  assert.match(appScript, /title\.focus\(\)/);
+  assert.match(styles, /\.inquiry-dialog[\s\S]*height: fit-content/);
 });
 
 test("[REG:hosting.generated_routes] build creates catalog, detail, and installation routes without an authentication code", async () => {
@@ -203,6 +247,7 @@ test("[REG:hosting.generated_routes] build creates catalog, detail, and installa
   const platformScript = await readFile(path.join(output, "platform.js"), "utf8");
   const generated = await readFile(path.join(output, "apps.json"), "utf8");
   const demoGif = await readFile(path.join(output, "assets", "autotrip-workflow.gif"));
+  const demoPoster = await readFile(path.join(output, "assets", "autotrip-workflow-poster.png"));
   assert.match(html, /data-page="catalog"/);
   assert.match(installIndex, /data-page="install-index"/);
   assert.match(installIndex, /<base href="\.\.\/"/);
@@ -223,6 +268,7 @@ test("[REG:hosting.generated_routes] build creates catalog, detail, and installa
   assert.doesNotMatch(html, /AUTOTRIP \/ SAFE MODE|AutoTrip 살펴보기/);
   assert.doesNotMatch(generated, /INSTALL_ACCESS_CODE|releases\/download|browser_download_url/);
   assert.equal(demoGif.subarray(0, 6).toString("ascii"), "GIF89a");
+  assert.equal(demoPoster.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
 });
 
 test("adding catalog metadata automatically creates routes for another program", async () => {
@@ -289,6 +335,6 @@ test("demo entries generate detail, GIF, and non-downloadable install preview ro
   const appScript = await readFile(path.join(output, "app.js"), "utf8");
   assert.match(appScript, /if \(!app\.authEndpoint\) return/);
   assert.match(appScript, /submit\.disabled = !app\.authEndpoint/);
-  assert.match(appScript, /설치 페이지 제공/);
+  assert.match(appScript, /설치 정보만 제공/);
   assert.doesNotMatch(appScript, /설치 준비 중|배포 준비 중/);
 });

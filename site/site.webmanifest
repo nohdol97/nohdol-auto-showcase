@@ -3,8 +3,8 @@
   "short_name": "Abalone",
   "start_url": "./",
   "display": "minimal-ui",
-  "background_color": "#f5f7fa",
-  "theme_color": "#315e9e",
+  "background_color": "#f4f6f5",
+  "theme_color": "#1f5e5b",
   "icons": [
     {
       "src": "./icon-192.png",

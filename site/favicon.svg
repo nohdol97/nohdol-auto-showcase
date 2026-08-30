@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-labelledby="title">
   <title id="title">Abalone</title>
-  <rect x="1" y="1" width="30" height="30" rx="7" fill="#315e9e" />
+  <rect x="1" y="1" width="30" height="30" rx="7" fill="#1f5e5b" />
   <path
     fill="#ffffff"
     fill-rule="evenodd"

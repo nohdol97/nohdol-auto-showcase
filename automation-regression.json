@@ -24,6 +24,18 @@
     "showcase.brand_icon": {
       "testFiles": ["tests/build-pages.test.mjs"]
     },
+    "showcase.abalone_brand": {
+      "testFiles": ["tests/build-pages.test.mjs"]
+    },
+    "showcase.availability_truth": {
+      "testFiles": ["tests/build-pages.test.mjs"]
+    },
+    "showcase.reduced_motion": {
+      "testFiles": ["tests/build-pages.test.mjs"]
+    },
+    "showcase.recovery_states": {
+      "testFiles": ["tests/build-pages.test.mjs"]
+    },
     "inquiry.email_verification": {
       "testFiles": ["tests/inquiry-worker.test.mjs"]
     },
