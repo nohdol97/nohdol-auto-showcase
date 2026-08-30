@@ -9,6 +9,9 @@
     "hosting.cloudflare_static_assets": {
       "testFiles": ["tests/build-pages.test.mjs"]
     },
+    "hosting.custom_domain": {
+      "testFiles": ["tests/build-pages.test.mjs"]
+    },
     "hosting.generated_routes": {
       "testFiles": ["tests/build-pages.test.mjs"]
     },

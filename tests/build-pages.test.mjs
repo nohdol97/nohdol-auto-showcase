@@ -5,6 +5,7 @@ import path from "node:path";
 import test from "node:test";
 import vm from "node:vm";
 import { buildSite, validateCatalog } from "../scripts/build-site.mjs";
+import showcaseWorker from "../src/worker.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const catalog = JSON.parse(await readFile(path.join(root, "apps.json"), "utf8"));
@@ -77,6 +78,17 @@ test("[REG:hosting.cloudflare_static_assets] Cloudflare serves generated assets 
   assert.equal(config.assets.not_found_handling, "404-page");
 });
 
+test("[REG:hosting.custom_domain] apex is primary and www redirects without dropping the route", async () => {
+  const config = JSON.parse(await readFile(path.join(root, "wrangler.jsonc"), "utf8"));
+  assert.deepEqual(config.routes, [
+    { pattern: "byabalone.com", custom_domain: true },
+    { pattern: "www.byabalone.com", custom_domain: true },
+  ]);
+  const response = await showcaseWorker.fetch(new Request("https://www.byabalone.com/install/autotrip/?from=www"), {}, {});
+  assert.equal(response.status, 308);
+  assert.equal(response.headers.get("Location"), "https://byabalone.com/install/autotrip/?from=www");
+});
+
 test("the legacy GitHub Pages bridge uses current action runtimes", async () => {
   const workflow = await readFile(path.join(root, ".github", "workflows", "pages.yml"), "utf8");
   assert.match(workflow, /actions\/configure-pages@v6/);
@@ -101,10 +113,10 @@ test("[REG:hosting.legacy_redirect] legacy GitHub Pages routes preserve path, qu
   };
   vm.runInNewContext(source, context);
   assert.deepEqual(replacements, [
-    "https://nohdol-auto-showcase.nohdol-auto-download-gateway.workers.dev/install/autotrip/?from=legacy#download",
+    "https://byabalone.com/install/autotrip/?from=legacy#download",
   ]);
 
-  context.window.location.origin = "https://nohdol-auto-showcase.nohdol-auto-download-gateway.workers.dev";
+  context.window.location.origin = "https://byabalone.com";
   vm.runInNewContext(source, context);
   assert.equal(replacements.length, 1);
 });

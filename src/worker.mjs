@@ -585,6 +585,10 @@ export default {
   async fetch(request, env, ctx) {
     try {
       const url = new URL(request.url);
+      if (url.hostname === "www.byabalone.com") {
+        url.hostname = "byabalone.com";
+        return Response.redirect(url.href, 308);
+      }
       if (url.pathname.startsWith("/api/")) return await api(request, env, ctx);
       return required(env, "ASSETS").fetch(request);
     } catch (error) {

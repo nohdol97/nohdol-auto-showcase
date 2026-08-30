@@ -3,6 +3,10 @@
   "name": "nohdol-auto-showcase",
   "compatibility_date": "2026-08-30",
   "main": "./src/worker.mjs",
+  "routes": [
+    { "pattern": "byabalone.com", "custom_domain": true },
+    { "pattern": "www.byabalone.com", "custom_domain": true }
+  ],
   "assets": {
     "directory": "./_site",
     "binding": "ASSETS",
