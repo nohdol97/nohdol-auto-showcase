@@ -30,6 +30,9 @@
     "showcase.availability_truth": {
       "testFiles": ["tests/build-pages.test.mjs"]
     },
+    "showcase.catalog_unified_alignment": {
+      "testFiles": ["tests/build-pages.test.mjs"]
+    },
     "showcase.reduced_motion": {
       "testFiles": ["tests/build-pages.test.mjs"]
     },

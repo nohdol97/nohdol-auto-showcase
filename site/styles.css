@@ -315,22 +315,6 @@ h1 em {
   transform: scale(0.98);
 }
 
-.availability {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-muted);
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.availability i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--success);
-}
-
 .route-card {
   overflow: hidden;
   border: 1px solid var(--border);
@@ -578,8 +562,8 @@ h1 em {
 
 .catalog-card {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) auto;
-  align-items: start;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: stretch;
   gap: 16px;
   min-height: 260px;
 }
@@ -594,6 +578,7 @@ h1 em {
 
 .catalog-copy {
   display: flex;
+  height: 100%;
   min-width: 0;
   min-height: 202px;
   flex-direction: column;
@@ -644,69 +629,6 @@ h1 em {
   padding-top: 24px;
 }
 
-.app-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  flex: none;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: var(--success-soft);
-  color: var(--success);
-  font-size: 11px;
-  font-weight: 650;
-}
-
-.app-status::before {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-  content: "";
-}
-
-.app-status.prototype-status {
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-.program-group + .program-group {
-  margin-top: 48px;
-}
-
-.program-group-heading {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-strong);
-}
-
-.program-group-heading h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 650;
-  letter-spacing: -0.015em;
-}
-
-.program-group-heading p {
-  max-width: 620px;
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 13px;
-}
-
-.verified-program-list {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.verified-program-list .catalog-card {
-  min-height: 220px;
-}
-
-.prototype-notice,
 .availability-notice {
   margin: 28px 0 0;
   padding: 16px;
@@ -835,7 +757,6 @@ h1 em {
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--surface);
-  filter: grayscale(1);
 }
 
 .workflow-media {
@@ -1681,9 +1602,6 @@ footer p {
     flex-direction: column;
   }
 
-  .route-title-row .app-status {
-    order: -1;
-  }
 }
 
 @media (max-width: 520px) {
@@ -1766,7 +1684,6 @@ footer p {
 
   .hero-actions,
   .section-heading,
-  .program-group-heading,
   footer {
     align-items: stretch;
     flex-direction: column;
@@ -1778,11 +1695,6 @@ footer p {
   .catalog-actions a,
   .install-index-card .primary-action {
     width: 100%;
-  }
-
-  .availability {
-    justify-content: center;
-    min-height: 32px;
   }
 
   .catalog-console,
@@ -1824,11 +1736,6 @@ footer p {
 
   .catalog-copy {
     min-height: 0;
-  }
-
-  .catalog-card > .app-status {
-    grid-row: 1;
-    justify-self: start;
   }
 
   .access-panel {

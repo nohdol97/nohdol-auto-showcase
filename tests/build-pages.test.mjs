@@ -61,11 +61,11 @@ test("detects supported desktop platforms and leaves mobile or unknown platforms
 
 test("the published catalog includes the AutoTrip workflow GIF", () => {
   assert.equal(catalog.apps[0].demoGif, "./assets/autotrip-workflow.gif");
-  assert.match(catalog.apps[0].demoAlt, /실제 AutoTrip 프로그램/);
+  assert.match(catalog.apps[0].demoAlt, /AutoTrip 프로그램/);
   assert.match(catalog.apps[0].demoAlt, /마이리얼트립 국내선 페이지/);
   assert.match(catalog.apps[0].demoAlt, /결제 전에 멈추는 과정/);
-  assert.match(catalog.apps[0].demoCaption, /프로그램의 실행 화면부터/);
-  assert.match(catalog.apps[0].demoCaption, /실제 결제 버튼은 누르지 않았습니다/);
+  assert.match(catalog.apps[0].demoCaption, /AutoTrip 실행 화면부터/);
+  assert.match(catalog.apps[0].demoCaption, /결제 버튼은 누르지 않았습니다/);
 });
 
 test("[REG:hosting.cloudflare_static_assets] Cloudflare serves generated assets through the inquiry Worker", async () => {
@@ -144,11 +144,11 @@ test("[REG:showcase.abalone_brand] the public UI layers Abalone identity over no
   for (const match of styles.matchAll(/rgb\((\d+) (\d+) (\d+)/g)) {
     assert.equal(new Set(match.slice(1, 4)).size, 1, `non-grayscale CSS rgb color: ${match[0]}`);
   }
-  assert.match(styles, /filter: grayscale\(1\)/);
+  assert.doesNotMatch(styles, /\.workflow-image\s*\{[^}]*\bfilter\s*:/s);
   assert.doesNotMatch(styles, /gradient|backdrop-filter|filter: blur|transition: all/i);
   assert.match(appScript, /"product-mark"/);
   assert.doesNotMatch(appScript, /element\("div", "brand-mark", app\.name/);
-  assert.match(appScript, /실제 프로그램 · 실제 사이트 · 결제 전 안전 정지/);
+  assert.match(appScript, /프로그램 흐름 · 결제 전 안전 정지/);
   assert.match(appScript, /status\.dataset\.state = "busy"/);
   assert.match(appScript, /status\.dataset\.state = "error"/);
 });
@@ -202,22 +202,31 @@ test("[REG:showcase.domain_embedded_positioning] the catalog explains remote dom
   assert.match(appScript, /프로그램 상담 시작/);
   assert.match(appScript, /new URL\("\?inquiry=open", document\.baseURI\)\.href/);
   assert.match(template, /어떤 업종에서 누가 어떤 순서로 일하는지/);
-  assert.match(appScript, /설치 정보만 제공/);
+  assert.match(appScript, /설치 안내/);
   assert.doesNotMatch(`${template}\n${appScript}`, /FDE|상주 개발|상주 인력|nohdol auto|데스크톱 자동화|자동화 프로그램|사용할 자동화/i);
   assert.doesNotMatch(appScript, /UI 콘셉트|UI 프로토타입|임시 포트폴리오|향후 교체/);
   assert.doesNotMatch(appScript, /PyInstaller|Electron|React|TypeScript|프레임워크/);
 });
 
-test("[REG:showcase.availability_truth] verified products and no-integration demos have distinct evidence groups", async () => {
+test("[REG:showcase.availability_truth] the home hides internal kinds while routes retain concrete availability", async () => {
   const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
-  assert.match(appScript, /실제 연동 프로그램/);
-  assert.match(appScript, /기능 데모/);
-  assert.match(appScript, /기능 데모 · 파일 없음/);
-  assert.match(appScript, /외부 시스템과 설치 파일은 연결되어 있지 않습니다/);
-  assert.match(appScript, /설치 정보만 제공/);
-  assert.doesNotMatch(appScript, /11개 제작 사례/);
+  assert.doesNotMatch(appScript, /실제 연동|기능 데모|기능 시연 화면|파일 없음/);
+  assert.doesNotMatch(appScript, /verifiedApps|demoApps|program-group/);
+  assert.match(appScript, /catalog\.apps\.forEach\(\(app, index\) => list\.append\(renderCatalogCard\(app, index\)\)\)/);
+  assert.match(appScript, /설치 파일과 인증코드는 현재 제공되지 않습니다/);
+  assert.match(appScript, /app\.availabilityNote/);
   assert.match(appScript, /submit\.disabled = !app\.authEndpoint/);
   assert.match(appScript, /if \(!app\.authEndpoint\) return/);
+});
+
+test("[REG:showcase.catalog_unified_alignment] catalog cards share one grid and a bottom action baseline", async () => {
+  const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
+  const styles = await readFile(path.join(root, "site", "styles.css"), "utf8");
+  assert.match(appScript, /element\("div", "app-list catalog-list"\)/);
+  assert.match(styles, /\.catalog-card\s*\{[^}]*grid-template-columns: 32px minmax\(0, 1fr\);[^}]*align-items: stretch;/s);
+  assert.match(styles, /\.catalog-copy\s*\{[^}]*display: flex;[^}]*height: 100%;[^}]*flex-direction: column;/s);
+  assert.match(styles, /\.catalog-actions\s*\{[^}]*margin-top: auto;/s);
+  assert.doesNotMatch(styles, /\.workflow-image\s*\{[^}]*\bfilter\s*:/s);
 });
 
 test("[REG:showcase.reduced_motion] every workflow GIF has a reduced-motion poster", async () => {
@@ -266,7 +275,7 @@ test("[REG:hosting.generated_routes] build creates catalog, detail, and installa
   assert.match(installRoute, /data-page="install" data-app-id="autotrip"/);
   assert.match(installRoute, /<base href="\.\.\/\.\.\/"/);
   assert.match(appScript, /설치 인증코드/);
-  assert.match(appScript, /설치 인증코드 필요/);
+  assert.doesNotMatch(appScript, /설치 인증코드 필요/);
   assert.match(appScript, /app\.assets\.some/);
   assert.match(platformScript, /"windows"/);
   assert.match(generated, /"defaultAssetId": "windows"/);
@@ -311,8 +320,8 @@ test("the catalog contains ten disclosed standalone program demos across three a
   for (const app of prototypes) {
     assert.equal(app.authEndpoint, null);
     assert.equal(app.installPreview, true);
-    assert.match(app.demoLabel, /기능 시연 화면/);
-    assert.match(app.demoLabel, /외부 시스템 미연동/);
+    assert.match(app.demoLabel, /예시/);
+    assert.doesNotMatch(app.demoLabel, /기능 시연|기능 데모/);
     assert.match(app.availabilityNote, /설치 페이지를 제공/);
     assert.match(app.availabilityNote, /설치 파일과 인증코드는 현재 제공되지 않습니다/);
     assert.equal(app.defaultAssetId, "windows");
@@ -346,6 +355,7 @@ test("demo entries generate detail, GIF, and non-downloadable install preview ro
   const appScript = await readFile(path.join(output, "app.js"), "utf8");
   assert.match(appScript, /if \(!app\.authEndpoint\) return/);
   assert.match(appScript, /submit\.disabled = !app\.authEndpoint/);
-  assert.match(appScript, /설치 정보만 제공/);
+  assert.match(appScript, /설치 안내/);
+  assert.doesNotMatch(appScript, /실제 연동|기능 데모|기능 시연 화면|파일 없음/);
   assert.doesNotMatch(appScript, /설치 준비 중|배포 준비 중/);
 });

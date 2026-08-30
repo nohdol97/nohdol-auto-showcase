@@ -10,12 +10,12 @@ The primary visitor either wants a program shaped around their domain or has bee
 
 1. Will the service first understand how our work actually operates?
 2. How does remote discovery become a small, testable program and a controlled rollout?
-3. What do the existing program examples do, and are their recordings verified external workflows or disclosed local demonstrations?
+3. What do the existing program examples do, and what workflow does each recording show?
 4. Does an example provide a downloadable installer or installation information only?
 
 The home page first explains the service sequence as `업무 이해 -> 작은 검증 -> 적용과 개선`, states that collaboration is remote, and offers both `제작 사례 보기` and `프로그램 상담 시작`. The catalog remains the truthful evidence surface: a detail route leads with its reviewed workflow recording, and an install route leads with the operating-system choice and installer-code control. Verified products may authorize a download; demo-only programs may say `설치 페이지 제공` while the same surface clearly states that the installer and code are not currently provided, keeps the control disabled, and attempts no request.
 
-The catalog also explains the day-to-day program experience in plain Korean. It promises to learn domain language before choosing a solution, validate the highest-value workflow in a small scope, and improve within an agreed remote delivery scope using observed results. Programs still need a clear screen, a natural order of use, visible progress, and understandable recovery guidance without asking visitors to understand development terminology. The home separates verified product evidence from deterministic no-integration demonstrations and states both counts rather than flattening them into one undifferentiated card grid.
+The catalog also explains the day-to-day program experience in plain Korean. It promises to learn domain language before choosing a solution, validate the highest-value workflow in a small scope, and improve within an agreed remote delivery scope using observed results. Programs still need a clear screen, a natural order of use, visible progress, and understandable recovery guidance without asking visitors to understand development terminology. The home presents every program in one ordered catalog without exposing internal product/demo kinds, split counts, group headings, or availability badges. Each card keeps the same domain label, flow vocabulary, and action labels; concrete download availability appears only where the visitor needs it on detail and install routes.
 
 The header exposes `문의하기` on every route. The dialog first explains the outcome in non-technical Korean, then separates required inquiry/privacy consent from optional marketing consent. Email input leads to a six-digit verification step, not directly to chat. A verified visitor resumes the newest incomplete inquiry, sees canonical server history, can add allowlisted private files, receives two-to-four-option choice cards when useful, and can always answer in their own words.
 
@@ -29,10 +29,10 @@ When the assistant considers the brief ready, the visitor can expand and review 
 - Use borders and small surface shifts for depth. Ordinary content has no drop shadow.
 - Use the native Korean-capable font stack and a compact type scale. Weight and tone create hierarchy before size.
 - The signature structure is one visible `업무 이해 -> 작은 검증 -> 적용과 개선` path. Do not repeat the same sequence as a trust strip and another feature list.
-- Keep the verified product group ahead of the deterministic demo group. Both may use cards because each program is independently selectable, but their headings, counts, badges, and availability language remain distinct.
+- Use one catalog grid for all independently selectable programs. Within each grid row, stretch every card and pin its action group to the bottom so `사례 보기` and `설치 안내` share a stable vertical baseline despite different Korean copy lengths.
 
 The site does not use gradients, glows, glass/blur, decorative background textures, rotated mockups, oversized hero type, or ambient animation. Cards exist only for an independently selectable program, the workflow recording, and the installation form.
-All UI surfaces, symbols, status treatments, and published workflow imagery render in black, white, or neutral gray. State meaning remains explicit in text and structure rather than relying on hue.
+All UI surfaces, symbols, and status treatments render in black, white, or neutral gray. Published workflow GIFs retain their original product colors because they are evidence rather than brand decoration. State meaning remains explicit in text and structure rather than relying on hue.
 
 ## Responsive and accessibility contract
 
@@ -51,7 +51,7 @@ All UI surfaces, symbols, status treatments, and published workflow imagery rend
 
 - Catalog: loading, populated, empty, and load-failure states remain visible. A load failure receives a heading, plain explanation, `다시 불러오기` action, and programmatic focus without losing the global navigation.
 - Inquiry: signed-out, requesting-code, code-entry, authenticated-loading, empty/resumed chat, uploading, streaming, retryable generation failure, review-ready, completed, and deletion states remain distinct in text rather than color alone.
-- Detail: each reviewed GIF and caption identifies either the verified program-to-site flow or the deterministic demo-data boundary. Public copy does not use `UI 콘셉트`, `UI 프로토타입`, temporary-portfolio, or removal-plan language.
+- Detail: each reviewed GIF and caption describes the shown workflow, example-data provenance, and any external action that was not performed without exposing an internal product/demo category. Public copy does not use `UI 콘셉트`, `UI 프로토타입`, temporary-portfolio, or removal-plan language.
 - Install: ready, authorizing, disabled-until-endpoint, success, and recoverable failure states remain distinct in text, not color alone.
 - A disabled install preview may show the same route, platform selector, and code field as a distributed product, but it has `authEndpoint: null`, a disabled submit button, an early request guard, and an explicit not-yet-available message.
 - The public site never contains or validates raw installer codes, product keys, verifiers, private object URLs, administrator controls, or direct installer URLs.
