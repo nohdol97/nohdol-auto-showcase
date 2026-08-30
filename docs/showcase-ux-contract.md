@@ -24,7 +24,7 @@ When the assistant considers the brief ready, the visitor can expand and review 
 ## Visual direction
 
 - Feel close to real work and calm about complexity: operational, readable, truthful, and quietly polished.
-- Keep `nohdol-clean` as the functional base and map the separate Abalone layer to `brand.canvas #F4F6F5`, `brand.ink #17211F`, `brand.accent #1F5E5B`, solid `brand.focus #1F5E5B`, and independent semantic status colors.
+- Keep `nohdol-clean` as the functional base and map the separate Abalone layer to grayscale-only `brand.canvas #F5F5F5`, `brand.ink #111111`, `brand.accent #111111`, solid `brand.focus #000000`, and independent grayscale semantic status tokens.
 - Use a 4px spacing grid, 6px controls, 8px grouped surfaces, and 10px floating or emphasized surfaces.
 - Use borders and small surface shifts for depth. Ordinary content has no drop shadow.
 - Use the native Korean-capable font stack and a compact type scale. Weight and tone create hierarchy before size.
@@ -32,6 +32,7 @@ When the assistant considers the brief ready, the visitor can expand and review 
 - Keep the verified product group ahead of the deterministic demo group. Both may use cards because each program is independently selectable, but their headings, counts, badges, and availability language remain distinct.
 
 The site does not use gradients, glows, glass/blur, decorative background textures, rotated mockups, oversized hero type, or ambient animation. Cards exist only for an independently selectable program, the workflow recording, and the installation form.
+All UI surfaces, symbols, status treatments, and published workflow imagery render in black, white, or neutral gray. State meaning remains explicit in text and structure rather than relying on hue.
 
 ## Responsive and accessibility contract
 

@@ -127,16 +127,24 @@ test("[REG:showcase.abalone_brand] the public UI layers Abalone identity over no
   const template = await readFile(path.join(root, "site", "index.html"), "utf8");
   const styles = await readFile(path.join(root, "site", "styles.css"), "utf8");
   const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
-  assert.match(template, /name="theme-color" content="#F4F6F5"/);
+  assert.match(template, /name="theme-color" content="#111111"/);
   assert.match(template, /class="skip-link" href="#page">본문으로 건너뛰기/);
   assert.doesNotMatch(template, /class="ambient/);
   for (const token of ["--brand-canvas", "--brand-ink", "--brand-accent", "--brand-accent-strong", "--brand-accent-soft", "--brand-focus"]) {
     assert.match(styles, new RegExp(token));
   }
-  assert.match(styles, /--brand-accent: #1f5e5b/);
+  assert.match(styles, /--brand-accent: #111111/);
   assert.match(styles, /--accent: var\(--brand-accent\)/);
   assert.match(styles, /outline: 3px solid var\(--brand-focus\)/);
   assert.match(styles, /border-radius: 6px/);
+  for (const match of styles.matchAll(/#([0-9a-f]{6})/gi)) {
+    const channels = [match[1].slice(0, 2), match[1].slice(2, 4), match[1].slice(4, 6)];
+    assert.equal(new Set(channels).size, 1, `non-grayscale CSS color: ${match[0]}`);
+  }
+  for (const match of styles.matchAll(/rgb\((\d+) (\d+) (\d+)/g)) {
+    assert.equal(new Set(match.slice(1, 4)).size, 1, `non-grayscale CSS rgb color: ${match[0]}`);
+  }
+  assert.match(styles, /filter: grayscale\(1\)/);
   assert.doesNotMatch(styles, /gradient|backdrop-filter|filter: blur|transition: all/i);
   assert.match(appScript, /"product-mark"/);
   assert.doesNotMatch(appScript, /element\("div", "brand-mark", app\.name/);
@@ -156,11 +164,13 @@ test("[REG:showcase.brand_icon] the Abalone mark is font-independent and ships i
   const legacyIcon = await readFile(path.join(root, "site", "favicon.ico"));
 
   assert.match(template, /<title>Abalone — 업무 맞춤 프로그램 제작<\/title>/);
-  assert.match(template, /rel="icon" href="\.\/favicon\.svg" type="image\/svg\+xml"/);
-  assert.match(template, /rel="apple-touch-icon" href="\.\/apple-touch-icon\.png"/);
-  assert.equal([...template.matchAll(/class="brand-mark" src="\.\/favicon\.svg"/g)].length, 2);
+  assert.match(template, /rel="icon" href="\.\/favicon\.svg\?v=black-white" type="image\/svg\+xml"/);
+  assert.match(template, /rel="alternate icon" href="\.\/favicon\.ico\?v=black-white"/);
+  assert.match(template, /rel="apple-touch-icon" href="\.\/apple-touch-icon\.png\?v=black-white"/);
+  assert.match(template, /rel="manifest" href="\.\/site\.webmanifest\?v=black-white"/);
+  assert.equal([...template.matchAll(/class="brand-mark" src="\.\/favicon\.svg\?v=black-white"/g)].length, 2);
   assert.match(svg, /viewBox="0 0 32 32"/);
-  assert.match(svg, /fill="#1f5e5b"/);
+  assert.match(svg, /fill="#111111"/);
   assert.match(svg, /fill="#ffffff"/);
   assert.doesNotMatch(svg, /<text|gradient|<image/i);
 
@@ -171,8 +181,9 @@ test("[REG:showcase.brand_icon] the Abalone mark is font-independent and ships i
   }
   assert.equal(legacyIcon.subarray(0, 4).toString("hex"), "00000100");
   assert.equal(manifest.name, "Abalone");
-  assert.equal(manifest.background_color, "#f4f6f5");
-  assert.equal(manifest.theme_color, "#1f5e5b");
+  assert.equal(manifest.background_color, "#f5f5f5");
+  assert.equal(manifest.theme_color, "#111111");
+  assert.deepEqual(manifest.icons.map((icon) => icon.src), ["./icon-192.png?v=black-white", "./icon-512.png?v=black-white"]);
   assert.deepEqual(manifest.icons.map((icon) => icon.sizes), ["192x192", "512x512"]);
 });
 
