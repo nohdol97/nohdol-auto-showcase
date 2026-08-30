@@ -7,11 +7,13 @@ import {
   PRIVACY_VERSION,
   SYSTEM_PROMPT,
   consumeOpenAIStream,
+  hasFilledInquiryTrap,
   normalizeEmail,
   sessionCookie,
   specToMarkdown,
   validateAttachment,
   validateInquiryState,
+  validateInquiryFormTiming,
 } from "../src/inquiry-core.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
@@ -42,12 +44,23 @@ test("[REG:inquiry.email_verification] email entry is normalized but authenticat
   assert.match(workerSource, /email_challenges/);
   assert.match(workerSource, /expiresInSeconds: 600/);
   assert.match(workerSource, /attempts >= 5/);
-  assert.match(workerSource, /turnstile\/v0\/siteverify/);
-  assert.match(workerSource, /TURNSTILE_SECRET_KEY/);
-  assert.match(workerSource, /result\.hostname !== expectedHostname/);
-  assert.match(workerSource, /result\.action !== "inquiry_email"/);
   assert.match(workerSource, /bytes\.byteLength > JSON_LIMIT/);
   assert.match(sessionCookie("opaque"), /HttpOnly; Secure; SameSite=Lax/);
+});
+
+test("[REG:inquiry.turnstile_free_abuse_controls] email delivery omits Turnstile and keeps layered request limits", () => {
+  assert.doesNotMatch(html, /challenges\.cloudflare\.com|inquiry-turnstile/i);
+  assert.doesNotMatch(client, /turnstile|public-config/i);
+  assert.doesNotMatch(workerSource, /TURNSTILE|siteverify|public-config/i);
+  assert.match(html, /id="inquiry-website"[^>]*tabindex="-1"/);
+  assert.equal(hasFilledInquiryTrap("bot.example"), true);
+  assert.equal(hasFilledInquiryTrap(""), false);
+  assert.throws(() => validateInquiryFormTiming(1_000, 1_500), /잠시 후/);
+  assert.doesNotThrow(() => validateInquiryFormTiming(1_000, 2_200));
+  assert.match(workerSource, /CODE_RESEND_COOLDOWN/);
+  assert.match(workerSource, /"otp-ip-short".*3.*15 \* 60/s);
+  assert.match(workerSource, /"otp-ip-day".*20.*24 \* 60 \* 60/s);
+  assert.match(workerSource, /"otp-email-day".*6.*24 \* 60 \* 60/s);
 });
 
 test("[REG:inquiry.consent_separation] required service consent and optional marketing consent are independent", () => {
@@ -57,7 +70,9 @@ test("[REG:inquiry.consent_separation] required service consent and optional mar
   assert.match(html, /<strong>선택<\/strong>/);
   assert.match(html, /동의하지 않아도 문의할 수 있고/);
   assert.match(client, new RegExp(`privacyVersion: PRIVACY_VERSION`));
-  assert.equal(PRIVACY_VERSION, "2026-08-30");
+  assert.equal(PRIVACY_VERSION, "2026-08-30-abalone");
+  assert.match(html, /운영: Abalone/);
+  assert.match(html, /inquiry@mail\.byabalone\.com/);
   assert.match(migration, /marketing INTEGER NOT NULL CHECK \(marketing IN \(0, 1\)\)/);
 });
 
@@ -74,6 +89,7 @@ test("[REG:inquiry.choice_options] the strict state tool supports two to four pl
   assert.deepEqual(INQUIRY_STATE_TOOL.parameters.required, ["readyForReview", "conversationTitle", "answeredTopics", "openQuestions", "choices", "spec"]);
   assert.equal(validateInquiryState(completeState), completeState);
   assert.match(SYSTEM_PROMPT, /2~4개의 짧은 선택지/);
+  assert.match(SYSTEM_PROMPT, /Abalone의 프로그램 문의 도우미/);
   const invalid = structuredClone(completeState);
   invalid.choices[0].options = [invalid.choices[0].options[0]];
   assert.throws(() => validateInquiryState(invalid), /choice card/);

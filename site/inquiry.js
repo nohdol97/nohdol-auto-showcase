@@ -1,5 +1,5 @@
 (() => {
-  const PRIVACY_VERSION = "2026-08-30";
+  const PRIVACY_VERSION = "2026-08-30-abalone";
   const byId = (id) => document.getElementById(id);
   const dialog = byId("inquiry-dialog");
   const auth = byId("inquiry-auth");
@@ -14,7 +14,7 @@
   const authStatus = byId("inquiry-auth-status");
   const chatStatus = byId("inquiry-chat-status");
   const sendButton = byId("inquiry-send");
-  const state = { challengeId: null, email: null, conversationId: null, attachmentIds: [], busy: false, retryMessageId: null, retryContent: null, turnstileToken: null, turnstileWidgetId: null, turnstileLoading: false };
+  const state = { challengeId: null, email: null, conversationId: null, attachmentIds: [], busy: false, retryMessageId: null, retryContent: null, formStartedAt: Date.now() };
 
   function setStatus(node, message, kind = "") {
     node.textContent = message;
@@ -24,7 +24,7 @@
   async function api(path, options = {}) {
     const headers = new Headers(options.headers);
     if (options.body && !(options.body instanceof FormData)) headers.set("Content-Type", "application/json");
-    if (options.method && options.method !== "GET") headers.set("X-Requested-With", "hangyeol-showcase");
+    if (options.method && options.method !== "GET") headers.set("X-Requested-With", "abalone-showcase");
     const response = await fetch(path, { ...options, headers, credentials: "same-origin" });
     if (!response.ok) {
       const result = await response.json().catch(() => ({}));
@@ -174,29 +174,6 @@
     }
   }
 
-  async function prepareTurnstile() {
-    if (state.turnstileWidgetId !== null || state.turnstileLoading) return;
-    state.turnstileLoading = true;
-    try {
-      const config = await (await api("/api/public-config")).json();
-      for (let attempt = 0; attempt < 50 && !window.turnstile; attempt += 1) await new Promise((resolve) => window.setTimeout(resolve, 100));
-      if (!window.turnstile) throw new Error("자동 요청 방지 기능을 불러오지 못했습니다.");
-      state.turnstileWidgetId = window.turnstile.render("#inquiry-turnstile", {
-        sitekey: config.turnstileSiteKey,
-        action: "inquiry_email",
-        theme: "light",
-        size: "flexible",
-        callback(token) { state.turnstileToken = token; setStatus(authStatus, ""); },
-        "expired-callback"() { state.turnstileToken = null; },
-        "error-callback"() { state.turnstileToken = null; setStatus(authStatus, "자동 요청 방지 확인을 다시 시도해 주세요.", "error"); },
-      });
-    } catch (error) {
-      setStatus(authStatus, error.message, "error");
-    } finally {
-      state.turnstileLoading = false;
-    }
-  }
-
   async function consumeSse(response, assistant) {
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
@@ -224,10 +201,6 @@
 
   emailForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!state.turnstileToken) {
-      setStatus(authStatus, "자동 요청 방지 확인을 완료해 주세요.", "error");
-      return;
-    }
     const button = emailForm.querySelector("button[type=submit]");
     button.disabled = true;
     setStatus(authStatus, "확인 메일을 보내는 중입니다…", "busy");
@@ -240,7 +213,8 @@
           requiredService: byId("inquiry-required-consent").checked,
           marketing: byId("inquiry-marketing-consent").checked,
           privacyVersion: PRIVACY_VERSION,
-          turnstileToken: state.turnstileToken,
+          website: byId("inquiry-website").value,
+          formStartedAt: state.formStartedAt,
         }),
       });
       const result = await response.json();
@@ -253,8 +227,6 @@
     } catch (error) {
       setStatus(authStatus, error.message, "error");
     } finally {
-      state.turnstileToken = null;
-      if (state.turnstileWidgetId !== null) window.turnstile?.reset(state.turnstileWidgetId);
       button.disabled = false;
     }
   });
@@ -285,6 +257,8 @@
     byId("inquiry-code").value = "";
     codeForm.hidden = true;
     emailForm.hidden = false;
+    byId("inquiry-website").value = "";
+    state.formStartedAt = Date.now();
     setStatus(authStatus, "");
     byId("inquiry-email").focus();
   });
@@ -393,7 +367,7 @@
 
   byId("inquiry-open").addEventListener("click", () => {
     dialog.showModal();
-    prepareTurnstile();
+    state.formStartedAt = Date.now();
     restoreSession();
   });
   byId("inquiry-close").addEventListener("click", () => dialog.close());
@@ -402,7 +376,7 @@
   });
   if (new URLSearchParams(window.location.search).get("inquiry") === "open") {
     dialog.showModal();
-    prepareTurnstile();
+    state.formStartedAt = Date.now();
     restoreSession();
   }
 })();

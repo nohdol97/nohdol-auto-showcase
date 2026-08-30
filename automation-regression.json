@@ -24,6 +24,9 @@
     "inquiry.email_verification": {
       "testFiles": ["tests/inquiry-worker.test.mjs"]
     },
+    "inquiry.turnstile_free_abuse_controls": {
+      "testFiles": ["tests/inquiry-worker.test.mjs"]
+    },
     "inquiry.session_ownership": {
       "testFiles": ["tests/inquiry-worker.test.mjs"]
     },

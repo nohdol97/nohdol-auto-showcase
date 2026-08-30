@@ -7,12 +7,14 @@ The public `문의하기` flow helps a non-developer explain the work they want 
 Email entry is not authentication. The flow is:
 
 1. The visitor enters an email address, accepts the required privacy notice, and may independently opt in to marketing messages.
-2. The visitor completes Cloudflare Turnstile and the server validates its single-use token before sending mail.
+2. The form applies a hidden trap field, a minimum interaction delay, a 60-second resend cooldown, and hashed short- and daily-limit buckets for the email address and client IP before sending mail.
 3. The server sends a six-digit, single-use code to that address. The code expires after 10 minutes and has a limited number of attempts.
 4. A successful code check creates an opaque 30-day server session in an `HttpOnly`, `Secure`, `SameSite=Lax` cookie. The browser never stores the session token in local storage.
 5. Only that verified session may create, read, stream, complete, or delete its conversations and attachments.
 
 The required privacy consent covers email verification, inquiry handling, saved conversation and attachment processing, OpenAI API processing, and operator follow-up. Marketing consent is optional and does not affect access to the inquiry flow. Its plain-language notice states that the inquiry email may receive program or service news and that the consent record is deleted with the inquiry data. Consent versions and timestamps are recorded separately.
+
+The public notice identifies the operator as `Abalone`, gives `inquiry@mail.byabalone.com` as the privacy contact, and discloses that connection information is processed for request-rate protection. It keeps the 90-day incomplete and one-year completed retention periods visible. This is an operational product contract, not a claim that the notice alone satisfies every law or business-specific compliance duty.
 
 ## Conversation behavior
 
@@ -73,16 +75,16 @@ The same Cloudflare Worker serves static assets and `/api/*`, but the bindings a
 - `OPENAI_API_KEY`: secret.
 - `OTP_PEPPER`: independent random secret used to digest verification codes.
 - `RESEND_API_KEY`: secret for transactional mail.
-- `EMAIL_FROM`: verified sender address.
+- `EMAIL_FROM`: verified sender address, initially `Abalone <inquiry@mail.byabalone.com>`.
 - `INQUIRY_OWNER_EMAIL`: private operator destination.
-- `TURNSTILE_SITE_KEY`: public widget identifier.
-- `TURNSTILE_SECRET_KEY`: server-only Siteverify secret.
 - `OPENAI_MODEL`: deploy-time model name.
 
 No installer verifier, product key, distribution KV, distribution R2 binding, or download-signing secret is available to this Worker. Production fails closed when required mail, storage, or model configuration is missing. Local tests use explicit fakes and never silently send mail or call a model.
 
 ## Abuse and operational controls
 
-Email-code requests, code checks, uploads, chat messages, and conversation creation are rate limited by hashed address/session/IP buckets. Responses do not reveal whether an email already exists. Logs use inquiry IDs and error classes, not email addresses, message text, filenames, codes, cookies, attachment contents, or API keys. HTML email output is escaped.
+Email-code requests, code checks, uploads, chat messages, and conversation creation are rate limited by hashed address/session/IP buckets. Email-code requests allow at most three requests per IP in 15 minutes, 20 per IP in one day, three per email in 30 minutes, and six per email in one day, with a separate 60-second resend cooldown. A hidden form field absorbs basic form bots and a minimum form-open interval adds friction. Responses do not reveal whether an email already exists. Logs use inquiry IDs and error classes, not email addresses, message text, filenames, codes, cookies, attachment contents, or API keys. HTML email output is escaped.
 
-The first production release is complete only after deterministic tests, D1 migration, private R2 policy, secret presence checks, wrong-code/expired-code/attempt-limit tests, authenticated ownership tests, file rejection tests, SSE grace-period persistence plus stale-generation recovery, model structured-state validation, explicit completion, operator delivery or observable pending retry, retention cleanup, and responsive keyboard-accessible UI checks have passed.
+The initial release deliberately has no interactive CAPTCHA or Turnstile challenge. That keeps the inquiry flow simpler, but it cannot fully stop distributed or targeted mail abuse. Resend delivery volume, Worker request volume, rate-limit responses, and mail-provider complaints must be monitored. If those signals show sustained abuse, add a managed challenge or temporarily pause code delivery; the hidden field and client-supplied timing value are secondary friction, not proof that a visitor is human.
+
+The first production release is complete only after deterministic tests, D1 migration, private R2 policy, secret presence checks, resend-cooldown and short/daily-limit tests, wrong-code/expired-code/attempt-limit tests, authenticated ownership tests, file rejection tests, SSE grace-period persistence plus stale-generation recovery, model structured-state validation, explicit completion, operator delivery or observable pending retry, retention cleanup, and responsive keyboard-accessible UI checks have passed.

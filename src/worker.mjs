@@ -16,6 +16,7 @@ import {
   errorResponse,
   extractInquiryState,
   hmacHex,
+  hasFilledInquiryTrap,
   isoAfter,
   json,
   normalizeEmail,
@@ -29,6 +30,7 @@ import {
   specToMarkdown,
   sseEvent,
   validateAttachment,
+  validateInquiryFormTiming,
 } from "./inquiry-core.mjs";
 
 const JSON_LIMIT = 64 * 1024;
@@ -115,40 +117,28 @@ async function sendMail(env, message, idempotencyKey) {
 async function sendVerificationCode(env, email, code, challengeId) {
   await sendMail(env, {
     to: [email],
-    subject: "[한결] 문의 이메일 확인 코드",
-    html: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#172033;line-height:1.6"><h1 style="font-size:20px">이메일을 확인해 주세요</h1><p>한결 문의창에 아래 6자리 코드를 입력해 주세요.</p><p style="font-size:28px;font-weight:700;letter-spacing:6px">${escapeHtml(code)}</p><p>코드는 10분 동안 한 번만 사용할 수 있습니다. 요청하지 않았다면 이 메일을 무시해 주세요.</p></div>`,
+    subject: "[Abalone] 문의 이메일 확인 코드",
+    html: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#172033;line-height:1.6"><h1 style="font-size:20px">이메일을 확인해 주세요</h1><p>Abalone 문의창에 아래 6자리 코드를 입력해 주세요.</p><p style="font-size:28px;font-weight:700;letter-spacing:6px">${escapeHtml(code)}</p><p>코드는 10분 동안 한 번만 사용할 수 있습니다. 요청하지 않았다면 이 메일을 무시해 주세요.</p></div>`,
   }, `verification/${challengeId}`);
-}
-
-async function verifyTurnstile(request, env, token) {
-  const responseToken = String(token ?? "");
-  if (!responseToken || responseToken.length > 2048) throw new HttpError(400, "HUMAN_CHECK_REQUIRED", "자동 요청 방지 확인을 완료해 주세요.");
-  const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      secret: required(env, "TURNSTILE_SECRET_KEY"),
-      response: responseToken,
-      remoteip: clientAddress(request),
-      idempotency_key: crypto.randomUUID(),
-    }),
-  });
-  if (!response.ok) throw new HttpError(503, "HUMAN_CHECK_UNAVAILABLE", "자동 요청 방지 확인을 불러오지 못했습니다.");
-  const result = await response.json();
-  const expectedHostname = new URL(request.url).hostname;
-  if (!result.success || result.hostname !== expectedHostname || result.action !== "inquiry_email") {
-    throw new HttpError(400, "HUMAN_CHECK_FAILED", "자동 요청 방지 확인을 다시 시도해 주세요.");
-  }
 }
 
 async function requestCode(request, env) {
   assertSameOrigin(request);
   const body = await readJson(request);
+  if (hasFilledInquiryTrap(body.website)) {
+    return json({ challengeId: crypto.randomUUID(), expiresInSeconds: 600, message: "확인 코드를 보냈습니다." }, 202);
+  }
+  validateInquiryFormTiming(body.formStartedAt);
   const email = normalizeEmail(body.email);
   if (body.requiredService !== true || body.privacyVersion !== PRIVACY_VERSION) throw new HttpError(400, "PRIVACY_CONSENT_REQUIRED", "필수 개인정보 안내를 확인하고 동의해 주세요.");
-  await rateLimit(env, "otp-ip", clientAddress(request), 5, 15 * 60);
+  const latestChallenge = await db(env).prepare("SELECT created_at FROM email_challenges WHERE email = ? ORDER BY created_at DESC LIMIT 1").bind(email).first();
+  if (latestChallenge && Date.parse(latestChallenge.created_at) > Date.now() - 60_000) {
+    throw new HttpError(429, "CODE_RESEND_COOLDOWN", "확인 메일은 1분 뒤에 다시 요청할 수 있습니다.");
+  }
+  await rateLimit(env, "otp-ip-short", clientAddress(request), 3, 15 * 60);
+  await rateLimit(env, "otp-ip-day", clientAddress(request), 20, 24 * 60 * 60);
   await rateLimit(env, "otp-email", email, 3, 30 * 60);
-  await verifyTurnstile(request, env, body.turnstileToken);
+  await rateLimit(env, "otp-email-day", email, 6, 24 * 60 * 60);
   const id = crypto.randomUUID();
   const code = randomCode();
   const codeDigest = await hmacHex(required(env, "OTP_PEPPER"), `${id}:${email}:${code}`);
@@ -483,7 +473,7 @@ async function notifyOwner(env, conversationId, deliveryId) {
   await sendMail(env, {
     to: [required(env, "INQUIRY_OWNER_EMAIL")],
     reply_to: item.email,
-    subject: `[한결 문의] ${item.id}`,
+    subject: `[Abalone 문의] ${item.id}`,
     html: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#172033;line-height:1.6"><h1 style="font-size:20px">새 프로그램 문의가 완료되었습니다</h1><p><strong>문의 ID:</strong> ${escapeHtml(item.id)}</p><p><strong>회신 이메일:</strong> ${escapeHtml(item.email)}</p><pre style="white-space:pre-wrap;font:inherit;background:#f5f7fa;padding:16px;border-radius:8px">${escapeHtml(item.spec_markdown)}</pre></div>`,
   }, `inquiry-delivery/${deliveryId}`);
 }
@@ -561,10 +551,9 @@ async function api(request, env, ctx) {
   const url = new URL(request.url);
   const method = request.method.toUpperCase();
   if (url.pathname === "/api/health" && method === "GET") {
-    const configured = Boolean(env.INQUIRY_DB && env.INQUIRY_FILES && env.OPENAI_API_KEY && env.OPENAI_MODEL && env.OTP_PEPPER && env.RESEND_API_KEY && env.EMAIL_FROM && env.INQUIRY_OWNER_EMAIL && env.TURNSTILE_SITE_KEY && env.TURNSTILE_SECRET_KEY);
+    const configured = Boolean(env.INQUIRY_DB && env.INQUIRY_FILES && env.OPENAI_API_KEY && env.OPENAI_MODEL && env.OTP_PEPPER && env.RESEND_API_KEY && env.EMAIL_FROM && env.INQUIRY_OWNER_EMAIL);
     return json({ status: configured ? "ready" : "configuration_required" }, configured ? 200 : 503);
   }
-  if (url.pathname === "/api/public-config" && method === "GET") return json({ turnstileSiteKey: required(env, "TURNSTILE_SITE_KEY") });
   if (url.pathname === "/api/auth/request-code" && method === "POST") return requestCode(request, env);
   if (url.pathname === "/api/auth/verify-code" && method === "POST") return verifyCode(request, env);
   if (url.pathname === "/api/auth/session" && method === "GET") return sessionStatus(request, env);

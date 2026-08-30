@@ -1,5 +1,5 @@
-export const PRIVACY_VERSION = "2026-08-30";
-export const SESSION_COOKIE = "hangyeol_inquiry";
+export const PRIVACY_VERSION = "2026-08-30-abalone";
+export const SESSION_COOKIE = "abalone_inquiry";
 export const SESSION_SECONDS = 30 * 24 * 60 * 60;
 export const INCOMPLETE_RETENTION_SECONDS = 90 * 24 * 60 * 60;
 export const COMPLETED_RETENTION_SECONDS = 365 * 24 * 60 * 60;
@@ -39,6 +39,18 @@ export function normalizeEmail(value) {
     throw new HttpError(400, "INVALID_EMAIL", "이메일 주소를 다시 확인해 주세요.");
   }
   return email;
+}
+
+export function hasFilledInquiryTrap(value) {
+  return String(value ?? "").trim().length > 0;
+}
+
+export function validateInquiryFormTiming(value, instant = Date.now()) {
+  const startedAt = Number(value);
+  const elapsed = instant - startedAt;
+  if (!Number.isFinite(startedAt) || startedAt <= 0 || elapsed < 1_200 || elapsed > 2 * 60 * 60 * 1000) {
+    throw new HttpError(400, "FORM_TIMING_INVALID", "잠시 후 다시 시도해 주세요.");
+  }
 }
 
 export function sanitizeFilename(value) {
@@ -155,7 +167,7 @@ export function errorResponse(error) {
 export function assertSameOrigin(request) {
   const origin = request.headers.get("Origin");
   if (origin && origin !== new URL(request.url).origin) throw new HttpError(403, "ORIGIN_NOT_ALLOWED", "요청 출처를 확인할 수 없습니다.");
-  if (request.headers.get("X-Requested-With") !== "hangyeol-showcase") throw new HttpError(403, "REQUEST_HEADER_REQUIRED", "요청을 확인할 수 없습니다.");
+  if (request.headers.get("X-Requested-With") !== "abalone-showcase") throw new HttpError(403, "REQUEST_HEADER_REQUIRED", "요청을 확인할 수 없습니다.");
 }
 
 export const SPEC_FIELDS = [
@@ -207,7 +219,7 @@ export const INQUIRY_STATE_TOOL = {
   },
 };
 
-export const SYSTEM_PROMPT = `당신은 한결의 프로그램 문의 도우미입니다. 사용자는 비개발자일 수 있으므로 쉬운 한국어로 대화하세요.
+export const SYSTEM_PROMPT = `당신은 Abalone의 프로그램 문의 도우미입니다. 사용자는 비개발자일 수 있으므로 쉬운 한국어로 대화하세요.
 
 목표는 사용자의 도메인 지식과 원하는 결과를 배우고, 실제 구축을 검토할 수 있는 구체적인 작업 명세를 함께 완성하는 것입니다.
 - 한 번에 연결된 주제 하나를 물어보세요. 이미 답한 질문을 반복하지 마세요.
