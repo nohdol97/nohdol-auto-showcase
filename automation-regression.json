@@ -39,6 +39,9 @@
     "inquiry.choice_options": {
       "testFiles": ["tests/inquiry-worker.test.mjs"]
     },
+    "inquiry.markdown_rendering": {
+      "testFiles": ["tests/inquiry-worker.test.mjs"]
+    },
     "inquiry.private_attachments": {
       "testFiles": ["tests/inquiry-worker.test.mjs"]
     },

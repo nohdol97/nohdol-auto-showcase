@@ -100,7 +100,7 @@
             <p>추가할 내용이 없다면 아래 확인란을 선택하고 문의를 완료해 주세요.</p>
             <details class="spec-preview">
               <summary>정리된 요청 내용 보기</summary>
-              <pre id="inquiry-spec-markdown"></pre>
+              <div class="markdown-body" id="inquiry-spec-markdown"></div>
             </details>
             <label class="check-row"><input id="inquiry-complete-check" type="checkbox" /><span>정리된 내용을 검토했고 이 문의를 완료합니다.</span></label>
             <button class="primary-action" id="inquiry-complete" type="button" disabled>문의 완료하고 전달하기</button>
@@ -120,6 +120,6 @@
         </section>
       </div>
     </dialog>
-    <script src="./inquiry.js" defer></script>
+    <script src="./inquiry.js" type="module"></script>
   </body>
 </html>

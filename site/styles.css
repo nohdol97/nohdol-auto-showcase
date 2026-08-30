@@ -1262,19 +1262,94 @@ h1 em {
   background: var(--accent-soft);
 }
 
-.chat-message strong {
+.chat-message > strong {
   display: block;
   margin-bottom: 4px;
   color: var(--text-muted);
   font-size: 11px;
 }
 
-.chat-message p {
+.markdown-body > :first-child {
+  margin-top: 0;
+}
+
+.markdown-body > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body p {
   margin: 0;
+}
+
+.markdown-body p + p,
+.markdown-body p + ul,
+.markdown-body p + ol,
+.markdown-body ul + p,
+.markdown-body ol + p,
+.markdown-body blockquote + p {
+  margin-top: 9px;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  margin: 8px 0;
+  padding-left: 22px;
+}
+
+.markdown-body li + li {
+  margin-top: 4px;
+}
+
+.markdown-body strong {
+  color: inherit;
+  font-size: inherit;
+}
+
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5 {
+  margin: 12px 0 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.markdown-body code {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--canvas);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.92em;
+}
+
+.markdown-body pre {
+  max-width: 100%;
+  margin: 8px 0;
+  padding: 10px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--canvas);
   white-space: pre-wrap;
 }
 
-.chat-message.pending p:empty::after {
+.markdown-body pre code {
+  padding: 0;
+  background: transparent;
+}
+
+.markdown-body blockquote {
+  margin: 8px 0;
+  padding-left: 10px;
+  border-left: 3px solid var(--border-strong);
+  color: var(--text-secondary);
+}
+
+.markdown-body a {
+  color: var(--accent);
+  text-underline-offset: 2px;
+}
+
+.chat-message.pending .message-body:empty::after {
   content: "답변을 정리하고 있습니다…";
   color: var(--text-muted);
 }
@@ -1345,14 +1420,12 @@ h1 em {
   cursor: pointer;
 }
 
-.spec-preview pre {
+.spec-preview .markdown-body {
   max-height: 240px;
   margin: 12px 0 0;
   overflow: auto;
   color: var(--text-secondary);
-  font: inherit;
   font-size: 12px;
-  white-space: pre-wrap;
 }
 
 .composer {

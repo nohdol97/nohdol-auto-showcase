@@ -1,3 +1,5 @@
+import { renderMarkdown } from "./markdown.js";
+
 (() => {
   const PRIVACY_VERSION = "2026-08-30-abalone";
   const byId = (id) => document.getElementById(id);
@@ -52,12 +54,13 @@
     if (pending) article.classList.add("pending");
     const label = document.createElement("strong");
     label.textContent = role === "assistant" ? "Abalone 도우미" : "나";
-    const body = document.createElement("p");
-    body.textContent = content;
+    const body = document.createElement("div");
+    body.className = "message-body markdown-body";
+    renderMarkdown(body, content);
     article.append(label, body);
     messages.append(article);
     article.scrollIntoView({ block: "nearest" });
-    return { article, body };
+    return { article, body, markdown: content };
   }
 
   function emptyConversation() {
@@ -101,7 +104,7 @@
 
   function applySpec(spec) {
     const ready = spec?.readyForReview === true;
-    byId("inquiry-spec-markdown").textContent = spec?.markdown ?? "";
+    renderMarkdown(byId("inquiry-spec-markdown"), spec?.markdown ?? "");
     completion.hidden = !ready;
     if (ready) completion.scrollIntoView({ block: "nearest" });
     renderChoices(spec?.choices ?? []);
@@ -191,7 +194,10 @@
           if (line.startsWith("data:")) data = JSON.parse(line.slice(5).trim());
         }
         if (!data) continue;
-        if (event === "delta") assistant.body.textContent += data.text;
+        if (event === "delta") {
+          assistant.markdown += data.text;
+          renderMarkdown(assistant.body, assistant.markdown);
+        }
         if (event === "state") applySpec(data);
         if (event === "error") throw new Error(data.message);
       }

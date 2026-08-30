@@ -15,6 +15,7 @@ import {
   validateInquiryState,
   validateInquiryFormTiming,
 } from "../src/inquiry-core.mjs";
+import { parseMarkdown } from "../site/markdown.js";
 
 const root = path.resolve(import.meta.dirname, "..");
 const workerSource = await readFile(path.join(root, "src", "worker.mjs"), "utf8");
@@ -94,6 +95,25 @@ test("[REG:inquiry.choice_options] the strict state tool supports two to four pl
   const invalid = structuredClone(completeState);
   invalid.choices[0].options = [invalid.choices[0].options[0]];
   assert.throws(() => validateInquiryState(invalid), /choice card/);
+});
+
+test("[REG:inquiry.markdown_rendering] chat formatting is structured without executable model HTML", () => {
+  const blocks = parseMarkdown("좋습니다. **예약·접수**부터 정리하겠습니다.\n\n1. 예약 확인\n2. 안내 보내기\n\n[안전한 링크](https://example.com) [위험한 링크](javascript:alert(1)) <img src=x onerror=alert(1)>");
+  assert.equal(blocks[0].type, "paragraph");
+  assert.equal(blocks[0].children[1].type, "strong");
+  assert.deepEqual(blocks[1], {
+    type: "list",
+    ordered: true,
+    items: [
+      [{ type: "text", value: "예약 확인" }],
+      [{ type: "text", value: "안내 보내기" }],
+    ],
+  });
+  assert.equal(blocks[2].children.find((token) => token.type === "link")?.href, "https://example.com/");
+  assert.match(blocks[2].children.map((token) => token.value ?? "").join(""), /javascript:alert/);
+  assert.match(blocks[2].children.map((token) => token.value ?? "").join(""), /<img src=x onerror=alert\(1\)>/);
+  assert.match(client, /renderMarkdown\(assistant\.body, assistant\.markdown\)/);
+  assert.doesNotMatch(client, /innerHTML|insertAdjacentHTML/);
 });
 
 test("[REG:inquiry.explicit_completion] the model can mark review-ready but only the user confirmation completes", () => {
