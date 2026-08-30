@@ -209,7 +209,9 @@ test("[REG:showcase.domain_embedded_positioning] the catalog explains remote dom
   assert.match(template, /Abalone/);
   assert.match(appScript, /업무 가까이에서 만드는 프로그램/);
   assert.match(appScript, /복잡한 일을 이해하고/);
-  assert.match(appScript, /쓸 수 있는 흐름으로 정리합니다/);
+  assert.match(appScript, /쓸 수 있는 흐름으로/);
+  assert.match(appScript, /정리합니다/);
+  assert.match(appScript, /mobile-title-break/);
   assert.match(appScript, /업종마다 사람, 규칙, 예외/);
   assert.match(appScript, /업무 이해/);
   assert.match(appScript, /작은 검증/);
@@ -219,7 +221,8 @@ test("[REG:showcase.domain_embedded_positioning] the catalog explains remote dom
   assert.match(appScript, /new URL\("\?inquiry=open", document\.baseURI\)\.href/);
   assert.match(template, /어떤 업종에서 누가 어떤 순서로 일하는지/);
   assert.match(appScript, /설치 안내/);
-  assert.match(styles, /@media \(max-width: 520px\)[\s\S]*h1,[\s\S]*word-break: keep-all;/);
+  assert.match(styles, /\.mobile-title-break\s*\{[^}]*display: none;/s);
+  assert.match(styles, /@media \(max-width: 520px\)[\s\S]*\.mobile-title-break\s*\{[^}]*display: block;/s);
   assert.doesNotMatch(`${template}\n${appScript}`, /FDE|상주 개발|상주 인력|nohdol auto|데스크톱 자동화|자동화 프로그램|사용할 자동화/i);
   assert.doesNotMatch(appScript, /UI 콘셉트|UI 프로토타입|임시 포트폴리오|향후 교체/);
   assert.doesNotMatch(appScript, /PyInstaller|Electron|React|TypeScript|프레임워크/);

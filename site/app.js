@@ -155,7 +155,11 @@ function renderCatalog(catalog, page) {
   heroCopy.append(eyebrow("업무 가까이에서 만드는 프로그램"));
   const title = element("h1", "", "복잡한 일을 이해하고");
   title.id = "hero-title";
-  title.append(document.createElement("br"), element("em", "", "쓸 수 있는 흐름으로 정리합니다."));
+  const mobileTitleBreak = document.createElement("br");
+  mobileTitleBreak.className = "mobile-title-break";
+  const emphasizedTitle = element("em");
+  emphasizedTitle.append("쓸 수 있는 흐름으로", mobileTitleBreak, " 정리합니다.");
+  title.append(document.createElement("br"), emphasizedTitle);
   const intro = element(
     "p",
     "intro",

@@ -123,7 +123,7 @@ function homeContent(catalog) {
       <section class="hero">
         <div class="hero-copy">
           <p class="eyebrow"><span></span>업무 가까이에서 만드는 프로그램</p>
-          <h1>복잡한 일을 이해하고<br /><em>쓸 수 있는 흐름으로 정리합니다.</em></h1>
+          <h1>복잡한 일을 이해하고<br /><em>쓸 수 있는 흐름으로<br class="mobile-title-break" /> 정리합니다.</em></h1>
           <p class="intro">업종마다 사람, 규칙, 예외와 쓰는 도구가 다릅니다. 실제 담당자의 말과 화면으로 업무를 이해한 뒤, 가장 필요한 흐름을 작은 범위부터 검증하고 원격으로 적용합니다.</p>
           <div class="hero-actions"><a class="primary-action" href="#programs">제작 사례 보기</a><a class="secondary-action" href="?inquiry=open">프로그램 상담 시작</a></div>
         </div>

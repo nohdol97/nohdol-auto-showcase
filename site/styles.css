@@ -249,6 +249,10 @@ h1 em {
   font-style: normal;
 }
 
+.mobile-title-break {
+  display: none;
+}
+
 .intro {
   max-width: 680px;
   margin-bottom: 28px;
@@ -1747,7 +1751,10 @@ footer p {
   h1,
   .route-hero h1 {
     font-size: 32px;
-    word-break: keep-all;
+  }
+
+  .mobile-title-break {
+    display: block;
   }
 
   .hero-actions,
