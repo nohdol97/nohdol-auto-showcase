@@ -71,6 +71,7 @@ test("the published catalog includes the AutoTrip workflow GIF", () => {
 test("[REG:hosting.cloudflare_static_assets] Cloudflare serves generated assets through the inquiry Worker", async () => {
   const config = JSON.parse(await readFile(path.join(root, "wrangler.jsonc"), "utf8"));
   assert.equal(config.name, "nohdol-auto-showcase");
+  assert.equal(config.workers_dev, true);
   assert.equal(config.main, "./src/worker.mjs");
   assert.equal(config.assets.directory, "./_site");
   assert.equal(config.assets.binding, "ASSETS");
