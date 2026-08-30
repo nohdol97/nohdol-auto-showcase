@@ -155,7 +155,7 @@ async function requestCode(request, env) {
   await db(env).prepare(
     `INSERT INTO email_challenges (id, email, code_digest, required_service, marketing, privacy_version, attempts, expires_at, created_at)
      VALUES (?, ?, ?, 1, ?, ?, 0, ?, ?)`,
-  ).bind(id, email, body.marketing === true ? 1 : 0, PRIVACY_VERSION, isoAfter(10 * 60), createdAt).run();
+  ).bind(id, email, codeDigest, body.marketing === true ? 1 : 0, PRIVACY_VERSION, isoAfter(10 * 60), createdAt).run();
   try {
     await sendVerificationCode(env, email, code, id);
   } catch (error) {

@@ -42,6 +42,7 @@ test("[REG:inquiry.email_verification] email entry is normalized but authenticat
   assert.equal(normalizeEmail(" User@Example.COM "), "user@example.com");
   assert.throws(() => normalizeEmail("not-an-email"), /이메일 주소/);
   assert.match(workerSource, /email_challenges/);
+  assert.match(workerSource, /\.bind\(id, email, codeDigest, body\.marketing/);
   assert.match(workerSource, /expiresInSeconds: 600/);
   assert.match(workerSource, /attempts >= 5/);
   assert.match(workerSource, /bytes\.byteLength > JSON_LIMIT/);
