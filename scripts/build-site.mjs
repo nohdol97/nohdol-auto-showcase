@@ -219,7 +219,7 @@ export async function buildSite(options) {
 
   await writeRoute(template, options.output, "/", {
     page: "catalog", baseHref: "./", title: "Abalone — 업무 맞춤 프로그램 제작",
-    description: "업무 흐름을 이해한 뒤 필요한 맞춤 프로그램을 작은 범위부터 검증합니다. Abalone 제작 사례와 안전한 설치 안내, 프로그램 문의를 확인하세요.",
+    description: "업무 흐름을 이해하고 필요한 맞춤 프로그램을 작은 범위부터 검증합니다. 제작 사례와 안전한 설치 안내, 프로그램 상담 방법을 확인하세요.",
     routePath: "/", content: homeContent(catalog), schemas: homeSchemas(),
   });
   await writeRoute(template, options.output, "/install/", {

@@ -325,6 +325,18 @@ test("[REG:seo.static_discovery] generated routes expose crawlable initial HTML,
 
   assert.match(home, /<main id="page"[^>]*>[\s\S]*<h1[^>]*>[^<]+/);
   assert.match(home, /복잡한 일을 이해하고/);
+  const description = home.match(/<meta name="description" content="([^"]+)" \/>/)?.[1];
+  const openGraphDescription = home.match(/<meta property="og:description" content="([^"]+)" \/>/)?.[1];
+  assert.ok(description, "home description metadata should exist");
+  assert.equal(
+    description,
+    "업무 흐름을 이해하고 필요한 맞춤 프로그램을 작은 범위부터 검증합니다. 제작 사례와 안전한 설치 안내, 프로그램 상담 방법을 확인하세요.",
+  );
+  assert.equal(openGraphDescription, description);
+  assert.ok(
+    [...description].length <= 80,
+    `home description exceeds 80 characters: ${[...description].length}`,
+  );
   assert.match(home, /<link rel="canonical" href="https:\/\/byabalone\.com\/"/);
   assert.match(home, /<meta property="og:title"/);
   assert.match(home, /<a[^>]+href="\.\/privacy\/"[^>]*>개인정보 처리방침<\/a>/);
