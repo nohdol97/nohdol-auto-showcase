@@ -150,7 +150,7 @@ function renderCatalogCard(app, index) {
 }
 
 function renderCatalog(catalog, page) {
-  document.title = "한결 — 업무 맞춤 프로그램 제작";
+  document.title = "Abalone — 업무 맞춤 프로그램 제작";
   const hero = element("section", "hero");
   hero.setAttribute("aria-labelledby", "hero-title");
   const heroCopy = element("div", "hero-copy");
@@ -275,7 +275,7 @@ function renderCatalog(catalog, page) {
 }
 
 function renderDetail(app, page) {
-  document.title = `${app.name} — 한결`;
+  document.title = `${app.name} — Abalone`;
   const hero = element("section", "route-hero");
   const breadcrumb = element("nav", "breadcrumb");
   breadcrumb.setAttribute("aria-label", "현재 위치");
@@ -318,7 +318,7 @@ function renderDetail(app, page) {
 }
 
 function renderInstallIndex(catalog, page) {
-  document.title = "프로그램 설치 — 한결";
+  document.title = "프로그램 설치 — Abalone";
   const hero = element("section", "route-hero compact-route-hero");
   hero.append(eyebrow("인증 설치"), element("h1", "", "설치할 프로그램을 선택하세요"));
   hero.append(
@@ -340,7 +340,7 @@ function renderInstallIndex(catalog, page) {
 }
 
 function renderInstall(app, page) {
-  document.title = `${app.name} 설치 — 한결`;
+  document.title = `${app.name} 설치 — Abalone`;
   const hero = element("section", "route-hero compact-route-hero");
   const breadcrumb = element("nav", "breadcrumb");
   breadcrumb.setAttribute("aria-label", "현재 위치");
@@ -395,7 +395,7 @@ function renderInstall(app, page) {
 }
 
 function renderMissing(page) {
-  document.title = "프로그램을 찾을 수 없음 — 한결";
+  document.title = "프로그램을 찾을 수 없음 — Abalone";
   const panel = element("section", "route-hero missing-route");
   panel.append(eyebrow("찾을 수 없음"), element("h1", "", "프로그램을 찾을 수 없습니다."));
   panel.append(link("primary-action", "전체 제작 사례로", new URL("./#programs", document.baseURI).href));

@@ -18,6 +18,9 @@
     "showcase.domain_embedded_positioning": {
       "testFiles": ["tests/build-pages.test.mjs"]
     },
+    "showcase.brand_icon": {
+      "testFiles": ["tests/build-pages.test.mjs"]
+    },
     "inquiry.email_verification": {
       "testFiles": ["tests/inquiry-worker.test.mjs"]
     },

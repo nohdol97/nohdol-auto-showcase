@@ -51,7 +51,7 @@
     article.className = `chat-message ${role}`;
     if (pending) article.classList.add("pending");
     const label = document.createElement("strong");
-    label.textContent = role === "assistant" ? "한결 도우미" : "나";
+    label.textContent = role === "assistant" ? "Abalone 도우미" : "나";
     const body = document.createElement("p");
     body.textContent = content;
     article.append(label, body);

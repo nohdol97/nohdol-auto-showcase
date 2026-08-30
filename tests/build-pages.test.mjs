@@ -124,10 +124,39 @@ test("the public UI follows the restrained nohdol-clean profile", async () => {
   assert.match(appScript, /status\.dataset\.state = "error"/);
 });
 
+test("[REG:showcase.brand_icon] the Abalone mark is font-independent and ships in browser icon formats", async () => {
+  const template = await readFile(path.join(root, "site", "index.html"), "utf8");
+  const svg = await readFile(path.join(root, "site", "favicon.svg"), "utf8");
+  const manifest = JSON.parse(await readFile(path.join(root, "site", "site.webmanifest"), "utf8"));
+  const faviconPng = await readFile(path.join(root, "site", "favicon-32.png"));
+  const appleTouchIcon = await readFile(path.join(root, "site", "apple-touch-icon.png"));
+  const icon192 = await readFile(path.join(root, "site", "icon-192.png"));
+  const icon512 = await readFile(path.join(root, "site", "icon-512.png"));
+  const legacyIcon = await readFile(path.join(root, "site", "favicon.ico"));
+
+  assert.match(template, /<title>Abalone — 업무 맞춤 프로그램 제작<\/title>/);
+  assert.match(template, /rel="icon" href="\.\/favicon\.svg" type="image\/svg\+xml"/);
+  assert.match(template, /rel="apple-touch-icon" href="\.\/apple-touch-icon\.png"/);
+  assert.equal([...template.matchAll(/class="brand-mark" src="\.\/favicon\.svg"/g)].length, 2);
+  assert.match(svg, /viewBox="0 0 32 32"/);
+  assert.match(svg, /fill="#315e9e"/);
+  assert.match(svg, /fill="#ffffff"/);
+  assert.doesNotMatch(svg, /<text|gradient|<image/i);
+
+  for (const [contents, size] of [[faviconPng, 32], [appleTouchIcon, 180], [icon192, 192], [icon512, 512]]) {
+    assert.equal(contents.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
+    assert.equal(contents.readUInt32BE(16), size);
+    assert.equal(contents.readUInt32BE(20), size);
+  }
+  assert.equal(legacyIcon.subarray(0, 4).toString("hex"), "00000100");
+  assert.equal(manifest.name, "Abalone");
+  assert.deepEqual(manifest.icons.map((icon) => icon.sizes), ["192x192", "512x512"]);
+});
+
 test("[REG:showcase.domain_embedded_positioning] the catalog explains remote domain-shaped delivery in plain Korean", async () => {
   const template = await readFile(path.join(root, "site", "index.html"), "utf8");
   const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
-  assert.match(template, /한결/);
+  assert.match(template, /Abalone/);
   assert.match(appScript, /원격 업무 맞춤 프로그램 제작/);
   assert.match(appScript, /업무를 먼저 배우고/);
   assert.match(appScript, /그에 맞게 만듭니다/);
@@ -200,8 +229,8 @@ test("adding catalog metadata automatically creates routes for another program",
   const detailRoute = await readFile(path.join(output, "apps", "sample-monitor", "index.html"), "utf8");
   const installRoute = await readFile(path.join(output, "install", "sample-monitor", "index.html"), "utf8");
   assert.match(detailRoute, /data-app-id="sample-monitor"/);
-  assert.match(detailRoute, /Sample Monitor — 한결/);
-  assert.match(installRoute, /Sample Monitor 설치 — 한결/);
+  assert.match(detailRoute, /Sample Monitor — Abalone/);
+  assert.match(installRoute, /Sample Monitor 설치 — Abalone/);
 });
 
 test("the catalog contains ten disclosed standalone program demos across three audiences", () => {

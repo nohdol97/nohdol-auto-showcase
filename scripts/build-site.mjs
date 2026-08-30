@@ -39,7 +39,7 @@ function escapeHtml(value) {
 
 function routeDocument(template, { page, appId = "", baseHref, title }) {
   return template
-    .replace("<title>한결 — 업무 맞춤 프로그램 제작</title>", `<base href="${escapeHtml(baseHref)}" />\n    <title>${escapeHtml(title)}</title>`)
+    .replace("<title>Abalone — 업무 맞춤 프로그램 제작</title>", `<base href="${escapeHtml(baseHref)}" />\n    <title>${escapeHtml(title)}</title>`)
     .replace('<body data-page="catalog">', `<body data-page="${escapeHtml(page)}"${appId ? ` data-app-id="${escapeHtml(appId)}"` : ""}>`);
 }
 
@@ -70,7 +70,7 @@ export async function buildSite(options) {
     routeDocument(template, {
       page: "install-index",
       baseHref: "../",
-      title: "프로그램 설치 — 한결",
+      title: "프로그램 설치 — Abalone",
     }),
   );
   for (const app of catalog.apps) {
@@ -82,7 +82,7 @@ export async function buildSite(options) {
         page: "detail",
         appId: app.id,
         baseHref: "../../",
-        title: `${app.name} — 한결`,
+        title: `${app.name} — Abalone`,
       }),
     );
     if ((app.kind ?? "product") === "product" || app.installPreview === true) {
@@ -94,7 +94,7 @@ export async function buildSite(options) {
           page: "install",
           appId: app.id,
           baseHref: "../../",
-          title: `${app.name} 설치 — 한결`,
+          title: `${app.name} 설치 — Abalone`,
         }),
       );
     }

@@ -2,7 +2,9 @@
 
 ## User and job
 
-The public name remains `한결` until a separate brand is selected; the domain name does not need to explain the service. The public promise is broader than recurring-work automation: learn a customer's industry, people, rules, exceptions, and existing tools, then remotely shape and validate software around that real work. Customer-facing copy does not lead with `FDE`, `상주`, `nohdol auto`, `자동화`, or implementation terminology. It describes close remote collaboration in plain Korean without implying an employee placement, physical residency, instant build, or unlimited continuing support. Existing product proper names and operational identifiers remain unchanged when renaming them would break truthful product or installation continuity.
+The public brand is `Abalone`, with `byabalone.com` selected as its custom domain. The name reflects software that stays close to a customer's real work without implying physical residency. The public promise is broader than recurring-work automation: learn a customer's industry, people, rules, exceptions, and existing tools, then remotely shape and validate software around that real work. Customer-facing copy does not lead with `FDE`, `상주`, `nohdol auto`, `자동화`, or implementation terminology. It describes close remote collaboration in plain Korean without implying an employee placement, instant build, or unlimited continuing support. Existing product proper names and operational identifiers remain unchanged when renaming them would break truthful product or installation continuity.
+
+The brand mark is a font-independent geometric lowercase `a`: its wide bowl suggests an abalone shell and its grounded lower edge represents close contact. It uses the existing accent and contrast colors without gradients or literal seafood imagery. The same SVG source appears in the header and footer and produces the favicon, legacy ICO, Apple touch icon, and 192/512-pixel web app icons.
 
 The primary visitor either wants a program shaped around their domain or has been told about an existing desktop program. They should answer these questions without reading a technical campaign page:
 
