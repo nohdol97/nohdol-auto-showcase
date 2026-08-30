@@ -205,6 +205,7 @@ test("[REG:showcase.brand_icon] the Abalone mark is font-independent and ships i
 test("[REG:showcase.domain_embedded_positioning] the catalog explains remote domain-shaped delivery in plain Korean", async () => {
   const template = await readFile(path.join(root, "site", "index.html"), "utf8");
   const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
+  const styles = await readFile(path.join(root, "site", "styles.css"), "utf8");
   assert.match(template, /Abalone/);
   assert.match(appScript, /업무 가까이에서 만드는 프로그램/);
   assert.match(appScript, /복잡한 일을 이해하고/);
@@ -218,6 +219,7 @@ test("[REG:showcase.domain_embedded_positioning] the catalog explains remote dom
   assert.match(appScript, /new URL\("\?inquiry=open", document\.baseURI\)\.href/);
   assert.match(template, /어떤 업종에서 누가 어떤 순서로 일하는지/);
   assert.match(appScript, /설치 안내/);
+  assert.match(styles, /@media \(max-width: 520px\)[\s\S]*h1,[\s\S]*word-break: keep-all;/);
   assert.doesNotMatch(`${template}\n${appScript}`, /FDE|상주 개발|상주 인력|nohdol auto|데스크톱 자동화|자동화 프로그램|사용할 자동화/i);
   assert.doesNotMatch(appScript, /UI 콘셉트|UI 프로토타입|임시 포트폴리오|향후 교체/);
   assert.doesNotMatch(appScript, /PyInstaller|Electron|React|TypeScript|프레임워크/);

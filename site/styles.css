@@ -1747,6 +1747,7 @@ footer p {
   h1,
   .route-hero h1 {
     font-size: 32px;
+    word-break: keep-all;
   }
 
   .hero-actions,
