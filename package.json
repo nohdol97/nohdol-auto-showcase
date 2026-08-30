@@ -7,7 +7,9 @@
     "build": "node scripts/build-site.mjs",
     "test": "node --test",
     "verify": "npm test && npm run build && WRANGLER_LOG_PATH=.wrangler/wrangler.log wrangler deploy --dry-run",
-    "deploy": "npm run verify && WRANGLER_LOG_PATH=.wrangler/wrangler.log wrangler deploy"
+    "deploy": "npm run verify && WRANGLER_LOG_PATH=.wrangler/wrangler.log wrangler deploy",
+    "db:migrate:local": "WRANGLER_LOG_PATH=.wrangler/wrangler.log wrangler d1 migrations apply INQUIRY_DB --local",
+    "db:migrate:remote": "WRANGLER_LOG_PATH=.wrangler/wrangler.log wrangler d1 migrations apply INQUIRY_DB --remote"
   },
   "devDependencies": {
     "wrangler": "4.127.1"

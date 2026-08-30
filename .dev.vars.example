@@ -1,0 +1,8 @@
+OPENAI_API_KEY=sk-example-do-not-use
+OTP_PEPPER=replace-with-a-random-secret-at-least-32-bytes
+RESEND_API_KEY=re_example_do_not_use
+EMAIL_FROM="Han-gyeol <inquiry@example.com>"
+INQUIRY_OWNER_EMAIL=owner@example.com
+# Official Turnstile testing keys; replace both before any public deployment.
+TURNSTILE_SITE_KEY=1x00000000000000000000AA
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA

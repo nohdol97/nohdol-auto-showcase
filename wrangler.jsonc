@@ -2,8 +2,31 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "nohdol-auto-showcase",
   "compatibility_date": "2026-08-30",
+  "main": "./src/worker.mjs",
   "assets": {
     "directory": "./_site",
-    "not_found_handling": "404-page"
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "INQUIRY_DB",
+      "database_name": "nohdol-auto-showcase-inquiries",
+      "database_id": "2a6681b5-0ecb-42a2-8ba2-69ddb63d66ee",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "INQUIRY_FILES",
+      "bucket_name": "nohdol-auto-showcase-inquiry-files"
+    }
+  ],
+  "vars": {
+    "OPENAI_MODEL": "gpt-5.6-sol"
+  },
+  "triggers": {
+    "crons": ["*/5 * * * *"]
   }
 }

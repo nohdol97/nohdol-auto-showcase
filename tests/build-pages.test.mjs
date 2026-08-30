@@ -67,12 +67,14 @@ test("the published catalog includes the AutoTrip workflow GIF", () => {
   assert.match(catalog.apps[0].demoCaption, /실제 결제 버튼은 누르지 않았습니다/);
 });
 
-test("[REG:hosting.cloudflare_static_assets] Cloudflare deploys the generated site as static assets", async () => {
+test("[REG:hosting.cloudflare_static_assets] Cloudflare serves generated assets through the inquiry Worker", async () => {
   const config = JSON.parse(await readFile(path.join(root, "wrangler.jsonc"), "utf8"));
   assert.equal(config.name, "nohdol-auto-showcase");
+  assert.equal(config.main, "./src/worker.mjs");
   assert.equal(config.assets.directory, "./_site");
+  assert.equal(config.assets.binding, "ASSETS");
+  assert.deepEqual(config.assets.run_worker_first, ["/api/*"]);
   assert.equal(config.assets.not_found_handling, "404-page");
-  assert.equal(config.main, undefined);
 });
 
 test("the legacy GitHub Pages bridge uses current action runtimes", async () => {

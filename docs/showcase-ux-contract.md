@@ -14,6 +14,10 @@ The catalog's primary action is choosing a program. A detail route leads with it
 
 The catalog also explains the day-to-day program experience in plain Korean. It promises a clear screen, a natural order of use, visible progress, and understandable recovery guidance without naming implementation tools or asking visitors to understand development terminology.
 
+The header exposes `문의하기` on every route. The dialog first explains the outcome in non-technical Korean, then separates required inquiry/privacy consent from optional marketing consent. Email input leads to a six-digit verification step, not directly to chat. A verified visitor resumes the newest incomplete inquiry, sees canonical server history, can add allowlisted private files, receives two-to-four-option choice cards when useful, and can always answer in their own words.
+
+When the assistant considers the brief ready, the visitor can expand and review the generated specification. Completion remains disabled until the visitor explicitly checks that they reviewed it. Completion copy promises a prompt email follow-up without claiming a guaranteed deadline. Logout revokes only the session; `이 문의 삭제` removes the selected conversation and attachments after a destructive confirmation.
+
 ## Visual direction
 
 - Feel like a calm product directory and distribution guide: operational, readable, and quietly polished.
@@ -32,12 +36,14 @@ The site does not use gradients, glows, glass/blur, decorative background textur
 - The site remains responsive because it is a public web surface; the desktop-only application-renderer constraint does not apply to this repository.
 - All routes prevent horizontal overflow, preserve readable long Korean copy, and expose visible `:focus-visible` treatment.
 - Native links, buttons, labels, select, and password input remain keyboard operable.
+- The inquiry dialog uses a labeled native dialog, keyboard-operable close and choice controls, an `aria-live` message region, announced busy/error/success states, and visible focus treatment. At mobile width it becomes a full-viewport surface without hiding the inquiry action.
 - The installation form keeps the code after neither success nor failure, blocks duplicate submission while authorizing, restores focus to the code field after recoverable failure, and announces status changes.
 - Reduced-motion preferences remove smooth scrolling and non-essential movement.
 
 ## State and safety contract
 
 - Catalog: loading, populated, empty, and load-failure states remain visible.
+- Inquiry: signed-out, requesting-code, code-entry, authenticated-loading, empty/resumed chat, uploading, streaming, retryable generation failure, review-ready, completed, and deletion states remain distinct in text rather than color alone.
 - Detail: each reviewed GIF and caption identifies either the verified program-to-site flow or the deterministic demo-data boundary. Public copy does not use `UI 콘셉트`, `UI 프로토타입`, temporary-portfolio, or removal-plan language.
 - Install: ready, authorizing, disabled-until-endpoint, success, and recoverable failure states remain distinct in text, not color alone.
 - A disabled install preview may show the same route, platform selector, and code field as a distributed product, but it has `authEndpoint: null`, a disabled submit button, an early request guard, and an explicit not-yet-available message.

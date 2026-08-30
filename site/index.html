@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="./styles.css" />
     <script src="./platform.js" defer></script>
     <script src="./app.js" defer></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
   </head>
   <body data-page="catalog">
     <header class="site-header">
@@ -23,6 +24,7 @@
       <nav class="site-nav" aria-label="주요 메뉴">
         <a class="header-link" href="./#programs">프로그램</a>
         <a class="header-link" href="./install/">설치</a>
+        <button class="header-inquiry" id="inquiry-open" type="button">문의하기</button>
       </nav>
     </header>
 
@@ -36,5 +38,80 @@
       <a class="brand footer-brand" href="./"><span class="brand-mark">한</span><span>한결</span></a>
       <p>되풀이하는 일은 줄이고, 중요한 일에 집중할 여유를 만듭니다.</p>
     </footer>
+
+    <dialog class="inquiry-dialog" id="inquiry-dialog" aria-labelledby="inquiry-title">
+      <div class="inquiry-shell">
+        <header class="inquiry-header">
+          <div>
+            <span class="inquiry-kicker">프로그램 상담</span>
+            <h2 id="inquiry-title">원하는 프로그램을 함께 정리해요</h2>
+          </div>
+          <button class="icon-button" id="inquiry-close" type="button" aria-label="문의창 닫기">×</button>
+        </header>
+
+        <section class="inquiry-auth" id="inquiry-auth">
+          <div class="inquiry-intro">
+            <strong>어려운 개발 용어를 몰라도 괜찮습니다.</strong>
+            <p>지금 하는 일과 바라는 결과를 편하게 알려주시면, 필요한 선택지를 보여드리고 실제 제작을 검토할 수 있는 내용으로 정리해 드립니다.</p>
+          </div>
+          <form id="inquiry-email-form" class="inquiry-form">
+            <label class="field-label" for="inquiry-email">답변받을 이메일</label>
+            <input class="field-control" id="inquiry-email" name="email" type="email" autocomplete="email" maxlength="254" required />
+            <details class="privacy-details">
+              <summary>개인정보 수집·이용 안내</summary>
+              <p>수집 항목: 이메일, 대화 내용, 첨부 파일. 목적: 본인 확인, 문의 구체화, 답변 및 추후 프로그램 개발 검토. 보관: 미완료 문의는 최근 활동 후 90일, 완료 문의는 1년. 그 전에 직접 삭제할 수 있습니다.</p>
+              <p>대화와 첨부는 답변 생성을 위해 OpenAI API로 처리되며, 확인 메일과 담당자 알림은 이메일 발송 서비스로 처리됩니다.</p>
+            </details>
+            <label class="check-row"><input id="inquiry-required-consent" type="checkbox" required /><span><strong>필수</strong> 위 개인정보 수집·이용과 AI 처리 내용을 확인했고 동의합니다.</span></label>
+            <label class="check-row"><input id="inquiry-marketing-consent" type="checkbox" /><span><strong>선택</strong> 문의 이메일로 새 프로그램과 서비스 소식을 받겠습니다. 동의하지 않아도 문의할 수 있고, 문의 데이터 삭제 시 함께 삭제됩니다.</span></label>
+            <div class="turnstile-slot" id="inquiry-turnstile" aria-label="자동 요청 방지 확인"></div>
+            <button class="primary-action full-action" type="submit">이메일 확인 코드 받기</button>
+          </form>
+          <form id="inquiry-code-form" class="inquiry-form" hidden>
+            <p class="form-help"><strong id="inquiry-code-email"></strong> 주소로 보낸 6자리 코드를 입력해 주세요. 코드는 10분 동안 유효합니다.</p>
+            <label class="field-label" for="inquiry-code">확인 코드</label>
+            <input class="field-control verification-code" id="inquiry-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required />
+            <button class="primary-action full-action" type="submit">확인하고 대화 시작하기</button>
+            <button class="text-button" id="inquiry-email-back" type="button">이메일 다시 입력하기</button>
+          </form>
+          <p class="form-status" id="inquiry-auth-status" role="status"></p>
+        </section>
+
+        <section class="inquiry-chat" id="inquiry-chat" hidden>
+          <div class="chat-toolbar">
+            <div><span>확인된 이메일</span><strong id="inquiry-user-email"></strong></div>
+            <div class="toolbar-actions">
+              <button class="text-button" id="inquiry-delete" type="button">이 문의 삭제</button>
+              <button class="text-button" id="inquiry-logout" type="button">로그아웃</button>
+            </div>
+          </div>
+          <div class="message-list" id="inquiry-messages" aria-live="polite"></div>
+          <div class="choice-list" id="inquiry-choices" aria-label="추천 선택지"></div>
+          <div class="completion-panel" id="inquiry-completion" hidden>
+            <strong>필요한 내용이 모두 정리되었습니다.</strong>
+            <p>추가할 내용이 없다면 아래 확인란을 선택하고 문의를 완료해 주세요.</p>
+            <details class="spec-preview">
+              <summary>정리된 요청 내용 보기</summary>
+              <pre id="inquiry-spec-markdown"></pre>
+            </details>
+            <label class="check-row"><input id="inquiry-complete-check" type="checkbox" /><span>정리된 내용을 검토했고 이 문의를 완료합니다.</span></label>
+            <button class="primary-action" id="inquiry-complete" type="button" disabled>문의 완료하고 전달하기</button>
+          </div>
+          <form class="composer" id="inquiry-message-form">
+            <div class="attachment-list" id="inquiry-attachments"></div>
+            <label class="sr-only" for="inquiry-message">메시지</label>
+            <textarea id="inquiry-message" rows="3" maxlength="8000" placeholder="지금 반복해서 하는 일이나 만들고 싶은 프로그램을 편하게 적어 주세요." required></textarea>
+            <div class="composer-actions">
+              <label class="secondary-action file-action" for="inquiry-file">파일 추가</label>
+              <input id="inquiry-file" type="file" accept=".pdf,.txt,.md,.json,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg" multiple hidden />
+              <span>파일당 10MB · 한 번에 5개</span>
+              <button class="primary-action" id="inquiry-send" type="submit">보내기</button>
+            </div>
+          </form>
+          <p class="form-status chat-status" id="inquiry-chat-status" role="status"></p>
+        </section>
+      </div>
+    </dialog>
+    <script src="./inquiry.js" defer></script>
   </body>
 </html>

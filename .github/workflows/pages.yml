@@ -12,6 +12,9 @@ on:
       - 'automation-regression.json'
       - 'apps.json'
       - 'scripts/**'
+      - 'src/**'
+      - 'migrations/**'
+      - 'docs/**'
       - 'site/**'
       - 'tests/**'
 

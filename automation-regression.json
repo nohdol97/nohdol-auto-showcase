@@ -14,6 +14,33 @@
     },
     "hosting.legacy_redirect": {
       "testFiles": ["tests/build-pages.test.mjs"]
+    },
+    "inquiry.email_verification": {
+      "testFiles": ["tests/inquiry-worker.test.mjs"]
+    },
+    "inquiry.session_ownership": {
+      "testFiles": ["tests/inquiry-worker.test.mjs"]
+    },
+    "inquiry.sse_persistence": {
+      "testFiles": ["tests/inquiry-worker.test.mjs"]
+    },
+    "inquiry.choice_options": {
+      "testFiles": ["tests/inquiry-worker.test.mjs"]
+    },
+    "inquiry.private_attachments": {
+      "testFiles": ["tests/inquiry-worker.test.mjs"]
+    },
+    "inquiry.explicit_completion": {
+      "testFiles": ["tests/inquiry-worker.test.mjs"]
+    },
+    "inquiry.consent_separation": {
+      "testFiles": ["tests/inquiry-worker.test.mjs"]
+    },
+    "inquiry.delivery_retry": {
+      "testFiles": ["tests/inquiry-worker.test.mjs"]
+    },
+    "inquiry.retention_cleanup": {
+      "testFiles": ["tests/inquiry-worker.test.mjs"]
     }
   }
 }
