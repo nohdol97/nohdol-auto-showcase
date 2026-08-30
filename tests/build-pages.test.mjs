@@ -76,7 +76,7 @@ test("[REG:hosting.cloudflare_static_assets] Cloudflare serves generated assets 
   assert.equal(config.main, "./src/worker.mjs");
   assert.equal(config.assets.directory, "./_site");
   assert.equal(config.assets.binding, "ASSETS");
-  assert.deepEqual(config.assets.run_worker_first, ["/api/*"]);
+  assert.equal(config.assets.run_worker_first, true);
   assert.equal(config.assets.not_found_handling, "404-page");
 });
 

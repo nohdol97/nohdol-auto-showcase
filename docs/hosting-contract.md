@@ -11,7 +11,7 @@
 
 ## Runtime boundary
 
-- Static assets are served from the `ASSETS` binding. Only `/api/*` and the daily retention schedule enter inquiry Worker code.
+- Every request enters the Worker so `www` can redirect before static delivery; non-API apex and retained-origin requests are immediately delegated to the `ASSETS` binding. `/api/*` and the daily retention schedule enter the inquiry handlers.
 - The inquiry boundary uses the dedicated `INQUIRY_DB` D1 database and private `INQUIRY_FILES` R2 bucket. It owns email verification, server sessions, conversation/spec persistence, temporary model-file references, SSE chat, explicit completion, and operator-delivery state.
 - Inquiry behavior, consent, storage, retention, and failure states are defined in [`inquiry-assistant-contract.md`](inquiry-assistant-contract.md).
 - Installer-code validation remains owned by the independent `nohdol-auto-downloads` Worker. The showcase never receives its secrets, KV, R2, or Durable Object bindings.
