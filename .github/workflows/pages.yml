@@ -37,7 +37,7 @@ jobs:
       - run: npm ci
       - run: npm run verify
       - name: Build legacy Pages bridge artifact
-        run: npm run build
+        run: npm run build && npm run build:legacy
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:

@@ -1,7 +1,7 @@
 import { renderMarkdown } from "./markdown.js";
 
 (() => {
-  const PRIVACY_VERSION = "2026-08-30-abalone";
+  const PRIVACY_VERSION = "2026-08-31-abalone-privacy";
   const byId = (id) => document.getElementById(id);
   const dialog = byId("inquiry-dialog");
   const auth = byId("inquiry-auth");

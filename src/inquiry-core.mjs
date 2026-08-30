@@ -1,4 +1,4 @@
-export const PRIVACY_VERSION = "2026-08-30-abalone";
+export const PRIVACY_VERSION = "2026-08-31-abalone-privacy";
 export const SESSION_COOKIE = "abalone_inquiry";
 export const SESSION_SECONDS = 30 * 24 * 60 * 60;
 export const INCOMPLETE_RETENTION_SECONDS = 90 * 24 * 60 * 60;

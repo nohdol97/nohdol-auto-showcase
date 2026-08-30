@@ -74,8 +74,11 @@ test("[REG:inquiry.consent_separation] required service consent and optional mar
   assert.match(html, /<strong>선택<\/strong>/);
   assert.match(html, /동의하지 않아도 문의할 수 있고/);
   assert.match(client, new RegExp(`privacyVersion: PRIVACY_VERSION`));
-  assert.equal(PRIVACY_VERSION, "2026-08-30-abalone");
-  assert.match(html, /운영: Abalone/);
+  assert.equal(PRIVACY_VERSION, "2026-08-31-abalone-privacy");
+  assert.match(html, /Cloudflare가 사이트·저장소를 운영/);
+  assert.match(html, /OpenAI API/);
+  assert.match(html, /Resend/);
+  assert.match(html, /href="\.\/privacy\/"/);
   assert.match(html, /inquiry@mail\.byabalone\.com/);
   assert.match(migration, /marketing INTEGER NOT NULL CHECK \(marketing IN \(0, 1\)\)/);
 });

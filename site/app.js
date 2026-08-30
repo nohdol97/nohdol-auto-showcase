@@ -377,11 +377,16 @@ async function loadPage() {
   const page = document.querySelector("#page");
   const pageType = document.body.dataset.page ?? "catalog";
   const appId = document.body.dataset.appId ?? "";
+  if (pageType === "policy") {
+    page.setAttribute("aria-busy", "false");
+    return;
+  }
   try {
     const response = await fetch(new URL("apps.json", document.baseURI), { cache: "no-store" });
     if (!response.ok) throw new Error("catalog unavailable");
     const catalog = await response.json();
     const app = catalog.apps.find((item) => item.id === appId);
+    page.replaceChildren();
     if (pageType === "catalog") renderCatalog(catalog, page);
     else if (pageType === "install-index") renderInstallIndex(catalog, page);
     else if (!app) renderMissing(page);
@@ -389,6 +394,7 @@ async function loadPage() {
     else if (pageType === "install" && hasInstallRoute(app)) renderInstall(app, page);
     else renderMissing(page);
   } catch {
+    page.replaceChildren();
     renderLoadError(page);
   } finally {
     page.setAttribute("aria-busy", "false");

@@ -42,6 +42,11 @@
     <footer>
       <a class="brand footer-brand" href="./"><img class="brand-mark" src="./favicon.svg?v=black-white" alt="" width="32" height="32" /><span>Abalone</span></a>
       <p>업무의 맥락을 이해하고, 실제로 쓸 수 있는 프로그램을 만듭니다.</p>
+      <nav class="policy-links" aria-label="정책 메뉴">
+        <a href="./privacy/">개인정보 처리방침</a>
+        <a href="./terms/">이용약관</a>
+        <a href="mailto:inquiry@mail.byabalone.com">개인정보·서비스 문의</a>
+      </nav>
     </footer>
 
     <dialog class="inquiry-dialog" id="inquiry-dialog" aria-labelledby="inquiry-title">
@@ -68,11 +73,12 @@
             </div>
             <details class="privacy-details">
               <summary>개인정보 수집·이용 안내</summary>
-              <p>운영: Abalone. 수집 항목: 이메일, 대화 내용, 첨부 파일, 인증 요청 제한을 위한 접속 정보. 목적: 본인 확인, 문의 구체화, 답변, 서비스 보호 및 추후 프로그램 개발 검토. 보관: 미완료 문의는 최근 활동 후 90일, 완료 문의는 1년. 그 전에 직접 삭제할 수 있습니다.</p>
-              <p>대화와 첨부는 답변 생성을 위해 OpenAI API로 처리되며, 확인 메일과 담당자 알림은 이메일 발송 서비스로 처리됩니다.</p>
+              <p>수집 항목: 이메일, 대화 내용, 선택한 첨부 파일, 요청 제한을 위한 접속 정보의 요약값. 목적: 본인 확인, 문의 구체화, 회신, 서비스 보호. 미완료 문의는 최근 활동 후 90일, 완료 문의는 1년 보관하며 그 전에 직접 삭제할 수 있습니다.</p>
+              <p>Cloudflare가 사이트·저장소를 운영하고, 이메일을 제외한 대화와 첨부는 OpenAI API로 처리되며, 확인 메일과 담당자 알림은 Resend로 전송됩니다. 이 과정에서 미국 등 국외에서 처리될 수 있습니다.</p>
+              <p><a href="./privacy/">개인정보 처리방침과 국외 처리 상세</a> · <a href="./terms/">이용약관</a></p>
               <p>개인정보 문의: inquiry@mail.byabalone.com</p>
             </details>
-            <label class="check-row"><input id="inquiry-required-consent" type="checkbox" required /><span><strong>필수</strong> 위 개인정보 수집·이용과 AI 처리 내용을 확인했고 동의합니다.</span></label>
+            <label class="check-row"><input id="inquiry-required-consent" type="checkbox" required /><span><strong>필수</strong> 개인정보 수집·이용, 처리위탁과 국외 처리 내용을 확인했고 동의합니다.</span></label>
             <label class="check-row"><input id="inquiry-marketing-consent" type="checkbox" /><span><strong>선택</strong> 문의 이메일로 새 프로그램과 서비스 소식을 받겠습니다. 동의하지 않아도 문의할 수 있고, 문의 데이터 삭제 시 함께 삭제됩니다.</span></label>
             <button class="primary-action full-action" type="submit">이메일 확인 코드 받기</button>
           </form>

@@ -592,12 +592,24 @@ export default {
   async fetch(request, env, ctx) {
     try {
       const url = new URL(request.url);
+      if (url.protocol === "http:") {
+        url.protocol = "https:";
+        if (url.hostname === "www.byabalone.com") url.hostname = "byabalone.com";
+        return Response.redirect(url.href, 308);
+      }
       if (url.hostname === "www.byabalone.com") {
         url.hostname = "byabalone.com";
         return Response.redirect(url.href, 308);
       }
       if (url.pathname.startsWith("/api/")) return await api(request, env, ctx);
-      return required(env, "ASSETS").fetch(request);
+      const response = await required(env, "ASSETS").fetch(request);
+      if (url.hostname.endsWith(".workers.dev")) {
+        const headers = new Headers(response.headers);
+        headers.set("X-Robots-Tag", "noindex, nofollow");
+        headers.set("Link", `<https://byabalone.com${url.pathname}>; rel="canonical"`);
+        return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+      }
+      return response;
     } catch (error) {
       if (!(error instanceof HttpError)) {
         console.error(JSON.stringify({ event: "worker_request_failed", path: new URL(request.url).pathname, method: request.method, errorClass: internalErrorClass(error) }));

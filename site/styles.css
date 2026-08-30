@@ -1535,6 +1535,73 @@ footer p {
   text-align: right;
 }
 
+.policy-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 16px;
+}
+
+.policy-links a,
+.policy-page a,
+.privacy-details a {
+  color: var(--text-secondary);
+  text-underline-offset: 3px;
+}
+
+.policy-page {
+  width: min(800px, 100%);
+  margin: 0 auto;
+  padding: 64px 0 96px;
+}
+
+.policy-page > section {
+  margin-top: 40px;
+}
+
+.policy-page h1 {
+  margin-bottom: 20px;
+}
+
+.policy-page h2 {
+  margin-bottom: 12px;
+  font-size: 20px;
+}
+
+.policy-page p,
+.policy-page li,
+.policy-page th,
+.policy-page td {
+  line-height: 1.7;
+}
+
+.policy-page table {
+  display: block;
+  width: 100%;
+  margin: 16px 0;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.policy-page th,
+.policy-page td {
+  padding: 12px;
+  border: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.policy-page th {
+  background: var(--surface-subtle);
+}
+
+.policy-page code {
+  padding: 2px 5px;
+  border-radius: 6px;
+  background: var(--control);
+}
+
 @media (max-width: 900px) {
   .hero {
     grid-template-columns: 1fr;

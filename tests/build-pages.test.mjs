@@ -91,6 +91,21 @@ test("[REG:hosting.custom_domain] apex is primary and www redirects without drop
   assert.equal(response.headers.get("Location"), "https://byabalone.com/install/autotrip/?from=www");
 });
 
+test("[REG:seo.canonical_origin] HTTP and retained Workers origins cannot compete with the canonical host", async () => {
+  const insecure = await showcaseWorker.fetch(new Request("http://byabalone.com/apps/autotrip/?from=http"), {}, {});
+  assert.equal(insecure.status, 308);
+  assert.equal(insecure.headers.get("Location"), "https://byabalone.com/apps/autotrip/?from=http");
+
+  const retained = await showcaseWorker.fetch(
+    new Request("https://nohdol-auto-showcase.example.workers.dev/apps/autotrip/"),
+    { ASSETS: { fetch: async () => new Response("<!doctype html><title>compat</title>", { headers: { "Content-Type": "text/html" } }) } },
+    {},
+  );
+  assert.equal(retained.status, 200);
+  assert.equal(retained.headers.get("X-Robots-Tag"), "noindex, nofollow");
+  assert.equal(retained.headers.get("Link"), '<https://byabalone.com/apps/autotrip/>; rel="canonical"');
+});
+
 test("the legacy GitHub Pages bridge uses current action runtimes", async () => {
   const workflow = await readFile(path.join(root, ".github", "workflows", "pages.yml"), "utf8");
   assert.match(workflow, /actions\/configure-pages@v6/);
@@ -291,6 +306,62 @@ test("[REG:hosting.generated_routes] build creates catalog, detail, and installa
   assert.equal(demoPoster.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
 });
 
+test("[REG:seo.static_discovery] generated routes expose crawlable initial HTML, canonical metadata, sitemap, and truthful schema", async () => {
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "showcase-seo-"));
+  const output = path.join(temporary, "site");
+  await buildSite({ catalog: path.join(root, "apps.json"), site: path.join(root, "site"), output });
+  const home = await readFile(path.join(output, "index.html"), "utf8");
+  const product = await readFile(path.join(output, "apps", "autotrip", "index.html"), "utf8");
+  const prototype = await readFile(path.join(output, "apps", "life-admin", "index.html"), "utf8");
+  const prototypeInstall = await readFile(path.join(output, "install", "life-admin", "index.html"), "utf8");
+  const robots = await readFile(path.join(output, "robots.txt"), "utf8");
+  const sitemap = await readFile(path.join(output, "sitemap.xml"), "utf8");
+  const notFound = await readFile(path.join(output, "404.html"), "utf8");
+
+  assert.match(home, /<main id="page"[^>]*>[\s\S]*<h1[^>]*>[^<]+/);
+  assert.match(home, /복잡한 일을 이해하고/);
+  assert.match(home, /<link rel="canonical" href="https:\/\/byabalone\.com\/"/);
+  assert.match(home, /<meta property="og:title"/);
+  assert.match(home, /<a[^>]+href="\.\/privacy\/"[^>]*>개인정보 처리방침<\/a>/);
+  assert.match(home, /<a[^>]+href="\.\/terms\/"[^>]*>이용약관<\/a>/);
+  assert.match(product, /<link rel="canonical" href="https:\/\/byabalone\.com\/apps\/autotrip\/"/);
+  assert.match(product, new RegExp(catalog.apps[0].description.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  assert.match(product, /"@type":"SoftwareApplication"/);
+  assert.doesNotMatch(prototype, /"@type":"SoftwareApplication"/);
+  assert.match(prototype, /외부 시스템 미연동/);
+  assert.match(prototypeInstall, /<meta name="robots" content="noindex, nofollow"/);
+  assert.match(robots, /^User-agent: \*$/m);
+  assert.match(robots, /^Allow: \/$/m);
+  assert.match(robots, /^Disallow: \/api\/$/m);
+  assert.match(robots, /^Sitemap: https:\/\/byabalone\.com\/sitemap\.xml$/m);
+  assert.match(sitemap, /<loc>https:\/\/byabalone\.com\/apps\/autotrip\/<\/loc>/);
+  assert.match(sitemap, /<loc>https:\/\/byabalone\.com\/privacy\/<\/loc>/);
+  assert.doesNotMatch(sitemap, /<loc>https:\/\/byabalone\.com\/install\/life-admin\/<\/loc>/);
+  assert.match(notFound, /<meta name="robots" content="noindex, nofollow"/);
+
+  for (const match of home.matchAll(/<script type="application\/ld\+json">([^<]+)<\/script>/g)) JSON.parse(match[1]);
+});
+
+test("[REG:legal.public_notices] privacy, terms, and consent surfaces match the implemented inquiry lifecycle", async () => {
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "showcase-legal-"));
+  const output = path.join(temporary, "site");
+  await buildSite({ catalog: path.join(root, "apps.json"), site: path.join(root, "site"), output });
+  const privacy = await readFile(path.join(output, "privacy", "index.html"), "utf8");
+  const terms = await readFile(path.join(output, "terms", "index.html"), "utf8");
+  const template = await readFile(path.join(output, "index.html"), "utf8");
+  const client = await readFile(path.join(output, "inquiry.js"), "utf8");
+  const core = await readFile(path.join(root, "src", "inquiry-core.mjs"), "utf8");
+
+  for (const text of ["이메일", "대화 내용", "첨부 파일", "접속 정보", "Cloudflare", "OpenAI", "Resend", "90일", "1년", "30일", "국외", "삭제", "열람", "inquiry@mail.byabalone.com"]) assert.match(privacy, new RegExp(text));
+  for (const text of ["문의", "계약이 아닙니다", "견적", "프로토타입", "설치 파일", "준거법", "분쟁", "inquiry@mail.byabalone.com"]) assert.match(terms, new RegExp(text));
+  assert.match(template, /<strong>필수<\/strong>\s*개인정보/);
+  assert.match(template, /<strong>선택<\/strong>\s*문의 이메일로 새 프로그램과 서비스 소식/);
+  assert.match(template, /href="\.\/privacy\/"/);
+  assert.match(template, /href="\.\/terms\/"/);
+  assert.match(client, /2026-08-31-abalone-privacy/);
+  assert.match(core, /2026-08-31-abalone-privacy/);
+});
+
 test("adding catalog metadata automatically creates routes for another program", async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "showcase-multi-app-"));
   const source = structuredClone(catalog);
@@ -309,8 +380,16 @@ test("adding catalog metadata automatically creates routes for another program",
   const detailRoute = await readFile(path.join(output, "apps", "sample-monitor", "index.html"), "utf8");
   const installRoute = await readFile(path.join(output, "install", "sample-monitor", "index.html"), "utf8");
   assert.match(detailRoute, /data-app-id="sample-monitor"/);
-  assert.match(detailRoute, /Sample Monitor — Abalone/);
-  assert.match(installRoute, /Sample Monitor 설치 — Abalone/);
+  assert.match(detailRoute, /Sample Monitor 제작 사례 — Abalone/);
+  assert.match(installRoute, /Sample Monitor 설치 안내 — Abalone/);
+});
+
+test("[REG:seo.legacy_bridge] the GitHub Pages compatibility artifact is noindexed", async () => {
+  const workflow = await readFile(path.join(root, ".github", "workflows", "pages.yml"), "utf8");
+  const script = await readFile(path.join(root, "scripts", "build-legacy-site.mjs"), "utf8");
+  assert.match(workflow, /npm run build && npm run build:legacy/);
+  assert.match(script, /noindex, nofollow/);
+  assert.match(script, /Disallow: \/nohdol-auto-showcase\//);
 });
 
 test("the catalog contains ten disclosed standalone program demos across three audiences", () => {
