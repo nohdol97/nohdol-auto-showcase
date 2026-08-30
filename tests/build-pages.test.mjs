@@ -127,14 +127,14 @@ test("[REG:showcase.abalone_brand] the public UI layers Abalone identity over no
   const template = await readFile(path.join(root, "site", "index.html"), "utf8");
   const styles = await readFile(path.join(root, "site", "styles.css"), "utf8");
   const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
-  assert.match(template, /name="theme-color" content="#16312D"/);
+  assert.match(template, /name="theme-color" content="#E45F3F"/);
   assert.match(template, /class="skip-link" href="#page">본문으로 건너뛰기/);
   assert.doesNotMatch(template, /class="ambient/);
   for (const token of ["--brand-canvas", "--brand-ink", "--brand-accent", "--brand-accent-strong", "--brand-accent-soft", "--brand-signature", "--brand-signature-strong", "--brand-signature-soft", "--brand-focus"]) {
     assert.match(styles, new RegExp(token));
   }
-  assert.match(styles, /--brand-accent: #0d6b64/);
-  assert.match(styles, /--brand-signature: #c85a3f/);
+  assert.match(styles, /--brand-accent: #0b6f68/);
+  assert.match(styles, /--brand-signature: #e45f3f/);
   assert.match(styles, /--accent: var\(--brand-accent\)/);
   assert.match(styles, /outline: 3px solid var\(--brand-focus\)/);
   assert.match(styles, /border-radius: 6px/);
@@ -161,7 +161,7 @@ test("[REG:showcase.brand_icon] the Abalone mark is font-independent and ships i
   assert.match(template, /rel="apple-touch-icon" href="\.\/abalone-touch-icon-v2\.png"/);
   assert.equal([...template.matchAll(/class="brand-mark" src="\.\/abalone-favicon-v2\.svg"/g)].length, 2);
   assert.match(svg, /viewBox="0 0 32 32"/);
-  assert.match(svg, /fill="#c85a3f"/);
+  assert.match(svg, /fill="#e45f3f"/);
   assert.match(svg, /fill="#fffaf3"/);
   assert.doesNotMatch(svg, /<text|gradient|<image/i);
 
@@ -172,8 +172,8 @@ test("[REG:showcase.brand_icon] the Abalone mark is font-independent and ships i
   }
   assert.equal(legacyIcon.subarray(0, 4).toString("hex"), "00000100");
   assert.equal(manifest.name, "Abalone");
-  assert.equal(manifest.background_color, "#f7f2ea");
-  assert.equal(manifest.theme_color, "#16312d");
+  assert.equal(manifest.background_color, "#f8f3eb");
+  assert.equal(manifest.theme_color, "#e45f3f");
   assert.deepEqual(manifest.icons.map((icon) => icon.src), ["./abalone-icon-v2-192.png", "./abalone-icon-v2-512.png"]);
   assert.deepEqual(manifest.icons.map((icon) => icon.sizes), ["192x192", "512x512"]);
 });

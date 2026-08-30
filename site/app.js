@@ -22,8 +22,8 @@ function eyebrow(text) {
   return node;
 }
 
-function statusBadge(text = "설치 인증코드 필요", tone = "information") {
-  return element("span", `app-status ${tone}-status`, text);
+function statusBadge(text = "설치 인증코드 필요") {
+  return element("span", "app-status", text);
 }
 
 function isPrototype(app) {
@@ -148,10 +148,8 @@ function renderCatalogCard(app, index) {
   actions.append(link("primary-action", "사례 보기", routeHref("apps", app.id)));
   if (hasInstallRoute(app)) actions.append(link("secondary-action", isPrototype(app) ? "제공 상태" : "설치 정보", routeHref("install", app.id)));
   copy.append(flow, actions);
-  const badge = statusBadge(
-    isPrototype(app) ? "기능 데모 · 파일 없음" : "설치 가능",
-    isPrototype(app) ? "information" : "success",
-  );
+  const badge = statusBadge(isPrototype(app) ? "기능 데모 · 파일 없음" : "설치 가능");
+  if (isPrototype(app)) badge.classList.add("prototype-status");
   if (!isPrototype(app) && app.demoGif) {
     card.classList.add("evidence-card");
     copy.prepend(badge);
@@ -207,12 +205,12 @@ function renderCatalog(catalog, page) {
     element("p", "", "현업의 말과 화면을 바탕으로 필요한 범위를 함께 정합니다."),
   );
   const progress = element("div", "progress-stack");
-  for (const [step, name, detail, state, narrativeClass] of [
-    ["01", "업무 이해", "사람·순서·규칙·예외 확인", "발견", "narrative-discovery"],
-    ["02", "작은 검증", "중요한 흐름부터 실제 화면으로 확인", "검증", "narrative-validation"],
-    ["03", "적용과 개선", "사용 결과를 보고 합의한 범위에서 보완", "개선", "narrative-improvement"],
+  for (const [step, name, detail, state] of [
+    ["01", "업무 이해", "사람·순서·규칙·예외 확인", "발견"],
+    ["02", "작은 검증", "중요한 흐름부터 실제 화면으로 확인", "검증"],
+    ["03", "적용과 개선", "사용 결과를 보고 합의한 범위에서 보완", "개선"],
   ]) {
-    const row = element("div", narrativeClass);
+    const row = element("div", state === "개선" ? "safe-step" : "");
     const description = element("p");
     description.append(element("strong", "", name), document.createTextNode(detail));
     row.append(element("span", "", step), description, element("b", "", state));
@@ -280,6 +278,7 @@ function renderDetail(app, page) {
   const copy = element("div");
   copy.append(element("h1", "", app.name), element("p", "intro", app.description));
   const badge = statusBadge(isPrototype(app) ? "기능 데모 · 파일 없음" : "설치 인증코드 필요");
+  if (isPrototype(app)) badge.classList.add("prototype-status");
   header.append(copy, badge);
   const actions = element("div", "hero-actions");
   if (hasInstallRoute(app)) actions.append(link("primary-action", "설치 페이지로 이동", routeHref("install", app.id)));

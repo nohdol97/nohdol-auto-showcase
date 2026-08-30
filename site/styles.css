@@ -1,22 +1,22 @@
 :root {
   color-scheme: light;
-  --brand-canvas: #f7f2ea;
-  --brand-surface: #fffcf8;
-  --brand-surface-subtle: #f0ebe3;
-  --brand-control: #e9e2d8;
-  --brand-ink: #16312d;
+  --brand-canvas: #f8f3eb;
+  --brand-surface: #fffdfc;
+  --brand-surface-subtle: #f2ede5;
+  --brand-control: #eee7dd;
+  --brand-ink: #18312d;
   --brand-ink-secondary: #4b5d58;
-  --brand-ink-muted: #6a7873;
-  --brand-border: rgb(22 49 45 / 14%);
-  --brand-border-strong: rgb(22 49 45 / 24%);
-  --brand-accent: #0d6b64;
+  --brand-ink-muted: #687873;
+  --brand-border: rgb(24 49 45 / 14%);
+  --brand-border-strong: rgb(24 49 45 / 24%);
+  --brand-accent: #0b6f68;
   --brand-accent-strong: #07534e;
-  --brand-accent-soft: #dceae6;
+  --brand-accent-soft: #ddeeea;
   --brand-on-accent: #ffffff;
-  --brand-signature: #c85a3f;
-  --brand-signature-strong: #9b3e2e;
-  --brand-signature-soft: #f3ddd3;
-  --brand-focus: #0d6b64;
+  --brand-signature: #e45f3f;
+  --brand-signature-strong: #b44830;
+  --brand-signature-soft: #fbe4db;
+  --brand-focus: #0b6f68;
   --brand-on-dark: #fffaf3;
   --brand-on-dark-muted: #c5d2cd;
   --brand-on-dark-border: rgb(255 250 243 / 18%);
@@ -40,8 +40,6 @@
   --warning-soft: #fff8e8;
   --danger: #b42318;
   --danger-soft: #fff1f0;
-  --information: #355f7b;
-  --information-soft: #eaf1f5;
   --media-overlay: rgb(16 19 24 / 88%);
 }
 
@@ -62,6 +60,7 @@ body {
   margin: 0;
   min-width: 320px;
   overflow-x: hidden;
+  border-top: 4px solid var(--brand-signature);
   background: var(--canvas);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", sans-serif;
@@ -219,31 +218,20 @@ footer {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(400px, 0.9fr);
   align-items: center;
-  gap: 64px;
-  padding: 88px 0 80px;
+  gap: 48px;
+  padding: 72px 0 64px;
 }
 
 .hero::before {
   position: absolute;
   z-index: -1;
   inset: 0 calc(50% - 50vw);
-  border-block: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--brand-signature-soft);
   content: "";
 }
 
 .hero-copy {
-  position: relative;
   max-width: 620px;
-  padding-left: 28px;
-}
-
-.hero-copy::before {
-  position: absolute;
-  inset: 6px auto 6px 0;
-  width: 2px;
-  background: var(--brand-signature);
-  content: "";
 }
 
 .eyebrow {
@@ -258,16 +246,16 @@ footer {
 }
 
 .eyebrow span {
-  width: 18px;
-  height: 2px;
-  border-radius: 1px;
+  width: 24px;
+  height: 4px;
+  border-radius: 2px;
   background: var(--brand-signature);
 }
 
 h1 {
   margin-bottom: 20px;
-  font-size: clamp(36px, 3.8vw, 50px);
-  font-weight: 600;
+  font-size: clamp(36px, 3.8vw, 48px);
+  font-weight: 650;
   line-height: 1.14;
   letter-spacing: -0.025em;
 }
@@ -278,8 +266,8 @@ h1 em {
   text-decoration: underline;
   text-decoration-color: var(--brand-signature);
   text-decoration-skip-ink: auto;
-  text-decoration-thickness: 0.07em;
-  text-underline-offset: 0.17em;
+  text-decoration-thickness: 0.12em;
+  text-underline-offset: 0.13em;
 }
 
 .intro {
@@ -361,7 +349,7 @@ h1 em {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--information);
+  background: var(--success);
 }
 
 .route-card {
@@ -372,9 +360,9 @@ h1 em {
 }
 
 .catalog-console {
-  padding: 28px;
-  border: 1px solid var(--brand-on-dark-border);
-  border-left: 3px solid var(--brand-signature);
+  padding: 24px;
+  border: 0;
+  border-top: 8px solid var(--brand-signature);
   background: var(--brand-ink);
   color: var(--brand-on-dark);
 }
@@ -399,7 +387,7 @@ h1 em {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--text-secondary);
+  color: var(--success);
   font-size: 12px;
   font-weight: 650;
 }
@@ -487,19 +475,24 @@ h1 em {
 
 .progress-stack b {
   padding: 3px 8px;
-  border-radius: 4px;
+  border-radius: 999px;
   background: var(--control);
   color: var(--text-secondary);
   font-size: 11px;
   font-weight: 600;
 }
 
-.catalog-console .narrative-discovery b {
+.progress-stack .safe-step b {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.catalog-console .progress-stack > div:nth-child(1) b {
   background: var(--brand-signature-soft);
   color: var(--brand-signature-strong);
 }
 
-.catalog-console .narrative-validation b {
+.catalog-console .progress-stack > div:nth-child(2) b {
   background: var(--brand-accent-soft);
   color: var(--brand-accent-strong);
 }
@@ -720,8 +713,8 @@ h1 em {
   flex: none;
   padding: 4px 8px;
   border-radius: 999px;
-  background: var(--information-soft);
-  color: var(--information);
+  background: var(--success-soft);
+  color: var(--success);
   font-size: 11px;
   font-weight: 650;
 }
@@ -734,9 +727,9 @@ h1 em {
   content: "";
 }
 
-.app-status.success-status {
-  background: var(--success-soft);
-  color: var(--success);
+.app-status.prototype-status {
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .program-group + .program-group {
@@ -764,8 +757,8 @@ h1 em {
 }
 
 .program-group-heading h3::before {
-  width: 18px;
-  height: 2px;
+  width: 24px;
+  height: 4px;
   flex: none;
   border-radius: 2px;
   background: var(--brand-signature);
@@ -856,8 +849,8 @@ h1 em {
   padding: 16px;
   border: 1px solid var(--border-strong);
   border-radius: 8px;
-  background: var(--information-soft);
-  color: var(--information);
+  background: var(--accent-soft);
+  color: var(--accent);
   font-size: 12px;
   font-weight: 550;
   line-height: 1.65;
@@ -871,8 +864,8 @@ h1 em {
   padding: 20px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  border-color: rgb(53 95 123 / 24%);
-  background: var(--information-soft);
+  border-color: rgb(180 72 48 / 24%);
+  background: var(--brand-signature-soft);
 }
 
 .notice-icon {
@@ -882,7 +875,7 @@ h1 em {
   flex: none;
   place-items: center;
   border-radius: 50%;
-  background: var(--information);
+  background: var(--brand-signature);
   color: var(--brand-on-dark);
   font-family: Georgia, serif;
   font-size: 13px;
@@ -910,8 +903,7 @@ h1 em {
   position: absolute;
   z-index: -1;
   inset: 0 calc(50% - 50vw);
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--brand-signature-soft);
   content: "";
 }
 
@@ -1208,7 +1200,7 @@ h1 em {
 }
 
 .form-status[data-state="busy"] {
-  color: var(--information);
+  color: var(--accent);
 }
 
 .form-status[data-state="success"] {
@@ -1290,7 +1282,7 @@ h1 em {
   padding: 0;
   overflow: hidden;
   border: 1px solid var(--border-strong);
-  border-top: 3px solid var(--brand-signature);
+  border-top: 6px solid var(--brand-signature);
   border-radius: 10px;
   background: var(--surface);
   color: var(--text);
