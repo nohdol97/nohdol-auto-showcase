@@ -60,6 +60,9 @@
     "inquiry.private_attachments": {
       "testFiles": ["tests/inquiry-worker.test.mjs"]
     },
+    "inquiry.model_routing": {
+      "testFiles": ["tests/inquiry-worker.test.mjs"]
+    },
     "inquiry.explicit_completion": {
       "testFiles": ["tests/inquiry-worker.test.mjs"]
     },

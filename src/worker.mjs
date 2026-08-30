@@ -25,6 +25,7 @@ import {
   randomCode,
   randomToken,
   safeEqual,
+  selectInquiryModel,
   sessionCookie,
   sha256,
   specToMarkdown,
@@ -371,7 +372,7 @@ async function beginMessage(request, env, ctx, conversationId) {
   if (attachmentIds.length) {
     const placeholders = attachmentIds.map(() => "?").join(",");
     attachments = await all(db(env).prepare(
-      `SELECT id, media_type, openai_file_id, openai_expires_at FROM attachments WHERE conversation_id = ? AND user_id = ? AND id IN (${placeholders})`,
+      `SELECT id, media_type, byte_size, openai_file_id, openai_expires_at FROM attachments WHERE conversation_id = ? AND user_id = ? AND id IN (${placeholders})`,
     ).bind(conversationId, user.id, ...attachmentIds));
     if (attachments.length !== attachmentIds.length || attachments.some((item) => !item.openai_file_id || item.openai_expires_at <= now())) throw new HttpError(400, "INVALID_ATTACHMENT", "파일을 다시 추가해 주세요.");
   }
@@ -402,14 +403,20 @@ async function beginMessage(request, env, ctx, conversationId) {
 }
 
 async function callOpenAI(env, history, attachments, priorState, signal) {
+  const model = selectInquiryModel({
+    balancedModel: required(env, "OPENAI_MODEL"),
+    complexModel: required(env, "OPENAI_COMPLEX_MODEL"),
+    attachments,
+  });
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: { Authorization: `Bearer ${required(env, "OPENAI_API_KEY")}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: required(env, "OPENAI_MODEL"),
+      model,
       store: false,
       stream: true,
       max_output_tokens: 4000,
+      reasoning: { effort: "medium" },
       instructions: `${SYSTEM_PROMPT}\n\n현재 저장된 구조화 상태입니다. 새 답변을 반영해 전체 상태를 다시 반환하세요. 이메일 주소는 모델에 전달되지 않습니다.\n${JSON.stringify(priorState ?? { readyForReview: false, note: "아직 저장된 상태 없음" })}`,
       input: openAIInput(history, attachments),
       tools: [INQUIRY_STATE_TOOL],
@@ -418,7 +425,7 @@ async function callOpenAI(env, history, attachments, priorState, signal) {
     signal,
   });
   if (!response.ok) throw new Error(`OpenAI response status ${response.status}`);
-  return response;
+  return { response, model };
 }
 
 function streamModelReply({ env, ctx, conversationId, assistantMessageId, history, attachments, priorState }) {
@@ -438,7 +445,7 @@ function streamModelReply({ env, ctx, conversationId, assistantMessageId, histor
     const abort = new AbortController();
     const timer = setTimeout(() => abort.abort(), MODEL_TIMEOUT_MS);
     try {
-      const response = await callOpenAI(env, history, attachments, priorState, abort.signal);
+      const { response, model } = await callOpenAI(env, history, attachments, priorState, abort.signal);
       const completed = await consumeOpenAIStream(response.body, { onDelta(delta) { output += delta; emit("delta", { text: delta }); } });
       if (!output.trim()) throw new Error("OpenAI response text missing");
       const state = extractInquiryState(completed);
@@ -447,7 +454,7 @@ function streamModelReply({ env, ctx, conversationId, assistantMessageId, histor
       const status = state.readyForReview ? "review_ready" : "collecting";
       await db(env).batch([
         db(env).prepare("UPDATE messages SET content = ?, generation_status = 'completed', model = ? WHERE id = ?")
-          .bind(output, required(env, "OPENAI_MODEL"), assistantMessageId),
+          .bind(output, model, assistantMessageId),
         db(env).prepare(
           `INSERT INTO requirement_specs (conversation_id, version, ready_for_review, spec_json, spec_markdown, updated_at)
            VALUES (?, 1, ?, ?, ?, ?)
@@ -560,7 +567,7 @@ async function api(request, env, ctx) {
   const url = new URL(request.url);
   const method = request.method.toUpperCase();
   if (url.pathname === "/api/health" && method === "GET") {
-    const configured = Boolean(env.INQUIRY_DB && env.INQUIRY_FILES && env.OPENAI_API_KEY && env.OPENAI_MODEL && env.OTP_PEPPER && env.RESEND_API_KEY && env.EMAIL_FROM && env.INQUIRY_OWNER_EMAIL);
+    const configured = Boolean(env.INQUIRY_DB && env.INQUIRY_FILES && env.OPENAI_API_KEY && env.OPENAI_MODEL && env.OPENAI_COMPLEX_MODEL && env.OTP_PEPPER && env.RESEND_API_KEY && env.EMAIL_FROM && env.INQUIRY_OWNER_EMAIL);
     return json({ status: configured ? "ready" : "configuration_required" }, configured ? 200 : 503);
   }
   if (url.pathname === "/api/auth/request-code" && method === "POST") return requestCode(request, env);

@@ -36,6 +36,8 @@ The recovered prior `의뢰인 준비사항` is a conditional checklist: target 
 
 The model returns conversational text plus a strict structured state update. The state records answered topics, open questions, choice cards, risks, assumptions, and the evolving specification. It may set `readyForReview` only when no blocking question remains. At that point it asks, in plain Korean, whether the visitor has anything else to add. The conversation becomes `completed` only after a separate explicit user confirmation; the model cannot complete it on the user's behalf.
 
+Model selection is deterministic and server-owned. Ordinary conversation turns and one lightweight attachment use the balanced model. A turn uses the complex-work model when it includes a PDF or Office document, more than one attachment, or at least 2 MiB of attachment data. The selected model is recorded on the completed assistant message. Both routes use `medium` reasoning effort so a model change does not silently change the reasoning policy. The browser cannot request or override either model.
+
 Assistant and visitor messages render a safe Markdown subset for paragraphs, headings, emphasis, ordered and unordered lists, quotations, code, and `http`, `https`, or `mailto` links. Rendering uses DOM text nodes and explicitly created elements, never model-supplied HTML. Raw HTML and unsafe link protocols remain visible as text. The same rendering applies while SSE text arrives and when canonical D1 history or the final specification is reloaded.
 
 The final specification includes a plain-language summary, users and roles, current problem, desired workflow, inputs and outputs, integrations, rules and exceptions, data and privacy needs, safety boundaries, supported environment, acceptance criteria, priorities, exclusions, assumptions, open non-blocking notes, and follow-up preference. Missing facts remain visibly marked instead of being guessed.
@@ -79,7 +81,8 @@ The same Cloudflare Worker serves static assets and `/api/*`, but the bindings a
 - `RESEND_API_KEY`: secret for transactional mail.
 - `EMAIL_FROM`: verified sender address, initially `Abalone <inquiry@mail.byabalone.com>`.
 - `INQUIRY_OWNER_EMAIL`: private operator destination.
-- `OPENAI_MODEL`: deploy-time model name.
+- `OPENAI_MODEL`: deploy-time balanced model name, initially `gpt-5.6-terra`.
+- `OPENAI_COMPLEX_MODEL`: deploy-time complex-work model name, initially `gpt-5.6-sol`.
 
 No installer verifier, product key, distribution KV, distribution R2 binding, or download-signing secret is available to this Worker. Production fails closed when required mail, storage, or model configuration is missing. Local tests use explicit fakes and never silently send mail or call a model.
 

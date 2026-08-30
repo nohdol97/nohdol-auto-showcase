@@ -9,6 +9,7 @@ import {
   consumeOpenAIStream,
   hasFilledInquiryTrap,
   normalizeEmail,
+  selectInquiryModel,
   sessionCookie,
   specToMarkdown,
   validateAttachment,
@@ -22,6 +23,7 @@ const workerSource = await readFile(path.join(root, "src", "worker.mjs"), "utf8"
 const migration = await readFile(path.join(root, "migrations", "0001_inquiry_assistant.sql"), "utf8");
 const html = await readFile(path.join(root, "site", "index.html"), "utf8");
 const client = await readFile(path.join(root, "site", "inquiry.js"), "utf8");
+const wrangler = await readFile(path.join(root, "wrangler.jsonc"), "utf8");
 
 const completeState = {
   readyForReview: false,
@@ -135,6 +137,37 @@ test("[REG:inquiry.private_attachments] allowlisted files have size and signatur
   assert.match(workerSource, /INQUIRY_FILES/);
   assert.match(workerSource, /purpose", "user_data"/);
   assert.doesNotMatch(workerSource, /nohdol-auto-installers|INSTALL_ACCESS_CODE|DOWNLOAD_SIGNING/);
+});
+
+test("[REG:inquiry.model_routing] balanced turns use Terra and deterministic complex attachments use Sol", () => {
+  const balancedModel = "gpt-5.6-terra";
+  const complexModel = "gpt-5.6-sol";
+  const select = (attachments) => selectInquiryModel({ balancedModel, complexModel, attachments });
+  assert.equal(select([]), balancedModel);
+  assert.equal(select([{ media_type: "text/plain", byte_size: 2 * 1024 * 1024 - 1 }]), balancedModel);
+  assert.equal(select([{ media_type: "image/png", byte_size: 120_000 }]), balancedModel);
+  assert.equal(select([{ media_type: "text/plain", byte_size: 2 * 1024 * 1024 }]), complexModel);
+  assert.equal(select([
+    { media_type: "image/png", byte_size: 10 },
+    { media_type: "text/csv", byte_size: 10 },
+  ]), complexModel);
+  for (const media_type of [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ]) assert.equal(select([{ media_type, byte_size: 100 }]), complexModel);
+  assert.match(workerSource, /SELECT id, media_type, byte_size, openai_file_id/);
+  assert.match(workerSource, /balancedModel: required\(env, "OPENAI_MODEL"\)/);
+  assert.match(workerSource, /complexModel: required\(env, "OPENAI_COMPLEX_MODEL"\)/);
+  assert.match(workerSource, /reasoning: \{ effort: "medium" \}/);
+  assert.match(workerSource, /\.bind\(output, model, assistantMessageId\)/);
+  assert.match(workerSource, /env\.OPENAI_MODEL && env\.OPENAI_COMPLEX_MODEL/);
+  assert.match(wrangler, /"OPENAI_MODEL": "gpt-5\.6-terra"/);
+  assert.match(wrangler, /"OPENAI_COMPLEX_MODEL": "gpt-5\.6-sol"/);
 });
 
 test("[REG:inquiry.sse_persistence] typed deltas use the disconnect grace period and stale generations recover", async () => {

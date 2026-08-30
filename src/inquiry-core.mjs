@@ -7,6 +7,17 @@ export const OPENAI_FILE_SECONDS = 30 * 24 * 60 * 60;
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
 export const MAX_CONVERSATION_FILE_BYTES = 25 * 1024 * 1024;
 export const MAX_FILES_PER_MESSAGE = 5;
+export const COMPLEX_ATTACHMENT_BYTES = 2 * 1024 * 1024;
+
+const COMPLEX_DOCUMENT_MEDIA_TYPES = new Set([
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+]);
 
 const ALLOWED_EXTENSIONS = new Map([
   ["pdf", "application/pdf"],
@@ -286,6 +297,15 @@ export function openAIInput(messages, currentAttachments = []) {
     return { role: message.role, content };
   });
   return input;
+}
+
+export function selectInquiryModel({ balancedModel, complexModel, attachments = [] }) {
+  if (!balancedModel || !complexModel) throw new Error("inquiry models are required");
+  const totalBytes = attachments.reduce((total, attachment) => total + Math.max(0, Number(attachment.byte_size) || 0), 0);
+  const needsComplexModel = attachments.length > 1
+    || totalBytes >= COMPLEX_ATTACHMENT_BYTES
+    || attachments.some((attachment) => COMPLEX_DOCUMENT_MEDIA_TYPES.has(attachment.media_type));
+  return needsComplexModel ? complexModel : balancedModel;
 }
 
 export async function consumeOpenAIStream(body, { onDelta = () => {}, onResponse = () => {} } = {}) {
