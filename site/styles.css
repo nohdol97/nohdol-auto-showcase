@@ -767,6 +767,28 @@ h1 em {
   display: block;
 }
 
+.workflow-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin: 8px 4px 0;
+}
+
+.workflow-motion-control {
+  min-height: 40px;
+  padding: 7px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.workflow-motion-control:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .workflow-caption {
   margin: 10px 4px 2px;
   color: var(--text-muted);
@@ -1033,6 +1055,7 @@ h1 em {
 .header-inquiry:focus-visible,
 .icon-button:focus-visible,
 .text-button:focus-visible,
+.workflow-motion-control:focus-visible,
 .choice-option:focus-visible,
 .file-action:focus-within,
 .composer textarea:focus-visible,
@@ -1684,6 +1707,7 @@ footer p {
   .header-inquiry,
   .icon-button,
   .text-button,
+  .workflow-motion-control,
   .file-action,
   .primary-action,
   .secondary-action,

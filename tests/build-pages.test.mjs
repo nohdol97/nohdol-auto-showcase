@@ -10,6 +10,71 @@ import showcaseWorker from "../src/worker.mjs";
 const root = path.resolve(import.meta.dirname, "..");
 const catalog = JSON.parse(await readFile(path.join(root, "apps.json"), "utf8"));
 
+class FakeNode {
+  constructor(tag = "", className = "", text = "") {
+    this.tag = tag;
+    this.className = className;
+    this.textContent = text;
+    this.children = [];
+    this.attributes = {};
+    this.dataset = {};
+    this.listeners = {};
+    this.classList = { contains: (name) => this.className.split(/\s+/).includes(name) };
+  }
+
+  append(...children) { this.children.push(...children); }
+  prepend(...children) { this.children.unshift(...children); }
+  replaceChildren(...children) { this.children = [...children]; }
+  setAttribute(name, value) { this.attributes[name] = String(value); }
+  addEventListener(name, listener) { this.listeners[name] = listener; }
+  focus() {}
+  get lastElementChild() { return this.children.at(-1); }
+}
+
+function findByClass(node, className) {
+  if (node?.classList?.contains(className)) return node;
+  for (const child of node?.children ?? []) {
+    const found = findByClass(child, className);
+    if (found) return found;
+  }
+  return null;
+}
+
+async function renderDetailPlayback({ reducedMotion }) {
+  const source = await readFile(path.join(root, "site", "app.js"), "utf8");
+  const page = new FakeNode("main");
+  const mediaListeners = {};
+  const motionPreference = {
+    matches: reducedMotion,
+    addEventListener(name, listener) { mediaListeners[name] = listener; },
+  };
+  const document = {
+    body: { dataset: { page: "detail", appId: catalog.apps[0].id } },
+    baseURI: "https://byabalone.com/",
+    title: "",
+    createElement: (tag) => new FakeNode(tag),
+    createTextNode: (text) => new FakeNode("#text", "", text),
+    querySelector: (selector) => selector === "#page" ? page : null,
+  };
+  const context = {
+    document,
+    fetch: async () => new Response(JSON.stringify(catalog), {
+      headers: { "Content-Type": "application/json" },
+    }),
+    navigator: {},
+    Response,
+    URL,
+    window: { matchMedia: () => motionPreference },
+  };
+  vm.runInNewContext(source, context);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  return {
+    button: findByClass(page, "workflow-motion-control"),
+    image: findByClass(page, "workflow-image"),
+    mediaListeners,
+  };
+}
+
 test("accepts a disabled endpoint until the authorization Worker is deployed", () => {
   const disabled = structuredClone(catalog);
   disabled.apps[0].authEndpoint = null;
@@ -249,18 +314,45 @@ test("[REG:showcase.catalog_unified_alignment] catalog cards share one grid and 
   assert.doesNotMatch(styles, /\.workflow-image\s*\{[^}]*\bfilter\s*:/s);
 });
 
-test("[REG:showcase.reduced_motion] every workflow GIF has a reduced-motion poster", async () => {
+test("[REG:showcase.reduced_motion] workflow GIFs support explicit playback without overriding reduced motion", async () => {
   const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
   const styles = await readFile(path.join(root, "site", "styles.css"), "utf8");
   assert.match(appScript, /prefers-reduced-motion: reduce/);
   assert.match(appScript, /-poster\.png/);
+  assert.match(appScript, /GIF 재생/);
+  assert.match(appScript, /GIF 멈추기/);
+  assert.match(appScript, /motionPreference\.addEventListener\("change"/);
+  assert.match(appScript, /playbackControl\.addEventListener\("click"/);
+  assert.match(appScript, /image\.src = playing \? app\.demoGif : posterSrc/);
   assert.match(appScript, /contains\("detail-shell"\) \? "eager" : "lazy"/);
   assert.match(styles, /aspect-ratio: 30 \/ 19/);
+  assert.match(styles, /\.workflow-controls\s*\{/);
+  assert.match(styles, /\.workflow-motion-control\s*\{[^}]*min-height: 40px;/s);
   for (const app of catalog.apps.filter((item) => item.demoGif)) {
     const poster = app.demoGif.replace(/^\.\//, "site/").replace(/\.gif$/i, "-poster.png");
     const contents = await readFile(path.join(root, poster));
     assert.equal(contents.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
   }
+});
+
+test("workflow GIF playback starts from the browser preference and remains user-controllable", async () => {
+  const ordinary = await renderDetailPlayback({ reducedMotion: false });
+  assert.equal(ordinary.image.src, "./assets/autotrip-workflow.gif");
+  assert.equal(ordinary.button.textContent, "GIF 멈추기");
+  ordinary.button.listeners.click();
+  assert.equal(ordinary.image.src, "./assets/autotrip-workflow-poster.png");
+  assert.equal(ordinary.button.textContent, "GIF 재생");
+  ordinary.button.listeners.click();
+  assert.equal(ordinary.image.src, "./assets/autotrip-workflow.gif");
+
+  const reduced = await renderDetailPlayback({ reducedMotion: true });
+  assert.equal(reduced.image.src, "./assets/autotrip-workflow-poster.png");
+  assert.equal(reduced.button.textContent, "GIF 재생");
+  reduced.button.listeners.click();
+  assert.equal(reduced.image.src, "./assets/autotrip-workflow.gif");
+  reduced.mediaListeners.change({ matches: true });
+  assert.equal(reduced.image.src, "./assets/autotrip-workflow-poster.png");
+  assert.equal(reduced.button.textContent, "GIF 재생");
 });
 
 test("[REG:showcase.recovery_states] catalog failure exposes a focused plain-Korean retry", async () => {
@@ -292,6 +384,7 @@ test("[REG:hosting.generated_routes] build creates catalog, detail, and installa
   assert.match(installIndex, /data-page="install-index"/);
   assert.match(installIndex, /<base href="\.\.\/"/);
   assert.match(detailRoute, /data-page="detail" data-app-id="autotrip"/);
+  assert.match(detailRoute, /<source media="\(prefers-reduced-motion: reduce\)" srcset="\.\/assets\/autotrip-workflow-poster\.png" \/>/);
   assert.match(installRoute, /data-page="install" data-app-id="autotrip"/);
   assert.match(installRoute, /<base href="\.\.\/\.\.\/"/);
   assert.match(appScript, /설치 인증코드/);

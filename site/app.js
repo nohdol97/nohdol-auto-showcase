@@ -35,16 +35,42 @@ function renderDemo(app, card) {
   const figure = element("figure", "workflow-demo");
   figure.append(element("span", "demo-label", app.demoLabel ?? "프로그램 흐름 · 결제 전 안전 정지"));
   const picture = element("picture", "workflow-media");
-  const reducedMotionSource = element("source");
-  reducedMotionSource.media = "(prefers-reduced-motion: reduce)";
-  reducedMotionSource.srcset = app.demoGif.replace(/\.gif$/i, "-poster.png");
+  const posterSrc = app.demoGif.replace(/\.gif$/i, "-poster.png");
+  const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let playing = !motionPreference.matches;
   const image = element("img", "workflow-image");
-  image.src = app.demoGif;
   image.alt = app.demoAlt;
   image.loading = card.classList.contains("detail-shell") ? "eager" : "lazy";
   image.decoding = "async";
-  picture.append(reducedMotionSource, image);
-  figure.append(picture, element("figcaption", "workflow-caption", app.demoCaption));
+  picture.append(image);
+
+  const controls = element("div", "workflow-controls");
+  const playbackControl = element("button", "workflow-motion-control");
+  playbackControl.type = "button";
+  const playbackStatus = element("span", "sr-only");
+  playbackStatus.setAttribute("role", "status");
+  playbackStatus.setAttribute("aria-live", "polite");
+
+  function renderPlaybackState() {
+    image.src = playing ? app.demoGif : posterSrc;
+    playbackControl.textContent = playing ? "GIF 멈추기" : "GIF 재생";
+    playbackControl.setAttribute("aria-pressed", String(playing));
+    playbackStatus.textContent = playing ? "GIF가 재생 중입니다." : "GIF가 멈춰 있습니다.";
+  }
+
+  playbackControl.addEventListener("click", () => {
+    playing = !playing;
+    renderPlaybackState();
+  });
+  motionPreference.addEventListener("change", (event) => {
+    if (!event.matches || !playing) return;
+    playing = false;
+    renderPlaybackState();
+  });
+  renderPlaybackState();
+
+  controls.append(playbackControl, playbackStatus);
+  figure.append(picture, controls, element("figcaption", "workflow-caption", app.demoCaption));
   card.append(figure);
 }
 
