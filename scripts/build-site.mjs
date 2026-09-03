@@ -137,7 +137,6 @@ function homeContent(catalog) {
 
 function detailContent(app) {
   const prototype = app.kind === "prototype";
-  const demoPoster = app.demoGif?.replace(/\.gif$/i, "-poster.png");
   return `
       <section class="route-hero">
         <nav class="breadcrumb" aria-label="현재 위치"><a href="./#programs">제작 사례</a><span>/</span><span>${escapeHtml(app.name)}</span></nav>
@@ -146,7 +145,7 @@ function detailContent(app) {
         <div class="hero-actions"><a class="primary-action" href="./install/${escapeHtml(app.id)}/">설치 페이지로 이동</a><a class="secondary-action" href="./#programs">전체 제작 사례</a></div>
       </section>
       <section class="detail-shell">
-        ${app.demoGif ? `<figure class="workflow-demo"><span class="demo-label">${escapeHtml(app.demoLabel ?? "프로그램 흐름 · 결제 전 안전 정지")}</span><picture class="workflow-media"><source media="(prefers-reduced-motion: reduce)" srcset="${escapeHtml(demoPoster)}" /><img class="workflow-image" src="${escapeHtml(app.demoGif)}" alt="${escapeHtml(app.demoAlt)}" /></picture><figcaption class="workflow-caption">${escapeHtml(app.demoCaption)}</figcaption></figure>` : ""}
+        ${app.demoGif ? `<figure class="workflow-demo"><span class="demo-label">${escapeHtml(app.demoLabel ?? "프로그램 흐름 · 결제 전 안전 정지")}</span><picture class="workflow-media"><img class="workflow-image" src="${escapeHtml(app.demoGif)}" alt="${escapeHtml(app.demoAlt)}" /></picture><figcaption class="workflow-caption">${escapeHtml(app.demoCaption)}</figcaption></figure>` : ""}
         <div class="info-grid"><article class="info-card"><strong>업무 흐름 확인</strong><p>${prototype ? "전용 입력, 실행 상태, 결과 화면을 예시 데이터로 확인합니다." : "프로그램 실행부터 연결된 사이트의 결제 전 안전 정지 지점까지 확인합니다."}</p></article><article class="info-card"><strong>제공 상태</strong><p>${prototype ? "기능 시연 화면 · 데모 데이터 · 외부 시스템 미연동" : "검증된 프로그램 설명과 인증 설치 경로를 분리해 제공합니다."}</p></article></div>
         ${prototype ? `<p class="availability-notice">${escapeHtml(app.availabilityNote)} 기능 시연 화면이며 외부 시스템 미연동 상태입니다.</p>` : app.warning ? `<p class="warning route-warning">${escapeHtml(app.warning)}</p>` : ""}
       </section>`;

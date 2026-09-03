@@ -314,45 +314,28 @@ test("[REG:showcase.catalog_unified_alignment] catalog cards share one grid and 
   assert.doesNotMatch(styles, /\.workflow-image\s*\{[^}]*\bfilter\s*:/s);
 });
 
-test("[REG:showcase.reduced_motion] workflow GIFs support explicit playback without overriding reduced motion", async () => {
+test("[REG:showcase.gif_autoplay] workflow GIFs use the animated source without playback controls", async () => {
   const appScript = await readFile(path.join(root, "site", "app.js"), "utf8");
   const styles = await readFile(path.join(root, "site", "styles.css"), "utf8");
-  assert.match(appScript, /prefers-reduced-motion: reduce/);
-  assert.match(appScript, /-poster\.png/);
-  assert.match(appScript, /GIF 재생/);
-  assert.match(appScript, /GIF 멈추기/);
-  assert.match(appScript, /motionPreference\.addEventListener\("change"/);
-  assert.match(appScript, /playbackControl\.addEventListener\("click"/);
-  assert.match(appScript, /image\.src = playing \? app\.demoGif : posterSrc/);
+  assert.match(appScript, /image\.src = app\.demoGif/);
+  assert.doesNotMatch(appScript, /prefers-reduced-motion: reduce/);
+  assert.doesNotMatch(appScript, /-poster\.png/);
+  assert.doesNotMatch(appScript, /GIF 재생|GIF 멈추기/);
+  assert.doesNotMatch(appScript, /playbackControl|playbackStatus|motionPreference/);
   assert.match(appScript, /contains\("detail-shell"\) \? "eager" : "lazy"/);
   assert.match(styles, /aspect-ratio: 30 \/ 19/);
-  assert.match(styles, /\.workflow-controls\s*\{/);
-  assert.match(styles, /\.workflow-motion-control\s*\{[^}]*min-height: 40px;/s);
-  for (const app of catalog.apps.filter((item) => item.demoGif)) {
-    const poster = app.demoGif.replace(/^\.\//, "site/").replace(/\.gif$/i, "-poster.png");
-    const contents = await readFile(path.join(root, poster));
-    assert.equal(contents.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
-  }
+  assert.doesNotMatch(styles, /\.workflow-controls\s*\{/);
+  assert.doesNotMatch(styles, /\.workflow-motion-control/);
 });
 
-test("workflow GIF playback starts from the browser preference and remains user-controllable", async () => {
+test("workflow GIF playback ignores the browser motion preference and has no control", async () => {
   const ordinary = await renderDetailPlayback({ reducedMotion: false });
   assert.equal(ordinary.image.src, "./assets/autotrip-workflow.gif");
-  assert.equal(ordinary.button.textContent, "GIF 멈추기");
-  ordinary.button.listeners.click();
-  assert.equal(ordinary.image.src, "./assets/autotrip-workflow-poster.png");
-  assert.equal(ordinary.button.textContent, "GIF 재생");
-  ordinary.button.listeners.click();
-  assert.equal(ordinary.image.src, "./assets/autotrip-workflow.gif");
+  assert.equal(ordinary.button, null);
 
   const reduced = await renderDetailPlayback({ reducedMotion: true });
-  assert.equal(reduced.image.src, "./assets/autotrip-workflow-poster.png");
-  assert.equal(reduced.button.textContent, "GIF 재생");
-  reduced.button.listeners.click();
   assert.equal(reduced.image.src, "./assets/autotrip-workflow.gif");
-  reduced.mediaListeners.change({ matches: true });
-  assert.equal(reduced.image.src, "./assets/autotrip-workflow-poster.png");
-  assert.equal(reduced.button.textContent, "GIF 재생");
+  assert.equal(reduced.button, null);
 });
 
 test("[REG:showcase.recovery_states] catalog failure exposes a focused plain-Korean retry", async () => {
@@ -379,12 +362,12 @@ test("[REG:hosting.generated_routes] build creates catalog, detail, and installa
   const platformScript = await readFile(path.join(output, "platform.js"), "utf8");
   const generated = await readFile(path.join(output, "apps.json"), "utf8");
   const demoGif = await readFile(path.join(output, "assets", "autotrip-workflow.gif"));
-  const demoPoster = await readFile(path.join(output, "assets", "autotrip-workflow-poster.png"));
   assert.match(html, /data-page="catalog"/);
   assert.match(installIndex, /data-page="install-index"/);
   assert.match(installIndex, /<base href="\.\.\/"/);
   assert.match(detailRoute, /data-page="detail" data-app-id="autotrip"/);
-  assert.match(detailRoute, /<source media="\(prefers-reduced-motion: reduce\)" srcset="\.\/assets\/autotrip-workflow-poster\.png" \/>/);
+  assert.match(detailRoute, /<img class="workflow-image" src="\.\/assets\/autotrip-workflow\.gif"/);
+  assert.doesNotMatch(detailRoute, /prefers-reduced-motion|workflow-motion-control|GIF 재생|GIF 멈추기/);
   assert.match(installRoute, /data-page="install" data-app-id="autotrip"/);
   assert.match(installRoute, /<base href="\.\.\/\.\.\/"/);
   assert.match(appScript, /설치 인증코드/);
@@ -401,7 +384,6 @@ test("[REG:hosting.generated_routes] build creates catalog, detail, and installa
   assert.doesNotMatch(html, /AUTOTRIP \/ SAFE MODE|AutoTrip 살펴보기/);
   assert.doesNotMatch(generated, /INSTALL_ACCESS_CODE|releases\/download|browser_download_url/);
   assert.equal(demoGif.subarray(0, 6).toString("ascii"), "GIF89a");
-  assert.equal(demoPoster.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
 });
 
 test("[REG:seo.static_discovery] generated routes expose crawlable initial HTML, canonical metadata, sitemap, and truthful schema", async () => {

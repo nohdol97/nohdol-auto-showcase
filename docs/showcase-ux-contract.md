@@ -44,11 +44,11 @@ All UI surfaces, symbols, and status treatments render in black, white, or neutr
 - The inquiry dialog uses a labeled native dialog, keyboard-operable close and choice controls, an `aria-live` message region, announced busy/error/success states, and visible focus treatment. At mobile width it becomes a full-viewport surface without hiding the inquiry action.
 - The installation form keeps the code after neither success nor failure, blocks duplicate submission while authorizing, restores focus to the code field after recoverable failure, and announces status changes.
 - Reduced-motion preferences remove smooth scrolling and non-essential movement.
-- `GIF-1`: Workflow recordings play by default when the browser reports no reduced-motion preference, and every recording exposes a visible control that can pause and resume it.
-- `GIF-2`: Reduced-motion preferences replace each animated workflow GIF with its first-frame poster until the visitor explicitly selects `GIF 재생`; CSS transition overrides alone are not sufficient.
-- `GIF-3`: The playback control uses the plain-Korean actions `GIF 재생` and `GIF 멈추기`, keeps at least a 44px mobile target, and announces the resulting playing or paused state without removing the recording's alternative text or provenance caption.
-- `GIF-4`: If the browser changes to reduced motion while a recording is playing, the recording returns to its poster. Playback controls do not change catalog truth, install authority, inquiry data, or publication state.
-- Acceptance: the build test verifies the poster asset for every GIF and the generated reduced-motion `<source>`; the playback regression verifies default play, explicit pause/resume, reduced-motion initial pause, and preference-change pause. A rendered browser check confirms the selected resource and two time-separated frames on a detail route.
+- `GIF-1`: Workflow recordings use their animated GIF as the direct image source and begin playback without a separate visitor action.
+- `GIF-2`: The recording exposes no play, pause, or motion-status control and does not substitute a poster under `prefers-reduced-motion`.
+- `GIF-3`: Alternative text and a provenance or limitation caption remain available without relying on animation to communicate availability, success, warning, or safety.
+- `GIF-4`: Removing playback UI does not change catalog truth, install authority, inquiry data, or publication state. This is an explicit product deviation from the shared Abalone preference for pauseable looping media.
+- Acceptance: the build regression verifies the direct GIF source and absence of playback UI in both the client renderer and generated detail HTML. A rendered browser check confirms no control, the selected GIF resource, and two different time-separated frames on a detail route.
 - Focus indicators use the solid brand focus token and preserve at least a 3:1 adjacent-color difference.
 
 ## State and safety contract
