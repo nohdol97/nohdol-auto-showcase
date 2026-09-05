@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#111111" />
+    <title>기회 Radar — Abalone Admin</title>
+    <link rel="icon" href="../../favicon.svg?v=black-white" type="image/svg+xml" />
+    <link rel="stylesheet" href="./radar.css" />
+    <script src="./radar.js" type="module"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">작업 영역으로 건너뛰기</a>
+    <header class="app-header">
+      <a class="brand" href="../../" aria-label="Abalone 홈">
+        <img src="../../favicon.svg?v=black-white" width="32" height="32" alt="" />
+        <span>Abalone</span><span class="product-name">Admin · Radar</span>
+      </a>
+      <button class="text-button" id="logout" type="button" hidden>로그아웃</button>
+    </header>
+
+    <main id="main">
+      <section class="login-view" id="login-view" aria-labelledby="login-title">
+        <p class="eyebrow">PRIVATE OPPORTUNITY RESEARCH</p>
+        <h1 id="login-title">가까운 업체의<br />연락할 근거를 찾습니다.</h1>
+        <p class="intro">리뷰를 우회 수집하지 않습니다. 공개 장소와 업체 소유 페이지에서 확인되는 사실을 찾아, 연락 전에 검증할 가설과 첫 질문으로 정리합니다.</p>
+        <form class="login-form" id="login-form">
+          <label for="password">관리자 값</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required />
+          <p class="field-help">서버의 <code>RADAR_ADMIN_PASSWORD</code> 환경값을 입력하세요. 브라우저에는 저장하지 않습니다.</p>
+          <button class="primary-button" type="submit">Radar 열기</button>
+        </form>
+        <p class="form-status" id="login-status" role="status"></p>
+      </section>
+
+      <section class="workspace" id="workspace" hidden>
+        <header class="workspace-heading">
+          <div>
+            <p class="eyebrow">오늘 연락할 후보</p>
+            <h1 id="workspace-title" tabindex="-1">공개 사실에서<br />첫 질문까지.</h1>
+            <p class="intro">확인된 사실과 추정은 분리되어 있습니다. 연락할 때는 가설을 주장하지 말고 첫 질문으로 확인하세요.</p>
+          </div>
+          <div class="run-panel">
+            <span class="run-label">최근 발굴</span>
+            <strong id="run-summary">아직 실행하지 않았습니다.</strong>
+            <button class="primary-button" id="run-now" type="button">지금 발굴하기</button>
+          </div>
+        </header>
+
+        <p class="service-warning" id="service-warning" hidden>필수 API 설정이 없어 발굴을 시작할 수 없습니다. 서버 환경값을 확인하세요.</p>
+        <p class="workspace-status" id="workspace-status" role="status"></p>
+
+        <section class="settings-section" aria-labelledby="settings-title">
+          <div class="section-title">
+            <div><span>01</span><h2 id="settings-title">살펴볼 범위</h2></div>
+            <button class="text-button" id="settings-toggle" type="button" aria-expanded="true" aria-controls="settings-form">설정 접기</button>
+          </div>
+          <form class="settings-form" id="settings-form">
+            <label><span>중심 위치</span><input id="location" name="location" minlength="2" maxlength="60" required placeholder="예: 성수역" /></label>
+            <label><span>업종 키워드 <small>쉼표로 1~5개</small></span><input id="keywords" name="keywords" maxlength="160" required placeholder="예: 공방, 세탁소, 미용실" /></label>
+            <label><span>검색 반경</span><select id="radius" name="radiusMeters"><option value="500">500m</option><option value="1200">1.2km</option><option value="3000">3km</option><option value="5000">5km</option></select></label>
+            <label><span>한 번에 조사할 후보</span><select id="max-candidates" name="maxCandidates"><option value="3">3곳</option><option value="5">5곳</option><option value="8">8곳</option><option value="10">10곳</option></select></label>
+            <label class="check-row"><input id="auto-enabled" name="autoEnabled" type="checkbox" /><span><strong>매일 자동 발굴</strong><small>서울 날짜 기준 하루 한 번 실행합니다.</small></span></label>
+            <button class="secondary-button" type="submit">검색 범위 저장하기</button>
+          </form>
+        </section>
+
+        <section class="results-section" aria-labelledby="results-title">
+          <div class="section-title">
+            <div><span>02</span><h2 id="results-title">근거가 있는 후보</h2></div>
+            <p id="result-count">0곳</p>
+          </div>
+          <div class="empty-state" id="empty-state">
+            <strong>저장된 후보가 없습니다.</strong>
+            <p>검색 범위를 저장한 뒤 지금 발굴하기를 누르세요. 매일 자동 발굴을 켜면 이후에는 새 결과만 확인하면 됩니다.</p>
+          </div>
+          <div class="result-layout" id="result-layout" hidden>
+            <ol class="candidate-list" id="candidate-list" aria-label="발굴 후보"></ol>
+            <article class="evidence-detail" id="evidence-detail" aria-live="polite"></article>
+          </div>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>

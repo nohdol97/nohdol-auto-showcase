@@ -3,3 +3,5 @@ OTP_PEPPER=replace-with-a-random-secret-at-least-32-bytes
 RESEND_API_KEY=re_example_do_not_use
 EMAIL_FROM="Abalone <inquiry@example.com>"
 INQUIRY_OWNER_EMAIL=owner@example.com
+KAKAO_REST_API_KEY=example-kakao-rest-api-key-do-not-use
+RADAR_ADMIN_PASSWORD=replace-with-a-random-password-at-least-20-characters

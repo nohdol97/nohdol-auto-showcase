@@ -261,7 +261,7 @@ export async function buildSite(options) {
   const sitemapPaths = ["/", "/install/", ...catalog.apps.map((app) => `/apps/${app.id}/`), ...catalog.apps.filter((app) => (app.kind ?? "product") === "product").map((app) => `/install/${app.id}/`), "/privacy/", "/terms/"];
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapPaths.map((item) => `  <url><loc>${absolutePath(item)}</loc><lastmod>${LAST_MODIFIED}</lastmod></url>`).join("\n")}\n</urlset>\n`;
   await writeFile(path.join(options.output, "sitemap.xml"), sitemap);
-  await writeFile(path.join(options.output, "robots.txt"), `User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: ${CANONICAL_ORIGIN}/sitemap.xml\n`);
+  await writeFile(path.join(options.output, "robots.txt"), `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin/\n\nSitemap: ${CANONICAL_ORIGIN}/sitemap.xml\n`);
   return catalog;
 }
 

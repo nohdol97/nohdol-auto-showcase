@@ -39,6 +39,21 @@
     "showcase.recovery_states": {
       "testFiles": ["tests/build-pages.test.mjs"]
     },
+    "radar.admin_auth": {
+      "testFiles": ["tests/radar-worker.test.mjs"]
+    },
+    "radar.public_place_contact": {
+      "testFiles": ["tests/radar-worker.test.mjs"]
+    },
+    "radar.evidence_analysis": {
+      "testFiles": ["tests/radar-worker.test.mjs"]
+    },
+    "radar.daily_discovery": {
+      "testFiles": ["tests/radar-worker.test.mjs"]
+    },
+    "radar.admin_surface": {
+      "testFiles": ["tests/radar-worker.test.mjs"]
+    },
     "inquiry.email_verification": {
       "testFiles": ["tests/inquiry-worker.test.mjs"]
     },

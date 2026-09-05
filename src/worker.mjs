@@ -33,6 +33,7 @@ import {
   validateAttachment,
   validateInquiryFormTiming,
 } from "./inquiry-core.mjs";
+import { cleanupRadar, radarApi, scheduledRadar } from "./radar-worker.mjs";
 
 const JSON_LIMIT = 64 * 1024;
 const MODEL_TIMEOUT_MS = 120_000;
@@ -566,6 +567,7 @@ async function cleanupExpired(env) {
 async function api(request, env, ctx) {
   const url = new URL(request.url);
   const method = request.method.toUpperCase();
+  if (url.pathname.startsWith("/api/admin/radar/")) return radarApi(request, env, ctx);
   if (url.pathname === "/api/health" && method === "GET") {
     const configured = Boolean(env.INQUIRY_DB && env.INQUIRY_FILES && env.OPENAI_API_KEY && env.OPENAI_MODEL && env.OPENAI_COMPLEX_MODEL && env.OTP_PEPPER && env.RESEND_API_KEY && env.EMAIL_FROM && env.INQUIRY_OWNER_EMAIL);
     return json({ status: configured ? "ready" : "configuration_required" }, configured ? 200 : 503);
@@ -603,6 +605,12 @@ export default {
       }
       if (url.pathname.startsWith("/api/")) return await api(request, env, ctx);
       const response = await required(env, "ASSETS").fetch(request);
+      if (url.pathname.startsWith("/admin/")) {
+        const headers = new Headers(response.headers);
+        headers.set("Cache-Control", "no-store");
+        headers.set("X-Robots-Tag", "noindex, nofollow");
+        return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+      }
       if (url.hostname.endsWith(".workers.dev")) {
         const headers = new Headers(response.headers);
         headers.set("X-Robots-Tag", "noindex, nofollow");
@@ -618,7 +626,7 @@ export default {
     }
   },
   async scheduled(_event, env, ctx) {
-    ctx.waitUntil(cleanupExpired(env));
+    ctx.waitUntil(Promise.all([cleanupExpired(env), cleanupRadar(env), scheduledRadar(env)]));
   },
 };
 
