@@ -417,3 +417,93 @@ test("[REG:radar.admin_surface] private Radar files expose explicit states and r
   assert.equal(wrangler.queues.consumers[0].max_retries, 3);
   assert.equal(wrangler.queues.consumers[0].retry_delay, 30);
 });
+
+test('[REG:radar.review_run] authenticated URL runs enqueue without Kakao settings and reject unauthenticated or invalid inputs', async () => {
+  const queued=[]; const statements=[];
+  let active=false;
+  const db={prepare(sql){return {args:[],bind(...args){this.args=args;return this;},async first(){return active && sql.includes("status = 'running' LIMIT 1") ? {id:'active'} : null;},async all(){return {results:[]};},async run(){statements.push({sql,args:this.args});}};}};
+  const secret='a-long-random-admin-password'; const token=await createRadarSession(secret);
+  const env={RADAR_ADMIN_PASSWORD:secret,INQUIRY_DB:db,OPENAI_API_KEY:'fake',OPENAI_MODEL:'gpt-test',RADAR_QUEUE:{async sendBatch(messages){queued.push(...messages);}}};
+  const request=(url,authenticated=true,origin='https://byabalone.com')=>new Request('https://byabalone.com/api/admin/radar/review-runs',{method:'POST',headers:{Origin:origin,'X-Requested-With':'abalone-showcase',Cookie:authenticated ? `${RADAR_SESSION_COOKIE}=${token}` : ''},body:JSON.stringify({url})});
+  const url='https://www.daangn.com/kr/local-profile/sample-demo123/?utm_source=tracking';
+  await assert.rejects(()=>radarApi(request(url,false),env,{}),error=>error.status===401);
+  await assert.rejects(()=>radarApi(request(url,true,'https://evil.example'),env,{}),error=>error.status===403);
+  await assert.rejects(()=>radarApi(request('https://evil.example/'),env,{}),error=>error.status===400);
+  assert.equal(queued.length,0);
+  const response=await radarApi(request(url),env,{});
+  assert.equal(response.status,202);
+  assert.equal((await response.json()).placesFound,1);
+  assert.equal(queued.length,1);
+  assert.equal(queued[0].body.place.kakaoId,'daangn:demo123');
+  assert.equal(queued[0].body.place.daangnUrl,'https://www.daangn.com/kr/local-profile/sample-demo123/');
+  assert.doesNotMatch(JSON.stringify(queued),/utm_source|observations|reviewBody|OPENAI/);
+  assert.ok(statements.some(s=>s.sql.includes('INSERT INTO radar_runs')));
+  active=true;
+  await assert.rejects(()=>radarApi(request(url),env,{}),error=>error.status===409);
+  assert.equal(queued.length,1);
+  const state=await radarApi(new Request('https://byabalone.com/api/admin/radar/state',{headers:{Cookie:`${RADAR_SESSION_COOKIE}=${token}`}}),env,{});
+  const snapshot=await state.json();
+  assert.equal(snapshot.configured,false);
+  assert.equal(snapshot.reviewConfigured,true);
+});
+
+function reviewPageFixture() {
+  const profile={id:'/kr/local-profile/sample-demo123/',href:'https://www.daangn.com/kr/local-profile/sample-demo123/',name:'가상 레슨실',status:'ACTIVE',address:{road:'가상로 1'},category:{name:'골프'},count:{reviewCount:12},reviews:[
+    {content:'고유한 합성 고객 원문입니다.',createdAt:'2026-09-01T00:00:00Z',user:{nickname:'수집금지작성자'},comment:{content:'고유한 합성 사장 답글입니다.',createdAt:'2026-09-02T00:00:00Z'}},
+  ]};
+  return `<script>window.__remixContext = ${JSON.stringify({state:{loaderData:{'routes/kr.local-profile.$local_profile_id':{localProfile:profile}}}})};</script>`;
+}
+function reviewAnalysisFixture() {
+  return {
+    confirmedFacts:['가상 레슨실은 골프 업체입니다.'],painHypothesis:'수업 기록 전달 방식에 개선 여지가 있는지 확인해야 합니다.',confidence:60,
+    sources:[{kind:'daangn_profile',url:'https://www.daangn.com/kr/local-profile/sample-demo123/',title:'가상 레슨실 후기',summary:'고객 경험과 사장님 답글을 구분해 읽었습니다.'}],
+    suggestedTool:'복습 카드',openingQuestion:'수업 내용을 어떻게 전달하시나요?',doNotClaim:'불편과 구매 수요는 미확인입니다.',
+    prototypeOffer:{name:'복습 카드',promise:'수업 내용을 정리합니다.',demoScope:'가상 기록 카드',requiredInput:'가상 항목',proofOfValue:'작성 시간을 비교합니다.'},
+    reviewInsights:{signals:[{evidenceId:'review-1',kind:'customer_review',summary:'한 고객이 수업 경험을 전했습니다.'}],items:[{name:'복습 카드',evidenceIds:['review-1'],hypothesis:'기록 전달에 도움을 줄 가능성을 확인합니다.',firstQuestion:'수업 내용을 어떻게 전달하시나요?',demoScope:'가상 수업 카드',validationMetric:'작성 시간'}],limitation:'초기 페이지 일부 후기이며 수요는 미확인입니다.'},
+  };
+}
+
+test('[REG:radar.review_queue] consumer fetches reviews, validates items, stores summaries and skips duplicate delivery', async () => {
+  const db=queueDbFixture({runs:[{id:'review-run',status:'running',places_found:1,started_at:'2026-09-06T00:00:00Z'}]});
+  const place={kakaoId:'daangn:demo123',name:'당근 업체',daangnUrl:'https://www.daangn.com/kr/local-profile/sample-demo123/'};
+  const originalFetch=globalThis.fetch; let calls=0;
+  globalThis.fetch=async (input,options)=>{
+    calls+=1;
+    if(String(input).includes('www.daangn.com')) return new Response(reviewPageFixture(),{headers:{'content-type':'text/html'}});
+    const request=JSON.parse(options.body);
+    assert.equal(request.store,false); assert.deepEqual(request.tools,[]);
+    assert.match(request.input,/고유한 합성 고객 원문/);
+    assert.match(request.input,/owner_reply/);
+    assert.doesNotMatch(request.input,/수집금지작성자/);
+    return Response.json({output_text:JSON.stringify(reviewAnalysisFixture())});
+  };
+  try {
+    const message=queueMessage({runId:'review-run',place});
+    await consumeRadarQueue({messages:[message]},{INQUIRY_DB:db,OPENAI_API_KEY:'fake',OPENAI_MODEL:'gpt-test'});
+    assert.equal(message.calls.ack,1);assert.equal(message.calls.retry.length,0);
+    const stored=db.state.candidates.get('review-run:daangn:demo123');
+    assert.equal(stored.name,'가상 레슨실');assert.equal(stored.confidence,30);
+    const analysis=JSON.parse(stored.analysis_json);
+    assert.equal(analysis.reviewEvidence.customerReviewCount,1);
+    assert.equal(analysis.reviewEvidence.ownerReplyCount,1);
+    assert.equal(analysis.reviewEvidence.reportedReviewCount,12);
+    assert.doesNotMatch(stored.analysis_json,/고유한 합성|수집금지작성자|reviewBody/);
+    assert.equal(db.state.runs.get('review-run').status,'completed');
+    const second=queueMessage({runId:'review-run',place});
+    await consumeRadarQueue({messages:[second]},{INQUIRY_DB:db});
+    assert.equal(second.calls.ack,1);assert.equal(calls,2);
+  } finally {globalThis.fetch=originalFetch;}
+});
+
+test('[REG:radar.review_queue] a blocked provider produces a bounded terminal failure without model calls',async()=>{
+  const db=queueDbFixture({runs:[{id:'blocked-run',status:'running',places_found:1,started_at:'2026-09-06T00:00:00Z'}]});
+  const originalFetch=globalThis.fetch;let calls=0;
+  globalThis.fetch=async()=>{calls++;return new Response('',{status:403});};
+  try{
+    const message=queueMessage({runId:'blocked-run',place:{kakaoId:'daangn:demo123',name:'당근 업체',daangnUrl:'https://www.daangn.com/kr/local-profile/sample-demo123/'}},3);
+    await consumeRadarQueue({messages:[message]},{INQUIRY_DB:db});
+    assert.equal(message.calls.ack,1);assert.equal(calls,1);
+    assert.equal(db.state.candidates.get('blocked-run:daangn:demo123').error_class,'DAANGN_BLOCKED');
+    assert.equal(db.state.runs.get('blocked-run').status,'failed');
+  }finally{globalThis.fetch=originalFetch;}
+});

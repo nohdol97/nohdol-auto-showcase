@@ -35,3 +35,5 @@ Rollback deploys the last verified showcase commit to the same Worker name. The 
 ## Live evidence
 
 Migration is complete only after the Worker deployment reports the custom domains, Queue inspection reports the declared producer and consumer, `www` redirects to the apex, and public checks observe `200` for `/`, `/apps/autotrip/`, `/install/`, `/install/autotrip/`, `apps.json`, and a workflow GIF. `/api/health` must report ready. A Radar canary must move from `running` to a terminal state with durable candidate counts. The installer gateway must return an allowlisted CORS response for the primary, retained Workers, and legacy GitHub Pages origins while rejecting an unrelated origin. Existing inquiry canaries remain valid only after the apex health, same-origin session, and OTP surfaces are observed.
+
+- Authenticated `POST /api/admin/radar/review-runs` enqueues a canonical Daangn profile URL without requiring Kakao search settings. The consumer reads bounded initial-page review data and stores derived summaries and coverage metadata under spec 004. No new binding or D1 migration is required.

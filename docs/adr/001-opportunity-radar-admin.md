@@ -1,7 +1,7 @@
 # ADR 001: 공개 사이트 Worker에 분리된 기회 Radar 관리자 경계 추가
 
 - 날짜: 2026-09-05
-- 상태: accepted
+- 상태: accepted (후기 제외 경계는 [ADR 003](003-review-evidence-boundary.md)으로 부분 대체)
 
 ## 배경
 

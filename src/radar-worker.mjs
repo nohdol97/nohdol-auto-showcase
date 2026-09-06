@@ -13,6 +13,8 @@ import {
   verifyRadarSession,
 } from "./radar-core.mjs";
 import { HttpError, assertSameOrigin, hmacHex, json, parseCookies, safeEqual } from "./inquiry-core.mjs";
+import { collectDaangnReviews, daangnQueuePlace } from "./radar-reviews.mjs";
+import { buildReviewAnalysisRequest, validateReviewAnalysis } from "./radar-review-analysis.mjs";
 
 const RETENTION_DAYS = 365;
 const RADAR_QUEUE_ATTEMPTS = 3;
@@ -168,6 +170,17 @@ async function analyzePlace(place, env) {
   return reconcileRadarSources(extractRadarAnalysis(body), body);
 }
 
+async function analyzeCollectedReviews(place, evidence, env) {
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${required(env, "OPENAI_API_KEY")}`, "Content-Type": "application/json" },
+    body: JSON.stringify(buildReviewAnalysisRequest({ model: required(env, "OPENAI_MODEL"), place, evidence })),
+    signal: AbortSignal.timeout(120_000),
+  });
+  if (!response.ok) throw new Error(`OpenAI Radar status ${response.status}`);
+  return extractRadarAnalysis(await response.json(), value => validateReviewAnalysis(value, evidence));
+}
+
 function errorClass(error) {
   if (error instanceof HttpError) return error.code;
   if (String(error?.message ?? "").startsWith("OpenAI Radar status")) return "OPENAI_RESPONSE_FAILED";
@@ -235,6 +248,13 @@ function radarQueuePayload(body) {
   if (!runId || runId.length > 80 || !place || typeof place !== "object" || Array.isArray(place)) return null;
   if (typeof place.kakaoId !== "string" || !place.kakaoId || place.kakaoId.length > 80) return null;
   if (typeof place.name !== "string" || !place.name || place.name.length > 120) return null;
+  if (place.daangnUrl || place.kakaoId.startsWith("daangn:")) {
+    try {
+      const safePlace = daangnQueuePlace(place.daangnUrl);
+      if (safePlace.kakaoId !== place.kakaoId) return null;
+      return { runId, place: safePlace };
+    } catch { return null; }
+  }
   return { runId, place };
 }
 
@@ -256,9 +276,15 @@ async function consumeRadarMessage(message, env) {
     message.ack();
     return;
   }
+  let place = payload.place;
   try {
-    const analysis = await analyzePlace(payload.place, env);
-    await insertCandidate(env, payload.runId, payload.place, analysis, null);
+    let analysis;
+    if (place.daangnUrl) {
+      const collected = await collectDaangnReviews(place.daangnUrl);
+      place = collected.place;
+      analysis = await analyzeCollectedReviews(place, collected.evidence, env);
+    } else analysis = await analyzePlace(place, env);
+    await insertCandidate(env, payload.runId, place, analysis, null);
     await refreshRadarRun(env, payload.runId);
     message.ack();
   } catch (error) {
@@ -267,7 +293,7 @@ async function consumeRadarMessage(message, env) {
       return;
     }
     try {
-      await insertCandidate(env, payload.runId, payload.place, null, error);
+      await insertCandidate(env, payload.runId, place, null, error);
       await refreshRadarRun(env, payload.runId);
       message.ack();
     } catch {
@@ -342,10 +368,20 @@ function publicRun(row) {
   return row ? { id: row.id, trigger: row.trigger_type, localDate: row.local_date, status: row.status, placesFound: row.places_found, candidatesAnalyzed: row.candidates_analyzed, startedAt: row.started_at, completedAt: row.completed_at } : null;
 }
 
+const REVIEW_ERROR_MESSAGES = {
+  DAANGN_BLOCKED: "당근에서 페이지 접근을 제한했습니다. 링크를 보존했으니 잠시 뒤 다시 시도해 주세요.",
+  DAANGN_RATE_LIMITED: "당근 요청이 제한되었습니다. 잠시 뒤 같은 링크로 다시 시도해 주세요.",
+  DAANGN_FETCH_FAILED: "당근 페이지를 가져오지 못했습니다. 링크를 확인하고 다시 시도해 주세요.",
+  DAANGN_PAGE_TOO_LARGE: "당근 페이지가 수집 가능한 크기를 초과했습니다. 다른 업체 링크를 입력해 주세요.",
+  DAANGN_UNSUPPORTED_PAGE: "당근의 후기 구조를 확인하지 못했습니다. 다른 업체 링크를 입력해 주세요.",
+  DAANGN_NO_REVIEWS: "초기 공개 페이지에 읽을 수 있는 고객 후기가 없습니다. 다른 업체 링크를 입력해 주세요.",
+};
+
 function publicCandidate(row) {
   return {
     id: row.id, name: row.name, address: row.address, category: row.category, phone: row.phone, mapUrl: row.map_url,
     distanceMeters: row.distance_meters, score: row.score, confidence: row.confidence, sourceCount: row.source_count,
+    errorMessage: row.analysis_status === "failed" ? (REVIEW_ERROR_MESSAGES[row.error_class] ?? "근거를 분석하지 못했습니다. 같은 조건으로 다시 시도해 주세요.") : null,
     analysisStatus: row.analysis_status, analysis: row.analysis_json ? JSON.parse(row.analysis_json) : null, createdAt: row.created_at,
   };
 }
@@ -360,13 +396,47 @@ async function state(request, env) {
      WHERE radar_runs.id = (SELECT id FROM radar_runs ORDER BY started_at DESC LIMIT 1)
      ORDER BY radar_candidates.score DESC, radar_candidates.distance_meters ASC LIMIT 20`,
   ).all()).results ?? [];
-  return json({ configured: Boolean(env.KAKAO_REST_API_KEY && env.OPENAI_API_KEY && env.OPENAI_MODEL && env.RADAR_QUEUE), settings, lastRun: publicRun(lastRun), candidates: rows.map(publicCandidate) });
+  return json({ reviewConfigured: Boolean(env.OPENAI_API_KEY && env.OPENAI_MODEL && env.RADAR_QUEUE), configured: Boolean(env.KAKAO_REST_API_KEY && env.OPENAI_API_KEY && env.OPENAI_MODEL && env.RADAR_QUEUE), settings, lastRun: publicRun(lastRun), candidates: rows.map(publicCandidate) });
 }
 
 async function beginRun(request, env) {
   assertSameOrigin(request);
   await authenticateRadar(request, env);
   return json({ accepted: true, ...await runRadarDiscovery(env) }, 202);
+}
+
+async function beginReviewRun(request, env) {
+  assertSameOrigin(request);
+  await authenticateRadar(request, env);
+  const input = await readJson(request);
+  const place = daangnQueuePlace(input?.url);
+  required(env, "OPENAI_API_KEY");
+  required(env, "OPENAI_MODEL");
+  const queue = required(env, "RADAR_QUEUE");
+  const database = radarDb(env);
+  await recoverStaleRadarRuns(database);
+  const activeQuery = "SELECT id FROM radar_runs WHERE status = 'running' LIMIT 1";
+  if (await database.prepare(activeQuery).first()) throw new HttpError(409, "RADAR_RUN_ACTIVE", "이미 발굴 작업이 진행 중입니다.");
+  const runId = crypto.randomUUID();
+  const now = timestamp();
+  try {
+    await database.prepare(
+      `INSERT INTO radar_runs (id, run_key, trigger_type, local_date, status, settings_json, places_found, candidates_analyzed, started_at, heartbeat_at)
+       VALUES (?, ?, 'manual', ?, 'running', ?, 1, 0, ?, ?)`,
+    ).bind(runId, `manual:${runId}`, seoulDateKey(), JSON.stringify({ source: "daangn", url: place.daangnUrl }), now, now).run();
+  } catch (error) {
+    if (await database.prepare(activeQuery).first()) throw new HttpError(409, "RADAR_RUN_ACTIVE", "이미 발굴 작업이 진행 중입니다.");
+    throw error;
+  }
+  try {
+    await queue.sendBatch([{ body: { runId, place } }]);
+  } catch (error) {
+    const failedAt = timestamp();
+    await database.prepare("UPDATE radar_runs SET status = 'failed', error_class = ?, completed_at = ?, heartbeat_at = ? WHERE id = ?")
+      .bind("RADAR_QUEUE_FAILED", failedAt, failedAt, runId).run();
+    throw new HttpError(503, "RADAR_QUEUE_FAILED", "발굴 작업을 시작하지 못했습니다. 같은 링크로 다시 시도해 주세요.");
+  }
+  return json({ accepted: true, runId, status: "running", placesFound: 1, candidatesAnalyzed: 0 }, 202);
 }
 
 export async function radarApi(request, env, ctx) {
@@ -378,6 +448,7 @@ export async function radarApi(request, env, ctx) {
   if (url.pathname === "/api/admin/radar/state" && method === "GET") return state(request, env);
   if (url.pathname === "/api/admin/radar/settings" && method === "PUT") return saveSettings(request, env);
   if (url.pathname === "/api/admin/radar/runs" && method === "POST") return beginRun(request, env);
+  if (url.pathname === "/api/admin/radar/review-runs" && method === "POST") return beginReviewRun(request, env);
   throw new HttpError(404, "RADAR_API_NOT_FOUND", "요청한 Radar 기능을 찾을 수 없습니다.");
 }
 

@@ -48,3 +48,11 @@ python3 -m http.server --directory _site 8080
 Copy `.dev.vars.example` to either the ignored `.env` or `.dev.vars` for local Worker development and replace every fake value. Never commit either file and do not use both together. Production requires `OPENAI_API_KEY`, `OTP_PEPPER`, `RESEND_API_KEY`, private `INQUIRY_OWNER_EMAIL`, `KAKAO_REST_API_KEY`, and `RADAR_ADMIN_PASSWORD` Worker secrets, plus the verified `EMAIL_FROM` deployment variable. `INQUIRY_OWNER_EMAIL` is the private inbox that receives completed specifications; it is not shown to visitors. The initial release intentionally omits Turnstile and instead applies resend cooldowns, hidden-field filtering, and hashed email/IP rate limits, so mail and request volume must be monitored for distributed abuse. Apply `npm run db:migrate:remote` before the first trusted-host `npm run deploy`.
 
 Workflow GIFs use ephemeral browser contexts and obvious demo values. They must not show production accounts, credentials, personal data, entered payment values, booking confirmation, or a final action. Demo-only programs continuously display `기능 시연 화면 · 데모 데이터 · 외부 시스템 미연동`; AutoTrip leaves the visible payment control untouched.
+
+## 당근 후기에서 프로그램 아이템 찾기
+
+관리자 Radar의 `후기에서 아이템 찾기`에 당근 공개 업체 링크를 넣고 `후기로 아이템 찾기`를 누릅니다. 주변 검색 설정과 Kakao 키 없이 기존 OpenAI·D1·Queue 설정으로 실행합니다. 고객 후기와 사장님 답글을 구분하여 업무 신호, 1~3개 프로그램 아이템, 확인 질문, 작은 데모와 검증 지표를 보여줍니다.
+
+초기 페이지에 포함된 일부 후기만 분석하며 실제 읽은 고객 후기·답글 수와 페이지 전체 표시 수를 구분합니다. 원문·작성자 프로필은 저장하지 않고 요약과 수집 범위를 남깁니다. Google·네이버·카카오 후기 수집은 연결되어 있지 않습니다. 기존 주변 업체 검색과 매일 발굴 기능은 유지됩니다.
+
+차단·요청 제한·후기 없음·페이지 구조 변경은 결과에 복구 안내로 표시됩니다. 같은 화면에서 입력한 링크는 오류와 진행 조회 후에도 유지됩니다. 새 비밀값과 DB 마이그레이션은 없으며 소스 반영과 운영 배포는 별도입니다. 자세한 기준은 [스펙 004](docs/specs/004-review-opportunity-items.md)를 따릅니다.

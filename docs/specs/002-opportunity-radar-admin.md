@@ -2,6 +2,7 @@
 
 - 상태: active
 - 날짜: 2026-09-05
+- 후기 링크 수동 실행 확장: [스펙 004](004-review-opportunity-items.md). 아래 R3~R4의 Kakao·웹 검색 경계는 기존 주변 업체 검색에 적용하며 당근 초기 공개 후기 분석은 스펙 004를 따른다.
 - 관련 ADR: `docs/adr/001-opportunity-radar-admin.md`
 
 ## 문제

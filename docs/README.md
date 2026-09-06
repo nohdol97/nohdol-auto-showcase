@@ -11,3 +11,6 @@
 - [기회 Radar 관리자 경계 ADR](adr/001-opportunity-radar-admin.md)
 - [Radar Queue 처리 ADR](adr/002-radar-queue-processing.md)
 - [프로젝트 하네스 변경 기록](harness-changelog.md)
+
+- [당근 후기 프로그램 아이템 스펙](specs/004-review-opportunity-items.md)
+- [후기 근거 경계 ADR](adr/003-review-evidence-boundary.md)

@@ -63,6 +63,42 @@
     "radar.stale_recovery": {
       "testFiles": ["tests/radar-worker.test.mjs"]
     },
+    "radar.review_run": {
+      "testFiles": ["tests/radar-worker.test.mjs"]
+    },
+    "radar.review_queue": {
+      "testFiles": ["tests/radar-worker.test.mjs"]
+    },
+    "radar.review_items": {
+      "testFiles": ["tests/radar-review-analysis.test.mjs"]
+    },
+    "radar.review_ui": {
+      "testFiles": ["tests/radar-review-ui.test.mjs"]
+    },
+    "radar.daangn_url": {
+      "testFiles": ["tests/radar-reviews.test.mjs"]
+    },
+    "radar.daangn_roles": {
+      "testFiles": ["tests/radar-reviews.test.mjs"]
+    },
+    "radar.daangn_limits": {
+      "testFiles": ["tests/radar-reviews.test.mjs"]
+    },
+    "radar.daangn_schema": {
+      "testFiles": ["tests/radar-reviews.test.mjs"]
+    },
+    "radar.daangn_fetch": {
+      "testFiles": ["tests/radar-reviews.test.mjs"]
+    },
+    "radar.daangn_failures": {
+      "testFiles": ["tests/radar-reviews.test.mjs"]
+    },
+    "radar.daangn_size": {
+      "testFiles": ["tests/radar-reviews.test.mjs"]
+    },
+    "radar.daangn_timeout": {
+      "testFiles": ["tests/radar-reviews.test.mjs"]
+    },
     "radar.admin_surface": {
       "testFiles": ["tests/radar-worker.test.mjs"]
     },

@@ -92,7 +92,7 @@ function boundedString(value, field, maximum = 600) {
   return result;
 }
 
-export function validateRadarAnalysis(value) {
+export function validateRadarAnalysis(value, { allowDaangnProfile = false } = {}) {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("invalid radar analysis");
   if (!Array.isArray(value.confirmedFacts) || value.confirmedFacts.length > 6) throw new Error("invalid confirmed facts");
   value.confirmedFacts.forEach((item) => boundedString(item, "confirmed fact", 300));
@@ -100,7 +100,7 @@ export function validateRadarAnalysis(value) {
   if (!Number.isInteger(confidence) || confidence < 0 || confidence > 100) throw new Error("invalid confidence");
   if (!Array.isArray(value.sources) || value.sources.length > 6) throw new Error("invalid sources");
   for (const source of value.sources) {
-    if (!SOURCE_KINDS.has(source?.kind)) throw new Error("invalid source kind");
+    if (!SOURCE_KINDS.has(source?.kind) && !(allowDaangnProfile && source?.kind === "daangn_profile")) throw new Error("invalid source kind");
     let url;
     try { url = new URL(source.url); } catch { throw new Error("invalid source url"); }
     if (url.protocol !== "https:" || url.username || url.password) throw new Error("invalid source url");
@@ -168,12 +168,12 @@ export function buildRadarOpenAIRequest({ model, place }) {
   };
 }
 
-export function extractRadarAnalysis(response) {
+export function extractRadarAnalysis(response, validator = validateRadarAnalysis) {
   const direct = typeof response?.output_text === "string" ? response.output_text : null;
   const nested = response?.output?.flatMap((item) => item?.content ?? []).find((item) => item?.type === "output_text")?.text;
   const text = direct ?? nested;
   if (!text) throw new Error("missing radar analysis output");
-  return validateRadarAnalysis(JSON.parse(text));
+  return validator(JSON.parse(text));
 }
 
 export function reconcileRadarSources(analysis, response) {
