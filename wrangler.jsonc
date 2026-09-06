@@ -29,6 +29,24 @@
       "bucket_name": "nohdol-auto-showcase-inquiry-files"
     }
   ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "RADAR_QUEUE",
+        "queue": "nohdol-auto-showcase-radar"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "nohdol-auto-showcase-radar",
+        "max_batch_size": 2,
+        "max_batch_timeout": 2,
+        "max_retries": 3,
+        "retry_delay": 30,
+        "max_concurrency": 1
+      }
+    ]
+  },
   "vars": {
     "OPENAI_MODEL": "gpt-5.6-terra",
     "OPENAI_COMPLEX_MODEL": "gpt-5.6-sol",

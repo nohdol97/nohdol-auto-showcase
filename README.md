@@ -4,7 +4,7 @@ Public Cloudflare Worker showcase branded as `Abalone` at `https://byabalone.com
 
 The private `/admin/radar/` route is a separate opportunity-research surface. It searches Kakao public business data, retains public business phone numbers, and uses OpenAI web search to separate observed public evidence from pain-point hypotheses. It never owns installer or product-key authority and never contacts a business automatically.
 
-The showcase Worker serves public static assets and owns the inquiry API plus the separated opportunity-Radar API. Its dedicated D1 database stores verified inquiry records and isolated `radar_*` settings, runs, public-business contacts, and evidence summaries; its dedicated private R2 bucket stores only inquiry attachments. The installer gateway remains an independent Cloudflare Worker that validates download codes and streams a time-limited installer object. No inquiry or Radar binding grants access to that gateway.
+The showcase Worker serves public static assets and owns the inquiry API plus the separated opportunity-Radar API. Its dedicated D1 database stores verified inquiry records and isolated `radar_*` settings, runs, public-business contacts, and evidence summaries; its dedicated private R2 bucket stores only inquiry attachments. A dedicated Cloudflare Queue continues candidate analysis after the run API returns and writes durable progress back to D1. The installer gateway remains an independent Cloudflare Worker that validates download codes and streams a time-limited installer object. No inquiry or Radar binding grants access to that gateway.
 
 The primary origin is `https://byabalone.com`. `www.byabalone.com` redirects to the apex while preserving the route and query. The former Workers origin remains reachable for shipped clients, and GitHub Pages remains a route-preserving compatibility bridge. Hosting and rollback boundaries are recorded in [`docs/hosting-contract.md`](docs/hosting-contract.md).
 
@@ -16,15 +16,17 @@ For distributed products, installer authorization and product activation are sep
 
 For local development, copy `.dev.vars.example` to the ignored `.env` (or `.dev.vars`, but do not use both) and set `RADAR_ADMIN_PASSWORD` to a random value of at least 20 characters, along with `KAKAO_REST_API_KEY` and the existing `OPENAI_API_KEY`. Open the Wrangler development URL at `/admin/radar/` and enter that password. The value is compared only in the Worker and is not bundled into static JavaScript.
 
-Production uses Cloudflare Worker secrets with the same names. Apply D1 migrations before deploying the Worker:
+Production uses Cloudflare Worker secrets with the same names. Create the dedicated Queue once, then apply D1 migrations before deploying the Worker:
 
 ```sh
+npx wrangler queues create nohdol-auto-showcase-radar
 npm run db:migrate:remote
 npx wrangler secret put RADAR_ADMIN_PASSWORD
 npx wrangler secret put KAKAO_REST_API_KEY
+npm run deploy
 ```
 
-`OPENAI_API_KEY` remains the shared model secret already required by the inquiry assistant. Source delivery does not apply remote migrations or deploy the Worker automatically.
+`OPENAI_API_KEY` remains the shared model secret already required by the inquiry assistant. The `RADAR_QUEUE` producer and consumer are declared in `wrangler.jsonc`; Queue delivery is at-least-once, so D1's `(run_id, kakao_id)` uniqueness is the idempotency boundary. Source delivery does not create the Queue, apply remote migrations, or deploy the Worker automatically.
 
 The public UI keeps `nohdol-clean` as its functional UX base and applies a separate Abalone brand layer for identity tokens, logo treatment, plain-Korean voice, and evidence hierarchy. Verified external workflow evidence is separated from deterministic no-integration demonstrations; every workflow GIF begins playing directly without a separate playback control. The route hierarchy and responsive/accessibility behavior are recorded in [`docs/showcase-ux-contract.md`](docs/showcase-ux-contract.md).
 

@@ -15,6 +15,9 @@ import {
 import { HttpError, assertSameOrigin, hmacHex, json, parseCookies, safeEqual } from "./inquiry-core.mjs";
 
 const RETENTION_DAYS = 365;
+const RADAR_QUEUE_ATTEMPTS = 3;
+const RADAR_RETRY_DELAY_SECONDS = 30;
+const STALE_RUN_MS = 15 * 60 * 1000;
 
 function required(env, name) {
   const value = env[name];
@@ -179,12 +182,123 @@ async function insertCandidate(env, runId, place, analysis, failure) {
   await radarDb(env).prepare(
     `INSERT INTO radar_candidates
       (id, run_id, kakao_id, name, address, category, phone, map_url, distance_meters, analysis_json, score, confidence, source_count, analysis_status, error_class, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(run_id, kakao_id) DO NOTHING`,
   ).bind(crypto.randomUUID(), runId, place.kakaoId, place.name, place.address, place.category, place.phone, place.mapUrl, place.distanceMeters,
     analysis ? JSON.stringify(analysis) : null, score, confidence, sources.length, failure ? "failed" : "completed", failure ? errorClass(failure) : null, timestamp()).run();
 }
 
+async function candidateExists(env, runId, kakaoId) {
+  return Boolean(await radarDb(env).prepare(
+    "SELECT id FROM radar_candidates WHERE run_id = ? AND kakao_id = ?",
+  ).bind(runId, kakaoId).first());
+}
+
+async function candidateStats(database, runId) {
+  const row = await database.prepare(
+    `SELECT COUNT(*) AS total,
+      SUM(CASE WHEN analysis_status = 'completed' THEN 1 ELSE 0 END) AS completed,
+      SUM(CASE WHEN analysis_status = 'failed' THEN 1 ELSE 0 END) AS failed
+     FROM radar_candidates WHERE run_id = ?`,
+  ).bind(runId).first();
+  return {
+    total: Number(row?.total ?? 0),
+    completed: Number(row?.completed ?? 0),
+    failed: Number(row?.failed ?? 0),
+  };
+}
+
+async function refreshRadarRun(env, runId, instant = Date.now()) {
+  const database = radarDb(env);
+  const run = await database.prepare(
+    "SELECT id, status, places_found FROM radar_runs WHERE id = ?",
+  ).bind(runId).first();
+  if (!run || run.status !== "running") return;
+  const stats = await candidateStats(database, runId);
+  const now = new Date(instant).toISOString();
+  if (Number(run.places_found) > 0 && stats.total >= Number(run.places_found)) {
+    const status = stats.failed === 0 ? "completed" : stats.completed === 0 ? "failed" : "partial";
+    await database.prepare(
+      "UPDATE radar_runs SET status = ?, candidates_analyzed = ?, error_class = ?, completed_at = ?, heartbeat_at = ? WHERE id = ? AND status = 'running'",
+    ).bind(status, stats.completed, stats.failed ? "CANDIDATE_ANALYSIS_FAILED" : null, now, now, runId).run();
+    return;
+  }
+  await database.prepare(
+    "UPDATE radar_runs SET candidates_analyzed = ?, heartbeat_at = ? WHERE id = ? AND status = 'running'",
+  ).bind(stats.completed, now, runId).run();
+}
+
+function radarQueuePayload(body) {
+  if (!body || typeof body !== "object" || Array.isArray(body)) return null;
+  const runId = typeof body.runId === "string" ? body.runId : "";
+  const place = body.place;
+  if (!runId || runId.length > 80 || !place || typeof place !== "object" || Array.isArray(place)) return null;
+  if (typeof place.kakaoId !== "string" || !place.kakaoId || place.kakaoId.length > 80) return null;
+  if (typeof place.name !== "string" || !place.name || place.name.length > 120) return null;
+  return { runId, place };
+}
+
+async function consumeRadarMessage(message, env) {
+  const payload = radarQueuePayload(message.body);
+  if (!payload) {
+    message.ack();
+    return;
+  }
+  const run = await radarDb(env).prepare(
+    "SELECT id, status, places_found FROM radar_runs WHERE id = ?",
+  ).bind(payload.runId).first();
+  if (!run || run.status !== "running") {
+    message.ack();
+    return;
+  }
+  if (await candidateExists(env, payload.runId, payload.place.kakaoId)) {
+    await refreshRadarRun(env, payload.runId);
+    message.ack();
+    return;
+  }
+  try {
+    const analysis = await analyzePlace(payload.place, env);
+    await insertCandidate(env, payload.runId, payload.place, analysis, null);
+    await refreshRadarRun(env, payload.runId);
+    message.ack();
+  } catch (error) {
+    if (Number(message.attempts ?? 1) < RADAR_QUEUE_ATTEMPTS) {
+      message.retry({ delaySeconds: RADAR_RETRY_DELAY_SECONDS });
+      return;
+    }
+    try {
+      await insertCandidate(env, payload.runId, payload.place, null, error);
+      await refreshRadarRun(env, payload.runId);
+      message.ack();
+    } catch {
+      message.retry({ delaySeconds: RADAR_RETRY_DELAY_SECONDS });
+    }
+  }
+}
+
+export async function consumeRadarQueue(batch, env) {
+  await Promise.all(batch.messages.map((message) => consumeRadarMessage(message, env)));
+}
+
+export async function recoverStaleRadarRuns(database, instant = Date.now()) {
+  const cutoff = new Date(instant - STALE_RUN_MS).toISOString();
+  const stalled = (await database.prepare(
+    "SELECT id, places_found FROM radar_runs WHERE status = 'running' AND COALESCE(heartbeat_at, started_at) <= ?",
+  ).bind(cutoff).all()).results ?? [];
+  const now = new Date(instant).toISOString();
+  for (const run of stalled) {
+    const stats = await candidateStats(database, run.id);
+    const status = stats.total > 0 ? "partial" : "failed";
+    await database.prepare(
+      `UPDATE radar_runs SET status = ?, places_found = MAX(places_found, ?), candidates_analyzed = ?,
+       error_class = 'RADAR_RUN_STALE', completed_at = ?, heartbeat_at = ? WHERE id = ? AND status = 'running'`,
+    ).bind(status, stats.total, stats.completed, now, now, run.id).run();
+  }
+  return stalled.length;
+}
+
 export async function runRadarDiscovery(env, { trigger = "manual", localDate = seoulDateKey() } = {}) {
+  await recoverStaleRadarRuns(radarDb(env));
   const settings = await loadSettings(env);
   if (!settings) throw new HttpError(409, "RADAR_SETTINGS_REQUIRED", "먼저 검색 범위를 저장해 주세요.");
   const active = await radarDb(env).prepare("SELECT id FROM radar_runs WHERE status = 'running' LIMIT 1").first();
@@ -194,9 +308,9 @@ export async function runRadarDiscovery(env, { trigger = "manual", localDate = s
   const startedAt = timestamp();
   try {
     await radarDb(env).prepare(
-      `INSERT INTO radar_runs (id, run_key, trigger_type, local_date, status, settings_json, places_found, candidates_analyzed, started_at)
-       VALUES (?, ?, ?, ?, 'running', ?, 0, 0, ?)`,
-    ).bind(runId, runKey, trigger, localDate, JSON.stringify(settings), startedAt).run();
+      `INSERT INTO radar_runs (id, run_key, trigger_type, local_date, status, settings_json, places_found, candidates_analyzed, started_at, heartbeat_at)
+       VALUES (?, ?, ?, ?, 'running', ?, 0, 0, ?, ?)`,
+    ).bind(runId, runKey, trigger, localDate, JSON.stringify(settings), startedAt, startedAt).run();
   } catch (error) {
     if (trigger === "scheduled") return { skipped: true, reason: "already_started" };
     throw error;
@@ -204,22 +318,22 @@ export async function runRadarDiscovery(env, { trigger = "manual", localDate = s
 
   try {
     const places = (await searchRadarPlaces(settings, env)).slice(0, settings.maxCandidates);
-    let failures = 0;
-    for (let index = 0; index < places.length; index += 2) {
-      const batch = places.slice(index, index + 2);
-      await Promise.all(batch.map(async (place) => {
-        try { await insertCandidate(env, runId, place, await analyzePlace(place, env), null); }
-        catch (error) { failures += 1; await insertCandidate(env, runId, place, null, error); }
-      }));
-    }
-    const status = failures === 0 ? "completed" : failures === places.length ? "failed" : "partial";
+    const heartbeatAt = timestamp();
     await radarDb(env).prepare(
-      "UPDATE radar_runs SET status = ?, places_found = ?, candidates_analyzed = ?, error_class = ?, completed_at = ? WHERE id = ?",
-    ).bind(status, places.length, places.length - failures, failures ? "CANDIDATE_ANALYSIS_FAILED" : null, timestamp(), runId).run();
-    return { runId, status, placesFound: places.length, candidatesAnalyzed: places.length - failures };
+      "UPDATE radar_runs SET places_found = ?, heartbeat_at = ? WHERE id = ?",
+    ).bind(places.length, heartbeatAt, runId).run();
+    if (places.length === 0) {
+      await radarDb(env).prepare(
+        "UPDATE radar_runs SET status = 'completed', completed_at = ?, heartbeat_at = ? WHERE id = ?",
+      ).bind(heartbeatAt, heartbeatAt, runId).run();
+      return { runId, status: "completed", placesFound: 0, candidatesAnalyzed: 0 };
+    }
+    await required(env, "RADAR_QUEUE").sendBatch(places.map((place) => ({ body: { runId, place } })));
+    return { runId, status: "running", placesFound: places.length, candidatesAnalyzed: 0 };
   } catch (error) {
-    await radarDb(env).prepare("UPDATE radar_runs SET status = 'failed', error_class = ?, completed_at = ? WHERE id = ?")
-      .bind(errorClass(error), timestamp(), runId).run();
+    const failedAt = timestamp();
+    await radarDb(env).prepare("UPDATE radar_runs SET status = 'failed', error_class = ?, completed_at = ?, heartbeat_at = ? WHERE id = ?")
+      .bind(errorClass(error), failedAt, failedAt, runId).run();
     throw error;
   }
 }
@@ -246,15 +360,13 @@ async function state(request, env) {
      WHERE radar_runs.id = (SELECT id FROM radar_runs ORDER BY started_at DESC LIMIT 1)
      ORDER BY radar_candidates.score DESC, radar_candidates.distance_meters ASC LIMIT 20`,
   ).all()).results ?? [];
-  return json({ configured: Boolean(env.KAKAO_REST_API_KEY && env.OPENAI_API_KEY && env.OPENAI_MODEL), settings, lastRun: publicRun(lastRun), candidates: rows.map(publicCandidate) });
+  return json({ configured: Boolean(env.KAKAO_REST_API_KEY && env.OPENAI_API_KEY && env.OPENAI_MODEL && env.RADAR_QUEUE), settings, lastRun: publicRun(lastRun), candidates: rows.map(publicCandidate) });
 }
 
-async function beginRun(request, env, ctx) {
+async function beginRun(request, env) {
   assertSameOrigin(request);
   await authenticateRadar(request, env);
-  const task = runRadarDiscovery(env);
-  ctx.waitUntil(task.catch(() => {}));
-  return json({ accepted: true }, 202);
+  return json({ accepted: true, ...await runRadarDiscovery(env) }, 202);
 }
 
 export async function radarApi(request, env, ctx) {
@@ -265,19 +377,20 @@ export async function radarApi(request, env, ctx) {
   if (url.pathname === "/api/admin/radar/logout" && method === "POST") return logout(request);
   if (url.pathname === "/api/admin/radar/state" && method === "GET") return state(request, env);
   if (url.pathname === "/api/admin/radar/settings" && method === "PUT") return saveSettings(request, env);
-  if (url.pathname === "/api/admin/radar/runs" && method === "POST") return beginRun(request, env, ctx);
+  if (url.pathname === "/api/admin/radar/runs" && method === "POST") return beginRun(request, env);
   throw new HttpError(404, "RADAR_API_NOT_FOUND", "요청한 Radar 기능을 찾을 수 없습니다.");
 }
 
 export async function scheduledRadar(env) {
   const settings = await loadSettings(env);
-  if (!settings?.autoEnabled || !env.KAKAO_REST_API_KEY || !env.OPENAI_API_KEY || !env.OPENAI_MODEL) return { skipped: true, reason: "disabled_or_unconfigured" };
+  if (!settings?.autoEnabled || !env.KAKAO_REST_API_KEY || !env.OPENAI_API_KEY || !env.OPENAI_MODEL || !env.RADAR_QUEUE) return { skipped: true, reason: "disabled_or_unconfigured" };
   const lastScheduled = await radarDb(env).prepare("SELECT local_date FROM radar_runs WHERE trigger_type = 'scheduled' ORDER BY started_at DESC LIMIT 1").first();
   if (!shouldRunDaily({ autoEnabled: settings.autoEnabled, lastScheduledDate: lastScheduled?.local_date ?? null })) return { skipped: true, reason: "already_attempted" };
   return runRadarDiscovery(env, { trigger: "scheduled", localDate: seoulDateKey() });
 }
 
 export async function cleanupRadar(env) {
+  await recoverStaleRadarRuns(radarDb(env));
   const cutoff = new Date(Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString();
   await radarDb(env).prepare("DELETE FROM radar_runs WHERE started_at < ?").bind(cutoff).run();
 }

@@ -14,7 +14,7 @@
 - Every request enters the Worker so `www` can redirect before static delivery; non-API apex and retained-origin requests are immediately delegated to the `ASSETS` binding. `/api/*` enters the inquiry or opportunity-Radar handlers, and the five-minute schedule performs retention work plus a Seoul-date daily Radar gate.
 - The inquiry boundary uses the dedicated `INQUIRY_DB` D1 database and private `INQUIRY_FILES` R2 bucket. It owns email verification, server sessions, conversation/spec persistence, temporary model-file references, SSE chat, explicit completion, and operator-delivery state.
 - Inquiry behavior, consent, storage, retention, and failure states are defined in [`inquiry-assistant-contract.md`](inquiry-assistant-contract.md).
-- `/admin/radar/` and `/api/admin/radar/*` use an isolated password-derived session, `radar_*` D1 tables, Kakao public-business search, and OpenAI web search. They own no installer or product-key authority; behavior is defined in [`specs/002-opportunity-radar-admin.md`](specs/002-opportunity-radar-admin.md).
+- `/admin/radar/` and `/api/admin/radar/*` use an isolated password-derived session, `radar_*` D1 tables, Kakao public-business search, and OpenAI web search. The run API sends public-place messages to the dedicated `nohdol-auto-showcase-radar` Queue; its same-Worker consumer performs candidate analysis and writes progress to D1. They own no installer or product-key authority; behavior is defined in [`specs/002-opportunity-radar-admin.md`](specs/002-opportunity-radar-admin.md) and [`specs/003-durable-radar-queue.md`](specs/003-durable-radar-queue.md).
 - Installer-code validation remains owned by the independent `nohdol-auto-downloads` Worker. The showcase never receives its secrets, KV, R2, or Durable Object bindings.
 - The authorization gateway allowlists the primary, retained Workers, and legacy GitHub Pages origins during the compatibility period. `www` serves only a redirect and receives no installer authorization. Foreign origins still fail closed.
 
@@ -23,14 +23,15 @@
 ```bash
 npm ci
 npm run verify
+npx wrangler queues create nohdol-auto-showcase-radar # first deployment only
 npm run db:migrate:remote
 npm run deploy
 ```
 
-`npm run verify` runs deterministic catalog, inquiry, and Radar regressions, generates every route, and performs a Wrangler dry run. `npm run deploy` uses only the trusted host's Wrangler OAuth session and prints no application secret. Inquiry secret presence is checked through `/api/health`; Radar configuration is visible only after Radar authentication.
+`npm run verify` runs deterministic catalog, inquiry, and Radar regressions, generates every route, and performs a Wrangler dry run. The Queue must exist before the Worker version that binds its producer and consumer is deployed; rerunning the create command is not part of routine deploys. `npm run deploy` uses only the trusted host's Wrangler OAuth session and prints no application secret. Inquiry secret presence is checked through `/api/health`; Radar configuration is visible only after Radar authentication.
 
-Rollback deploys the last verified showcase commit to the same Worker name. The retained Workers origin and legacy Pages bridge remain independently reachable throughout a failed custom-domain deployment, and the installer gateway keeps all three declared application origins until retirement is explicitly authorized.
+Rollback deploys the last verified showcase commit to the same Worker name. The compatible D1 progress column and Queue remain in place; deleting either is a separate destructive operation. The retained Workers origin and legacy Pages bridge remain independently reachable throughout a failed custom-domain deployment, and the installer gateway keeps all three declared application origins until retirement is explicitly authorized.
 
 ## Live evidence
 
-Migration is complete only after the Worker deployment reports the custom domains, `www` redirects to the apex, and public checks observe `200` for `/`, `/apps/autotrip/`, `/install/`, `/install/autotrip/`, `apps.json`, and a workflow GIF. `/api/health` must report ready. The installer gateway must return an allowlisted CORS response for the primary, retained Workers, and legacy GitHub Pages origins while rejecting an unrelated origin. Existing inquiry canaries remain valid only after the apex health, same-origin session, and OTP surfaces are observed.
+Migration is complete only after the Worker deployment reports the custom domains, Queue inspection reports the declared producer and consumer, `www` redirects to the apex, and public checks observe `200` for `/`, `/apps/autotrip/`, `/install/`, `/install/autotrip/`, `apps.json`, and a workflow GIF. `/api/health` must report ready. A Radar canary must move from `running` to a terminal state with durable candidate counts. The installer gateway must return an allowlisted CORS response for the primary, retained Workers, and legacy GitHub Pages origins while rejecting an unrelated origin. Existing inquiry canaries remain valid only after the apex health, same-origin session, and OTP surfaces are observed.

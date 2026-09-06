@@ -53,7 +53,9 @@ function formatRun(run) {
   if (!run) return "아직 실행하지 않았습니다.";
   const labels = { running: "발굴 중", completed: "발굴 완료", partial: "일부 발굴 완료", failed: "발굴 실패" };
   const date = new Date(run.startedAt).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" });
-  return `${date} · ${labels[run.status] ?? run.status} · ${run.candidatesAnalyzed ?? 0}곳 분석`;
+  const analyzed = run.candidatesAnalyzed ?? 0;
+  const progress = run.placesFound > 0 ? `${analyzed}/${run.placesFound}곳 분석` : `${analyzed}곳 분석`;
+  return `${date} · ${labels[run.status] ?? run.status} · ${progress}`;
 }
 
 function fillSettings(settings) {

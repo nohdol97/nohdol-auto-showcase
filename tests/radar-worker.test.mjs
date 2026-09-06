@@ -19,10 +19,83 @@ import {
   validateRadarSettings,
   verifyRadarSession,
 } from "../src/radar-core.mjs";
-import { radarApi } from "../src/radar-worker.mjs";
+import { consumeRadarQueue, radarApi, recoverStaleRadarRuns } from "../src/radar-worker.mjs";
 import showcaseWorker from "../src/worker.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
+
+function queueDbFixture({ runs, candidates = [] }) {
+  const state = {
+    runs: new Map(runs.map((run) => [run.id, { ...run }])),
+    candidates: new Map(candidates.map((candidate) => [`${candidate.run_id}:${candidate.kakao_id}`, { ...candidate }])),
+  };
+  const aggregate = (runId) => {
+    const rows = [...state.candidates.values()].filter((candidate) => candidate.run_id === runId);
+    return {
+      total: rows.length,
+      completed: rows.filter((candidate) => candidate.analysis_status === "completed").length,
+      failed: rows.filter((candidate) => candidate.analysis_status === "failed").length,
+    };
+  };
+  return {
+    state,
+    prepare(sql) {
+      return {
+        args: [],
+        bind(...args) { this.args = args; return this; },
+        async first() {
+          if (sql.includes("COUNT(*) AS total")) return aggregate(this.args[0]);
+          if (sql.includes("FROM radar_candidates") && sql.includes("kakao_id = ?")) {
+            return state.candidates.get(`${this.args[0]}:${this.args[1]}`) ?? null;
+          }
+          if (sql.includes("FROM radar_runs") && sql.includes("WHERE id = ?")) return state.runs.get(this.args[0]) ?? null;
+          return null;
+        },
+        async all() {
+          if (sql.includes("COALESCE(heartbeat_at, started_at)")) {
+            const cutoff = this.args[0];
+            return { results: [...state.runs.values()].filter((run) => run.status === "running" && (run.heartbeat_at ?? run.started_at) <= cutoff) };
+          }
+          return { results: [] };
+        },
+        async run() {
+          if (sql.includes("INSERT INTO radar_candidates")) {
+            const [id, runId, kakaoId, name, address, category, phone, mapUrl, distanceMeters, analysisJson, score, confidence, sourceCount, analysisStatus, errorClass, createdAt] = this.args;
+            state.candidates.set(`${runId}:${kakaoId}`, {
+              id, run_id: runId, kakao_id: kakaoId, name, address, category, phone, map_url: mapUrl,
+              distance_meters: distanceMeters, analysis_json: analysisJson, score, confidence,
+              source_count: sourceCount, analysis_status: analysisStatus, error_class: errorClass, created_at: createdAt,
+            });
+          } else if (sql.includes("status = ?, candidates_analyzed = ?")) {
+            const [status, analyzed, errorClass, completedAt, heartbeatAt, runId] = this.args;
+            Object.assign(state.runs.get(runId), { status, candidates_analyzed: analyzed, error_class: errorClass, completed_at: completedAt, heartbeat_at: heartbeatAt });
+          } else if (sql.includes("SET candidates_analyzed = ?, heartbeat_at = ?")) {
+            const [analyzed, heartbeatAt, runId] = this.args;
+            Object.assign(state.runs.get(runId), { candidates_analyzed: analyzed, heartbeat_at: heartbeatAt });
+          } else if (sql.includes("RADAR_RUN_STALE")) {
+            const [status, placesFound, analyzed, completedAt, heartbeatAt, runId] = this.args;
+            Object.assign(state.runs.get(runId), {
+              status, places_found: Math.max(state.runs.get(runId).places_found, placesFound),
+              candidates_analyzed: analyzed, error_class: "RADAR_RUN_STALE", completed_at: completedAt, heartbeat_at: heartbeatAt,
+            });
+          }
+          return { success: true };
+        },
+      };
+    },
+  };
+}
+
+function queueMessage(body, attempts = 1) {
+  const calls = { ack: 0, retry: [] };
+  return {
+    body,
+    attempts,
+    ack() { calls.ack += 1; },
+    retry(options) { calls.retry.push(options); },
+    calls,
+  };
+}
 
 test("[REG:radar.admin_auth] password-derived sessions expire, reject tampering, and stay in a strict host cookie", async () => {
   const secret = "a-long-random-admin-password";
@@ -140,6 +213,172 @@ test("[REG:radar.daily_discovery] Seoul calendar date gates automatic discovery 
   assert.equal(shouldRunDaily({ autoEnabled: false, lastScheduledDate: null, instant: afterMidnightUtc }), false);
 });
 
+test("[REG:radar.queue_delivery] manual runs enqueue every public place without waitUntil background work", async () => {
+  const statements = [];
+  const fakeDb = {
+    prepare(sql) {
+      const statement = {
+        args: [],
+        bind(...args) { this.args = args; return this; },
+        async first() {
+          if (sql.includes("SELECT * FROM radar_settings")) return {
+            id: 1, location: "영통역", keywords_json: '["정형외과"]', radius_meters: 1200,
+            max_candidates: 3, auto_enabled: 0, created_at: "2026-09-06T00:00:00.000Z", updated_at: "2026-09-06T00:00:00.000Z",
+          };
+          return null;
+        },
+        async all() { return { results: [] }; },
+        async run() { statements.push({ sql, args: this.args }); return { success: true }; },
+      };
+      return statement;
+    },
+  };
+  const queued = [];
+  const background = [];
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (input) => {
+    const url = new URL(input);
+    if (url.pathname.endsWith("/search/address.json")) {
+      return Response.json({ documents: [{ x: "127.071", y: "37.251" }] });
+    }
+    if (url.pathname.endsWith("/search/keyword.json")) {
+      return Response.json({ documents: [
+        { id: "1", place_name: "가상 의원 1", road_address_name: "경기 가상로 1", category_name: "의료", distance: "100", phone: "031-000-0001", place_url: "https://place.map.kakao.com/1" },
+        { id: "2", place_name: "가상 의원 2", road_address_name: "경기 가상로 2", category_name: "의료", distance: "200", phone: "031-000-0002", place_url: "https://place.map.kakao.com/2" },
+        { id: "3", place_name: "가상 의원 3", road_address_name: "경기 가상로 3", category_name: "의료", distance: "300", phone: "031-000-0003", place_url: "https://place.map.kakao.com/3" },
+      ] });
+    }
+    throw new Error(`unexpected fetch ${url}`);
+  };
+  try {
+    const secret = "a-long-random-admin-password";
+    const token = await createRadarSession(secret);
+    const response = await radarApi(new Request("https://byabalone.com/api/admin/radar/runs", {
+      method: "POST",
+      headers: { Origin: "https://byabalone.com", "X-Requested-With": "abalone-showcase", Cookie: `${RADAR_SESSION_COOKIE}=${token}` },
+      body: "{}",
+    }), {
+      RADAR_ADMIN_PASSWORD: secret,
+      INQUIRY_DB: fakeDb,
+      KAKAO_REST_API_KEY: "fake-kakao-key",
+      OPENAI_API_KEY: "fake-openai-key",
+      OPENAI_MODEL: "gpt-test",
+      RADAR_QUEUE: { async sendBatch(messages) { queued.push(...messages); } },
+    }, { waitUntil(task) { background.push(task); } });
+    assert.equal(response.status, 202);
+    assert.equal(background.length, 0);
+    assert.equal(queued.length, 3);
+    assert.deepEqual(queued.map((message) => message.body.place.kakaoId), ["1", "2", "3"]);
+    assert.ok(statements.some(({ sql, args }) => sql.includes("places_found") && args.includes(3)));
+  } finally {
+    globalThis.fetch = originalFetch;
+    await Promise.allSettled(background);
+  }
+});
+
+test("[REG:radar.queue_delivery] a queued place persists one analysis and completes its run", async () => {
+  const db = queueDbFixture({ runs: [{
+    id: "run-success", status: "running", places_found: 1, candidates_analyzed: 0,
+    started_at: "2026-09-06T00:00:00.000Z", heartbeat_at: "2026-09-06T00:00:00.000Z",
+  }] });
+  const analysis = {
+    confirmedFacts: [],
+    painHypothesis: "접수 업무를 다시 정리하는 과정이 있는지 확인할 필요가 있습니다.",
+    confidence: 30,
+    sources: [],
+    suggestedTool: "접수 요청을 한 화면에서 분류하는 작은 도구",
+    openingQuestion: "접수 요청은 지금 어떤 순서로 정리하시나요?",
+    doNotClaim: "현재 접수 과정이 비효율적이라고 확인된 것은 아닙니다.",
+    prototypeOffer: {
+      name: "접수 요청 정리 도구",
+      promise: "접수 요청의 처리 상태를 한 화면에서 확인하게 합니다.",
+      demoScope: "요청 입력, 상태 분류, 오늘 처리 목록을 시연합니다.",
+      requiredInput: "현재 사용하는 접수 항목과 가상 요청 예시",
+      proofOfValue: "요청 한 건을 찾고 분류하는 시간을 비교합니다.",
+    },
+  };
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => Response.json({
+    output: [{ type: "message", content: [{ type: "output_text", text: JSON.stringify(analysis) }] }],
+  });
+  try {
+    const place = { kakaoId: "8", name: "가상 의원", address: "경기 가상로 8", category: "의료", phone: "031-000-0008", mapUrl: "https://place.map.kakao.com/8", distanceMeters: 80 };
+    const message = queueMessage({ runId: "run-success", place });
+    await consumeRadarQueue({ messages: [message] }, { INQUIRY_DB: db, OPENAI_API_KEY: "fake", OPENAI_MODEL: "gpt-test" });
+    assert.equal(message.calls.ack, 1);
+    assert.equal(message.calls.retry.length, 0);
+    assert.equal(db.state.candidates.get("run-success:8").analysis_status, "completed");
+    assert.equal(db.state.runs.get("run-success").status, "completed");
+    assert.equal(db.state.runs.get("run-success").candidates_analyzed, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("[REG:radar.queue_retry] transient analysis retries and a third failure becomes a terminal candidate", async () => {
+  const db = queueDbFixture({ runs: [{
+    id: "run-retry", status: "running", places_found: 1, candidates_analyzed: 0,
+    started_at: "2026-09-06T00:00:00.000Z", heartbeat_at: "2026-09-06T00:00:00.000Z",
+  }] });
+  const place = { kakaoId: "42", name: "가상 공방", address: "서울 가상구", category: "공방", phone: null, mapUrl: null, distanceMeters: 100 };
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response("upstream failed", { status: 500 });
+  try {
+    const first = queueMessage({ runId: "run-retry", place }, 1);
+    await consumeRadarQueue({ messages: [first] }, { INQUIRY_DB: db, OPENAI_API_KEY: "fake", OPENAI_MODEL: "gpt-test" });
+    assert.equal(first.calls.ack, 0);
+    assert.deepEqual(first.calls.retry, [{ delaySeconds: 30 }]);
+    assert.equal(db.state.candidates.size, 0);
+    assert.equal(db.state.runs.get("run-retry").status, "running");
+
+    const third = queueMessage({ runId: "run-retry", place }, 3);
+    await consumeRadarQueue({ messages: [third] }, { INQUIRY_DB: db, OPENAI_API_KEY: "fake", OPENAI_MODEL: "gpt-test" });
+    assert.equal(third.calls.ack, 1);
+    assert.equal(third.calls.retry.length, 0);
+    assert.equal(db.state.candidates.get("run-retry:42").analysis_status, "failed");
+    assert.equal(db.state.runs.get("run-retry").status, "failed");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("[REG:radar.queue_idempotency] duplicate delivery skips the model and preserves completed progress", async () => {
+  const db = queueDbFixture({
+    runs: [{ id: "run-done", status: "running", places_found: 1, candidates_analyzed: 0, started_at: "2026-09-06T00:00:00.000Z", heartbeat_at: "2026-09-06T00:00:00.000Z" }],
+    candidates: [{ id: "candidate-1", run_id: "run-done", kakao_id: "7", analysis_status: "completed" }],
+  });
+  let modelCalls = 0;
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => { modelCalls += 1; throw new Error("model must not be called"); };
+  try {
+    const message = queueMessage({ runId: "run-done", place: { kakaoId: "7", name: "가상점" } });
+    await consumeRadarQueue({ messages: [message] }, { INQUIRY_DB: db, OPENAI_API_KEY: "fake", OPENAI_MODEL: "gpt-test" });
+    assert.equal(modelCalls, 0);
+    assert.equal(message.calls.ack, 1);
+    assert.equal(db.state.runs.get("run-done").status, "completed");
+    assert.equal(db.state.runs.get("run-done").candidates_analyzed, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("[REG:radar.stale_recovery] a stalled run becomes partial from its durable candidate count", async () => {
+  const db = queueDbFixture({
+    runs: [{ id: "run-stale", status: "running", places_found: 3, candidates_analyzed: 0, started_at: "2026-09-06T00:00:00.000Z", heartbeat_at: "2026-09-06T00:01:00.000Z" }],
+    candidates: [
+      { id: "candidate-1", run_id: "run-stale", kakao_id: "1", analysis_status: "completed" },
+      { id: "candidate-2", run_id: "run-stale", kakao_id: "2", analysis_status: "completed" },
+    ],
+  });
+  const recovered = await recoverStaleRadarRuns(db, Date.parse("2026-09-06T00:20:00.000Z"));
+  assert.equal(recovered, 1);
+  assert.deepEqual(db.state.runs.get("run-stale"), {
+    id: "run-stale", status: "partial", places_found: 3, candidates_analyzed: 2,
+    started_at: "2026-09-06T00:00:00.000Z", heartbeat_at: "2026-09-06T00:20:00.000Z",
+    error_class: "RADAR_RUN_STALE", completed_at: "2026-09-06T00:20:00.000Z",
+  });
+});
+
 test("[REG:radar.admin_surface] private Radar files expose explicit states and remain outside public discovery", async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "abalone-radar-admin-"));
   const output = path.join(temporary, "site");
@@ -156,6 +395,7 @@ test("[REG:radar.admin_surface] private Radar files expose explicit states and r
   assert.match(html, /지금 발굴하기/);
   for (const state of ["login", "setup", "ready", "busy", "empty", "error"]) assert.match(script, new RegExp(`\\b${state}\\b`));
   assert.match(script, /\/api\/admin\/radar\/session/);
+  assert.match(script, /\$\{analyzed\}\/\$\{run\.placesFound\}곳 분석/);
   assert.doesNotMatch(script, /localStorage|sessionStorage|innerHTML/);
   assert.match(styles, /--brand-accent: #111111/);
   assert.match(styles, /outline: 3px solid var\(--brand-focus\)/);
@@ -169,4 +409,11 @@ test("[REG:radar.admin_surface] private Radar files expose explicit states and r
   assert.match(migration, /CREATE UNIQUE INDEX radar_runs_single_active_idx/);
   assert.match(migration, /CREATE TABLE radar_candidates/);
   assert.match(migration, /phone TEXT/);
+  const progressMigration = await readFile(path.join(root, "migrations/0003_radar_progress.sql"), "utf8");
+  assert.match(progressMigration, /ADD COLUMN heartbeat_at TEXT/);
+  assert.match(progressMigration, /radar_runs_status_heartbeat_idx/);
+  const wrangler = JSON.parse(await readFile(path.join(root, "wrangler.jsonc"), "utf8"));
+  assert.deepEqual(wrangler.queues.producers, [{ binding: "RADAR_QUEUE", queue: "nohdol-auto-showcase-radar" }]);
+  assert.equal(wrangler.queues.consumers[0].max_retries, 3);
+  assert.equal(wrangler.queues.consumers[0].retry_delay, 30);
 });

@@ -33,7 +33,7 @@ import {
   validateAttachment,
   validateInquiryFormTiming,
 } from "./inquiry-core.mjs";
-import { cleanupRadar, radarApi, scheduledRadar } from "./radar-worker.mjs";
+import { cleanupRadar, consumeRadarQueue, radarApi, scheduledRadar } from "./radar-worker.mjs";
 
 const JSON_LIMIT = 64 * 1024;
 const MODEL_TIMEOUT_MS = 120_000;
@@ -627,6 +627,9 @@ export default {
   },
   async scheduled(_event, env, ctx) {
     ctx.waitUntil(Promise.all([cleanupExpired(env), cleanupRadar(env), scheduledRadar(env)]));
+  },
+  async queue(batch, env) {
+    await consumeRadarQueue(batch, env);
   },
 };
 
