@@ -58,3 +58,5 @@ Workflow GIFs use ephemeral browser contexts and obvious demo values. They must 
 차단·요청 제한·후기 없음·페이지 구조 변경은 결과에 복구 안내로 표시됩니다. 같은 화면에서 입력한 링크는 오류와 진행 조회 후에도 유지됩니다. 새 비밀값과 DB 마이그레이션은 없으며 소스 반영과 운영 배포는 별도입니다. 자세한 기준은 [스펙 004](docs/specs/004-review-opportunity-items.md)를 따릅니다.
 
 2026-09-07 운영 배포를 완료했습니다. 다만 실제 운영 표본은 당근의 서버 접근 차단으로 수집에 실패했으며, 후기 기반 아이템 생성 성공은 아직 확인하지 못했습니다. 로컬 HTTP 수집 결과와 운영 수집 가능 여부는 다릅니다.
+
+같은 날 별도 Cloudflare Browser Run 진단에서는 HTTP 200과 고객 후기 8개·사장님 답글 5개 수집을 확인했습니다. 이 헤드리스 수집 경로는 아직 운영 Radar에 연결하지 않았습니다. [실측 결과와 적용 범위](docs/proposals/001-daangn-cloudflare-headless.md)를 참고하세요.
