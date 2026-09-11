@@ -21,6 +21,55 @@
       ]
     },
     {
+      "id": "kakao-summary",
+      "name": "Kakao Summary",
+      "audience": "개인 업무",
+      "sector": "카카오톡 대화 정리",
+      "description": "macOS에서 사용자가 선택한 카카오톡 대화를 수집하고 요약해 로컬 이력으로 확인하는 데스크톱 프로그램입니다. Windows는 진단과 이력 조회만 지원합니다.",
+      "authEndpoint": null,
+      "demoGif": null,
+      "activationRequired": false,
+      "activationNote": "ZIP 전체 압축을 푼 뒤 Mac은 시작.command, Windows는 시작.cmd를 더블클릭합니다. 종료는 열린 터미널에서 Ctrl+C입니다. 별도 앱 활성화나 제품키가 필요하지 않습니다. 본인의 OpenAI API 키를 입력하며 키는 실행 중 메모리에만 보관하고 요약 이력은 로컬에 저장됩니다.",
+      "availabilityNote": "설치 안내를 제공하며, 다운로드는 현재 제공하지 않습니다.",
+      "warning": "macOS 15 이상에서 Apple Silicon 또는 Intel에 맞는 ZIP을 선택해 압축을 풉니다. Windows x64는 진단과 이력 조회만 지원하며 카카오톡 대화 수집·요약은 지원하지 않습니다. Mac에서 대화방을 열면 읽음으로 바뀌며 선택한 대화 내용이 OpenAI API로 전송됩니다. 메시지를 보내거나 답장하지 않습니다. 설치 파일은 서명·공증되지 않아 운영체제 경고가 표시될 수 있습니다.",
+      "detailPoints": [
+        [
+          "대화 선택과 요약",
+          "macOS에서 사용자가 선택한 카카오톡 대화를 수집하고, 대화방을 열면 읽음으로 바뀌고 요약 요청 시 대화 내용을 OpenAI API로 전송합니다."
+        ],
+        [
+          "지원 환경",
+          "macOS 15 이상 Apple Silicon·Intel ZIP을 제공합니다. Windows x64는 진단과 이력 조회만 지원하며 대화 수집·요약은 지원하지 않습니다."
+        ],
+        [
+          "압축 해제와 실행",
+          "ZIP 전체 압축을 푼 뒤 Mac은 시작.command, Windows는 시작.cmd를 더블클릭합니다. 터미널과 브라우저가 열리며, 종료는 터미널에서 Ctrl+C입니다."
+        ],
+        [
+          "키와 이력 보관",
+          "별도 앱 활성화나 제품키가 필요하지 않습니다. 사용자가 입력한 본인의 OpenAI API 키는 실행 중 메모리에만 보관하며 요약 이력은 로컬에 저장됩니다."
+        ]
+      ],
+      "defaultAssetId": "macos-arm64",
+      "assets": [
+        {
+          "id": "macos-arm64",
+          "label": "macOS 15 이상 · Apple Silicon · ZIP",
+          "platform": "macos"
+        },
+        {
+          "id": "macos-x64",
+          "label": "macOS 15 이상 · Intel · ZIP",
+          "platform": "macos"
+        },
+        {
+          "id": "windows-x64",
+          "label": "Windows x64 · 진단·이력 조회 전용 · ZIP",
+          "platform": "windows"
+        }
+      ]
+    },
+    {
       "id": "life-admin",
       "kind": "prototype",
       "name": "LifeAdmin",

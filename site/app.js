@@ -65,9 +65,10 @@ function renderInstallForm(app, card) {
     navigator.userAgentData?.platform ?? navigator.platform ?? "",
     navigator.userAgent ?? "",
   );
+  const platformAssets = app.assets.filter((item) => item.platform === detectedAssetId);
   asset.value = app.assets.some((item) => item.id === detectedAssetId)
     ? detectedAssetId
-    : app.defaultAssetId;
+    : platformAssets.find((item) => item.id === app.defaultAssetId)?.id ?? platformAssets[0]?.id ?? app.defaultAssetId;
   assetLabel.append(asset);
 
   const codeLabel = element("label", "field-label", "설치 인증코드");
@@ -250,7 +251,7 @@ function renderDetail(app, page) {
   const detail = element("section", "detail-shell");
   renderDemo(app, detail);
   const infoGrid = element("div", "info-grid");
-  const detailPoints = isPrototype(app)
+  const detailPoints = app.detailPoints ?? (isPrototype(app)
     ? [
         ["업무 흐름 확인", "업무 담당자가 보게 될 전용 입력, 실행 상태, 결과 화면을 확인합니다."],
         ["지원 환경", "Windows, macOS, Linux용 설치 페이지 구성을 확인할 수 있습니다."],
@@ -260,15 +261,15 @@ function renderDetail(app, page) {
         ["업무 흐름 확인", "프로그램 실행부터 연결된 사이트의 안전 정지 지점까지 화면으로 확인합니다."],
         ["편하게 쓰는 화면", "자주 쓰는 기능과 필요한 정보를 한눈에 찾고, 진행 상태와 다음 행동을 쉽게 알 수 있도록 다듬었습니다."],
         ["프로그램별 권한", "다른 프로그램의 인증코드나 설치 파일과 섞이지 않는 앱별 경계를 사용합니다."],
-      ];
+      ]);
   for (const [title, text] of detailPoints) {
     const item = element("article", "info-card");
     item.append(element("strong", "", title), element("p", "", text));
     infoGrid.append(item);
   }
   detail.append(infoGrid);
-  if (isPrototype(app)) detail.append(element("p", "availability-notice", app.availabilityNote));
-  else if (app.warning) detail.append(element("p", "warning route-warning", app.warning));
+  if (isPrototype(app) || (!app.authEndpoint && app.availabilityNote)) detail.append(element("p", "availability-notice", app.availabilityNote));
+  if (!isPrototype(app) && app.warning) detail.append(element("p", "warning route-warning", app.warning));
   page.append(hero, detail);
 }
 
@@ -307,13 +308,13 @@ function renderInstall(app, page) {
       "intro",
       isPrototype(app)
         ? "지원 운영체제와 설치 절차를 확인할 수 있습니다. 설치 파일과 인증코드는 현재 제공되지 않습니다."
-        : "운영체제를 선택하고 공유받은 설치 인증코드를 입력하면 현재 최신 설치 파일만 전달됩니다.",
+        : !app.authEndpoint && app.availabilityNote ? app.availabilityNote : "운영체제를 선택하고 공유받은 설치 인증코드를 입력하면 현재 최신 설치 파일만 전달됩니다.",
     ),
   );
 
   const layout = element("section", "install-layout");
   const guide = element("div", "install-guide");
-  guide.append(element("h2", "", isPrototype(app) ? "설치 제공 상태" : "설치와 활성화 순서"));
+  guide.append(element("h2", "", isPrototype(app) ? "설치 제공 상태" : app.activationRequired === false ? "설치와 사용 순서" : "설치와 활성화 순서"));
   const installSteps = isPrototype(app)
     ? [
         ["01", "지원 운영체제 확인", "Windows, macOS, Linux 설치 페이지 구성을 제공합니다."],
@@ -321,16 +322,16 @@ function renderInstall(app, page) {
         ["03", "인증코드", "현재 프로그램별 설치 인증코드는 발급되지 않습니다."],
       ]
     : [
-        ["01", "최신 설치 파일 받기", "이 페이지에서 프로그램별 설치 인증코드를 서버로 검증합니다."],
+        ["01", "최신 설치 파일 받기", !app.authEndpoint && app.availabilityNote ? app.availabilityNote : "이 페이지에서 프로그램별 설치 인증코드를 서버로 검증합니다."],
         ["02", "운영체제 경고 확인", "현재 설치 파일은 서명·공증되지 않아 보안 경고가 표시될 수 있습니다."],
-        ["03", "앱에서 한 번 활성화", app.activationNote],
+        ["03", app.activationRequired === false ? "앱 사용 준비" : "앱에서 한 번 활성화", app.activationNote],
       ];
   for (const [number, title, text] of installSteps) {
     const step = element("article", "install-step");
     step.append(element("span", "", number), element("strong", "", title), element("p", "", text));
     guide.append(step);
   }
-  if (!isPrototype(app)) guide.append(
+  if (!isPrototype(app) && app.activationRequired !== false) guide.append(
     element(
       "p",
       "warning",

@@ -15,3 +15,4 @@
 - [당근 후기 프로그램 아이템 스펙](specs/004-review-opportunity-items.md) — 2026-09-07 운영 배포 및 당근 접근 차단 검증 기록
 - [후기 근거 경계 ADR](adr/003-review-evidence-boundary.md)
 - [당근 Cloudflare 헤드리스 실측](proposals/001-daangn-cloudflare-headless.md) — 진단 성공, 운영 Radar 연결 미적용
+- [Kakao Summary 공개 안내와 설치 경계](specs/005-kakao-summary-catalog.md) — 로컬 검증 완료, 공개 배포 미검증

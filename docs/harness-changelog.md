@@ -18,3 +18,11 @@
 - 후기 원문 복사 응답과 존재하지 않는 근거 참조를 서버에서 거부하고, 초기 HTML 데이터의 고객/답글 역할 및 실제 수집 범위를 분리했다.
 - 실제 일반 HTTP 수집은 고객 후기 8개·답글 5개·표시 전체 11개로 확인했다. 로컬 OpenAI 키가 없어 실제 모델 응답과 운영 Worker 실행은 미검증이다.
 - 최종 로컬 `npm run verify`: 73개 회귀, 정적 빌드와 Worker dry-run 통과. 기존 마이그레이션을 적용한 메모리 SQLite에서 실행 잠금·실패 저장·재시작을 확인했고, 390/768/1440px Chromium에서 합성 성공·오류·진행 화면과 가로 넘침 없음·44px 조작 영역을 확인했다.
+
+## 2026-09-11
+
+- Kakao Summary v0.2.0의 공개 설명과 세 플랫폼 ZIP 설치 안내를 스펙 005로 추가했다. macOS 15 이상 지원, Windows 진단·이력 조회 전용, API 키 메모리 보관과 로컬 이력 경계를 초기 HTML과 동적 화면에 반영했다.
+- 제품별 상세 설명과 활성화 필요 여부를 metadata로 선언하여 AutoTrip 전용 결제·제품키 안내가 새 앱에 표시되지 않도록 했다. 인증 endpoint는 실제 연결 검증 전 `null`이다.
+- `npm run verify` 75개 회귀·빌드·Worker dry-run, Abalone static audit·5개 도구 테스트, 390/768/1440px Chromium 6개 화면의 가로 넘침 없음과 제출 차단을 확인했다. source push·공개 배포·실제 다운로드는 별도 상태다.
+
+2026-09-11 배포 전 상태: 원본 v0.2.0 ZIP은 독립 downloads 저장소에서 private R2 read-back과 current feed까지 검증했다. 이 showcase의 `npm run deploy`는 자동 승인 검토가 최초 요청만으로 공개 게시 확인이 부족하다고 판단해 실행 전에 거부했다. 공개 게시 및 최초 설치 코드 설정 승인을 요청한 상태이며 authEndpoint는 null이다. main push가 legacy Pages 게시를 유발하므로 승인 전에는 로컬 커밋만 보관한다.

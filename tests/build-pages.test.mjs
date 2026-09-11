@@ -544,3 +544,58 @@ test("demo entries generate detail, GIF, and non-downloadable install preview ro
   assert.doesNotMatch(appScript, /실제 연동|기능 데모|기능 시연 화면|파일 없음/);
   assert.doesNotMatch(appScript, /설치 준비 중|배포 준비 중/);
 });
+
+test("Kakao Summary routes disclose platform limits and a disabled install without invented activation", async () => {
+  const app = catalog.apps.find((item) => item.id === "kakao-summary");
+  assert.ok(app, "Kakao Summary must be in the catalog");
+  if (app.authEndpoint !== null) assert.equal(app.authEndpoint, "https://nohdol-auto-downloads.nohdol-auto-download-gateway.workers.dev/authorize");
+  assert.equal(app.demoGif, null);
+  assert.equal(app.activationRequired, false);
+  assert.deepEqual(app.assets.map((asset) => asset.id), ["macos-arm64", "macos-x64", "windows-x64"]);
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "showcase-kakao-"));
+  const disabledCatalog = structuredClone(catalog);
+  disabledCatalog.apps.find((item) => item.id === "kakao-summary").authEndpoint = null;
+  const fixturePath = path.join(temporary, "fixture.json");
+  await writeFile(fixturePath, JSON.stringify(disabledCatalog));
+  await buildSite({ catalog: fixturePath, site: path.join(root, "site"), output: path.join(temporary, "site") });
+  for (const route of ["apps", "install"]) {
+    const html = await readFile(path.join(temporary, "site", route, app.id, "index.html"), "utf8");
+    for (const phrase of ["macOS 15", "Windows", "진단", "이력", "제품키가 필요하지 않습니다", "OpenAI API 키", "메모리", "로컬", "다운로드는 현재 제공하지 않습니다", "시작.command", "시작.cmd", "Ctrl+C", "읽음"]) assert.ok(html.includes(phrase), `${route} missing ${phrase}`);
+    assert.doesNotMatch(html, /앱에서 한 번 활성화|설치와 활성화|결제 전|제품키 사용 경계|workflow-image/);
+  }
+  const sitemap = await readFile(path.join(temporary, "site", "sitemap.xml"), "utf8");
+  assert.ok(sitemap.includes("https://byabalone.com/apps/kakao-summary/"));
+});
+
+async function renderKakaoRoute(route, platform = "MacIntel") {
+  const disabledCatalog = structuredClone(catalog);
+  disabledCatalog.apps.find((item) => item.id === "kakao-summary").authEndpoint = null;
+  const source = await readFile(path.join(root, "site", "app.js"), "utf8");
+  const page = new FakeNode("main");
+  const requests = [];
+  const document = { body: { dataset: { page: route, appId: "kakao-summary" } }, baseURI: "https://byabalone.com/", title: "", createElement: (tag) => new FakeNode(tag), querySelector: () => page };
+  vm.runInNewContext(source, { document, URL, navigator: { platform }, window: { showcasePlatform: { detectAssetId: () => platform === "Win32" ? "windows" : "macos" } }, fetch: async (url) => { requests.push(url); return new Response(JSON.stringify(disabledCatalog)); } });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  return { page, requests };
+}
+
+function nodeText(node) { return [node.textContent ?? "", ...(node.children ?? []).map(nodeText)].join(" "); }
+function findTag(node, tag) { return node.tag === tag ? node : (node.children ?? []).map((child) => findTag(child, tag)).find(Boolean); }
+
+test("Kakao Summary client keeps product-specific guidance and blocks unavailable downloads", async () => {
+  for (const route of ["detail", "install"]) {
+    const { page, requests } = await renderKakaoRoute(route);
+    const text = nodeText(page);
+    for (const phrase of ["macOS 15", "진단", "이력", "OpenAI API 키", "메모리", "로컬", "다운로드는 현재 제공하지 않습니다", "시작.command", "시작.cmd", "Ctrl+C", "읽음"]) assert.ok(text.includes(phrase), `${route} missing ${phrase}`);
+    assert.doesNotMatch(text, /앱에서 한 번 활성화|설치와 활성화|제품키 입력란|결제 전/);
+    if (route === "install") {
+      const form = findTag(page, "form");
+      assert.equal(findTag(form, "button").disabled, true);
+      assert.equal(findTag(form, "select").value, "macos-arm64");
+      await form.listeners.submit({ preventDefault() {} });
+      assert.equal(requests.length, 1);
+    }
+  }
+  const { page } = await renderKakaoRoute("install", "Win32");
+  assert.equal(findTag(page, "select").value, "windows-x64");
+});

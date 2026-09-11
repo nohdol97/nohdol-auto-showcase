@@ -19,6 +19,9 @@ export function validateCatalog(catalog) {
       if (app.authEndpoint !== null || app.installPreview !== true || !app.demoGif || !app.demoAlt || !app.demoCaption || !app.demoLabel || !app.availabilityNote || !app.audience || !app.sector) throw new Error(`prototype ${app.id} must define a truthful disabled install preview`);
       if (!SAFE_DEMO_PATH.test(app.demoGif)) throw new Error(`invalid demo GIF path: ${app.id}`);
     } else if (!app.activationNote) throw new Error(`invalid app metadata: ${app.id}`);
+    if (app.activationRequired !== undefined && typeof app.activationRequired !== "boolean") throw new Error(`invalid activation requirement: ${app.id}`);
+    if (app.detailPoints !== undefined && (!Array.isArray(app.detailPoints) || app.detailPoints.length === 0 || app.detailPoints.some((point) => !Array.isArray(point) || point.length !== 2 || point.some((text) => typeof text !== "string" || !text.trim())))) throw new Error(`invalid detail points: ${app.id}`);
+    if (app.assets?.some((asset) => asset.platform !== undefined && !["macos", "windows", "linux"].includes(asset.platform))) throw new Error(`invalid asset platform: ${app.id}`);
     if (kind === "product" && app.authEndpoint !== null) {
       const endpoint = new URL(app.authEndpoint);
       if (endpoint.protocol !== "https:" || endpoint.pathname !== "/authorize") throw new Error(`invalid authorization endpoint: ${app.id}`);
@@ -146,7 +149,8 @@ function detailContent(app) {
       </section>
       <section class="detail-shell">
         ${app.demoGif ? `<figure class="workflow-demo"><span class="demo-label">${escapeHtml(app.demoLabel ?? "프로그램 흐름 · 결제 전 안전 정지")}</span><picture class="workflow-media"><img class="workflow-image" src="${escapeHtml(app.demoGif)}" alt="${escapeHtml(app.demoAlt)}" /></picture><figcaption class="workflow-caption">${escapeHtml(app.demoCaption)}</figcaption></figure>` : ""}
-        <div class="info-grid"><article class="info-card"><strong>업무 흐름 확인</strong><p>${prototype ? "전용 입력, 실행 상태, 결과 화면을 예시 데이터로 확인합니다." : "프로그램 실행부터 연결된 사이트의 결제 전 안전 정지 지점까지 확인합니다."}</p></article><article class="info-card"><strong>제공 상태</strong><p>${prototype ? "기능 시연 화면 · 데모 데이터 · 외부 시스템 미연동" : "검증된 프로그램 설명과 인증 설치 경로를 분리해 제공합니다."}</p></article></div>
+        <div class="info-grid">${app.detailPoints ? app.detailPoints.map(([title, text]) => `<article class="info-card"><strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p></article>`).join("") : `<article class="info-card"><strong>업무 흐름 확인</strong><p>${prototype ? "전용 입력, 실행 상태, 결과 화면을 예시 데이터로 확인합니다." : "프로그램 실행부터 연결된 사이트의 결제 전 안전 정지 지점까지 확인합니다."}</p></article><article class="info-card"><strong>제공 상태</strong><p>${prototype ? "기능 시연 화면 · 데모 데이터 · 외부 시스템 미연동" : "검증된 프로그램 설명과 인증 설치 경로를 분리해 제공합니다."}</p></article>`}</div>
+        ${!prototype && !app.authEndpoint && app.availabilityNote ? `<p class="availability-notice">${escapeHtml(app.availabilityNote)}</p>` : ""}
         ${prototype ? `<p class="availability-notice">${escapeHtml(app.availabilityNote)} 기능 시연 화면이며 외부 시스템 미연동 상태입니다.</p>` : app.warning ? `<p class="warning route-warning">${escapeHtml(app.warning)}</p>` : ""}
       </section>`;
 }
@@ -158,7 +162,9 @@ function installIndexContent(catalog) {
 
 function installContent(app) {
   const prototype = app.kind === "prototype";
-  return `<section class="route-hero compact-route-hero"><nav class="breadcrumb" aria-label="현재 위치"><a href="./install/">설치</a><span>/</span><span>${escapeHtml(app.name)}</span></nav><p class="eyebrow"><span></span>설치 안내</p><h1>${escapeHtml(app.name)} 설치</h1><p class="intro">${prototype ? "지원 운영체제 구성을 확인할 수 있지만 설치 파일과 인증코드는 현재 제공되지 않습니다." : "운영체제를 선택하고 공유받은 설치 인증코드를 입력하면 현재 최신 설치 파일만 전달됩니다."}</p></section><section class="install-layout"><div class="install-guide"><h2>${prototype ? "설치 제공 상태" : "설치와 활성화 순서"}</h2><article class="install-step"><span>01</span><strong>지원 환경 확인</strong><p>${escapeHtml(app.assets.map((asset) => asset.label).join(", "))}</p></article><article class="install-step"><span>02</span><strong>설치 파일</strong><p>${prototype ? "현재 다운로드 파일과 인증코드를 제공하지 않습니다." : "프로그램별 서버 인증 뒤 짧은 시간 동안 전달됩니다."}</p></article></div><div class="app-card install-card"><h2>${escapeHtml(app.name)}</h2><p>${prototype ? "기능 시연 화면 · 데모 데이터 · 외부 시스템 미연동" : "설치 인증은 브라우저에 코드를 저장하지 않는 동적 양식에서 진행합니다."}</p><a class="secondary-action full-action" href="./apps/${escapeHtml(app.id)}/">프로그램 설명 보기</a></div></section>`;
+  const unavailable = !app.authEndpoint && app.availabilityNote;
+  const intro = prototype ? "지원 운영체제 구성을 확인할 수 있지만 설치 파일과 인증코드는 현재 제공되지 않습니다." : unavailable || "운영체제를 선택하고 공유받은 설치 인증코드를 입력하면 현재 최신 설치 파일만 전달됩니다.";
+  return `<section class="route-hero compact-route-hero"><nav class="breadcrumb" aria-label="현재 위치"><a href="./install/">설치</a><span>/</span><span>${escapeHtml(app.name)}</span></nav><p class="eyebrow"><span></span>설치 안내</p><h1>${escapeHtml(app.name)} 설치</h1><p class="intro">${escapeHtml(intro)}</p></section><section class="install-layout"><div class="install-guide"><h2>${prototype ? "설치 제공 상태" : app.activationRequired === false ? "설치와 사용 순서" : "설치와 활성화 순서"}</h2><article class="install-step"><span>01</span><strong>지원 환경 확인</strong><p>${escapeHtml(app.assets.map((asset) => asset.label).join(", "))}</p></article><article class="install-step"><span>02</span><strong>설치 파일</strong><p>${escapeHtml(prototype ? "현재 다운로드 파일과 인증코드를 제공하지 않습니다." : unavailable || "프로그램별 서버 인증 뒤 짧은 시간 동안 전달됩니다.")}</p></article>${!prototype ? `<article class="install-step"><span>03</span><strong>${app.activationRequired === false ? "앱 사용 준비" : "앱에서 한 번 활성화"}</strong><p>${escapeHtml(app.activationNote)}</p></article>` : ""}</div><div class="app-card install-card"><h2>${escapeHtml(app.name)}</h2><p>${escapeHtml(prototype ? "기능 시연 화면 · 데모 데이터 · 외부 시스템 미연동" : unavailable || "설치 인증은 브라우저에 코드를 저장하지 않는 동적 양식에서 진행합니다.")}</p>${app.warning ? `<p class="warning">${escapeHtml(app.warning)}</p>` : ""}<a class="secondary-action full-action" href="./apps/${escapeHtml(app.id)}/">프로그램 설명 보기</a></div></section>`;
 }
 
 function privacyContent() {
@@ -231,13 +237,13 @@ export async function buildSite(options) {
     const prototype = app.kind === "prototype";
     await writeRoute(template, options.output, `/apps/${app.id}/`, {
       page: "detail", appId: app.id, baseHref: "../../", title: `${app.name} 제작 사례 — Abalone`,
-      description: `${app.description} ${prototype ? "예시 데이터로 구성한 외부 시스템 미연동 기능 시연입니다." : "실제 업무 흐름과 안전 정지 지점을 확인하세요."}`,
+      description: `${app.description} ${prototype ? "예시 데이터로 구성한 외부 시스템 미연동 기능 시연입니다." : app.detailPoints ? "지원 환경과 데이터 처리 범위를 확인하세요." : "실제 업무 흐름과 안전 정지 지점을 확인하세요."}`,
       routePath: `/apps/${app.id}/`, content: detailContent(app), schemas: prototype ? [] : [softwareSchema(app)],
     });
     if (!prototype || app.installPreview === true) {
       await writeRoute(template, options.output, `/install/${app.id}/`, {
         page: "install", appId: app.id, baseHref: "../../", title: `${app.name} 설치 안내 — Abalone`,
-        description: prototype ? `${app.name}의 지원 운영체제와 설치 화면 예시입니다. 설치 파일과 인증코드는 현재 제공되지 않습니다.` : `${app.name}의 지원 운영체제, 인증 설치 절차와 제품키 사용 경계를 확인하세요.`,
+        description: prototype ? `${app.name}의 지원 운영체제와 설치 화면 예시입니다. 설치 파일과 인증코드는 현재 제공되지 않습니다.` : `${app.name}의 지원 운영체제, 인증 설치 절차와 ${app.activationRequired === false ? "사용 준비 사항" : "제품키 사용 경계"}를 확인하세요.`,
         routePath: `/install/${app.id}/`, content: installContent(app), noindex: prototype,
       });
     }
