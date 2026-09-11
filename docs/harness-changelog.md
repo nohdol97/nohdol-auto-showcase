@@ -26,3 +26,5 @@
 - `npm run verify` 75개 회귀·빌드·Worker dry-run, Abalone static audit·5개 도구 테스트, 390/768/1440px Chromium 6개 화면의 가로 넘침 없음과 제출 차단을 확인했다. source push·공개 배포·실제 다운로드는 별도 상태다.
 
 2026-09-11 배포 전 상태: 원본 v0.2.0 ZIP은 독립 downloads 저장소에서 private R2 read-back과 current feed까지 검증했다. 이 showcase의 `npm run deploy`는 자동 승인 검토가 최초 요청만으로 공개 게시 확인이 부족하다고 판단해 실행 전에 거부했다. 공개 게시 및 최초 설치 코드 설정 승인을 요청한 상태이며 authEndpoint는 null이다. main push가 legacy Pages 게시를 유발하므로 승인 전에는 로컬 커밋만 보관한다.
+
+2026-09-11 승인 후 게시: Kakao Summary v0.2.0 설치 코드를 Secret·server verifier·Keychain에 연결한 뒤 인증 endpoint 활성화. 76개 회귀/build/dry-run과 공개 자산 byte 일치, Worker `5eb07b2e-6941-425e-80a9-d2897cdd9192` 100%, 정상 ZIP3종 무결성과 코드/origin/변조/만료 거부 확인. 기존 gateway와 제품키는 변경하지 않았다. 반복 요청429는 운영 바인딩 확인과 별도로 미관측 상태다.

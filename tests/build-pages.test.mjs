@@ -555,6 +555,7 @@ test("Kakao Summary routes disclose platform limits and a disabled install witho
   const temporary = await mkdtemp(path.join(os.tmpdir(), "showcase-kakao-"));
   const disabledCatalog = structuredClone(catalog);
   disabledCatalog.apps.find((item) => item.id === "kakao-summary").authEndpoint = null;
+  disabledCatalog.apps.find((item) => item.id === "kakao-summary").availabilityNote = "설치 안내를 제공하며, 다운로드는 현재 제공하지 않습니다.";
   const fixturePath = path.join(temporary, "fixture.json");
   await writeFile(fixturePath, JSON.stringify(disabledCatalog));
   await buildSite({ catalog: fixturePath, site: path.join(root, "site"), output: path.join(temporary, "site") });
@@ -570,6 +571,7 @@ test("Kakao Summary routes disclose platform limits and a disabled install witho
 async function renderKakaoRoute(route, platform = "MacIntel") {
   const disabledCatalog = structuredClone(catalog);
   disabledCatalog.apps.find((item) => item.id === "kakao-summary").authEndpoint = null;
+  disabledCatalog.apps.find((item) => item.id === "kakao-summary").availabilityNote = "설치 안내를 제공하며, 다운로드는 현재 제공하지 않습니다.";
   const source = await readFile(path.join(root, "site", "app.js"), "utf8");
   const page = new FakeNode("main");
   const requests = [];
@@ -598,4 +600,26 @@ test("Kakao Summary client keeps product-specific guidance and blocks unavailabl
   }
   const { page } = await renderKakaoRoute("install", "Win32");
   assert.equal(findTag(page, "select").value, "windows-x64");
+});
+
+test("published Kakao Summary form sends the selected ZIP to its gateway and clears the code on rejection", async () => {
+  const app = catalog.apps.find((item) => item.id === "kakao-summary");
+  assert.equal(app.authEndpoint, "https://nohdol-auto-downloads.nohdol-auto-download-gateway.workers.dev/authorize");
+  assert.equal(app.availabilityNote, undefined);
+  const source = await readFile(path.join(root, "site", "app.js"), "utf8");
+  const page = new FakeNode("main"); const requests = [];
+  const document = { body: { dataset: { page: "install", appId: app.id } }, baseURI: "https://byabalone.com/", title: "", createElement: tag => new FakeNode(tag), querySelector: () => page };
+  vm.runInNewContext(source, { document, URL, navigator: { platform: "Win32" }, window: { showcasePlatform: { detectAssetId: () => "windows" } }, fetch: async (url, options) => {
+    requests.push({url, options}); return options?.method === 'POST' ? new Response('{}', {status:401}) : new Response(JSON.stringify(catalog));
+  } });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const form = findTag(page, "form"), input = findTag(form, "input"), button = findTag(form, "button");
+  assert.equal(button.disabled, false);
+  assert.equal(findTag(form, "select").value, "windows-x64");
+  input.value = "fixture-invalid-code";
+  await form.listeners.submit({ preventDefault() {} });
+  assert.equal(requests[1].url, app.authEndpoint);
+  assert.deepEqual(JSON.parse(requests[1].options.body), { appId: app.id, assetId: "windows-x64", code: "fixture-invalid-code" });
+  assert.equal(input.value, ""); assert.equal(button.disabled, false);
+  assert.doesNotMatch(nodeText(page), /다운로드는 현재 제공하지 않습니다/);
 });
