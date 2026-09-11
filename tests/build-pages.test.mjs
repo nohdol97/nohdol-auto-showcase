@@ -549,7 +549,6 @@ test("Kakao Summary routes disclose platform limits and a disabled install witho
   const app = catalog.apps.find((item) => item.id === "kakao-summary");
   assert.ok(app, "Kakao Summary must be in the catalog");
   if (app.authEndpoint !== null) assert.equal(app.authEndpoint, "https://nohdol-auto-downloads.nohdol-auto-download-gateway.workers.dev/authorize");
-  assert.equal(app.demoGif, null);
   assert.equal(app.activationRequired, false);
   assert.deepEqual(app.assets.map((asset) => asset.id), ["macos-arm64", "macos-x64", "windows-x64"]);
   const temporary = await mkdtemp(path.join(os.tmpdir(), "showcase-kakao-"));
@@ -562,7 +561,8 @@ test("Kakao Summary routes disclose platform limits and a disabled install witho
   for (const route of ["apps", "install"]) {
     const html = await readFile(path.join(temporary, "site", route, app.id, "index.html"), "utf8");
     for (const phrase of ["macOS 15", "Windows", "진단", "이력", "제품키가 필요하지 않습니다", "OpenAI API 키", "메모리", "로컬", "다운로드는 현재 제공하지 않습니다", "시작.command", "시작.cmd", "Ctrl+C", "읽음"]) assert.ok(html.includes(phrase), `${route} missing ${phrase}`);
-    assert.doesNotMatch(html, /앱에서 한 번 활성화|설치와 활성화|결제 전|제품키 사용 경계|workflow-image/);
+    assert.doesNotMatch(html, /앱에서 한 번 활성화|설치와 활성화|결제 전|제품키 사용 경계/);
+    if (route === "install") assert.doesNotMatch(html, /workflow-image/);
   }
   const sitemap = await readFile(path.join(temporary, "site", "sitemap.xml"), "utf8");
   assert.ok(sitemap.includes("https://byabalone.com/apps/kakao-summary/"));
@@ -583,6 +583,36 @@ async function renderKakaoRoute(route, platform = "MacIntel") {
 
 function nodeText(node) { return [node.textContent ?? "", ...(node.children ?? []).map(nodeText)].join(" "); }
 function findTag(node, tag) { return node.tag === tag ? node : (node.children ?? []).map((child) => findTag(child, tag)).find(Boolean); }
+
+test("Kakao Summary publishes disclosed fixture footage without changing the released product or download authority", async () => {
+  const app = catalog.apps.find((item) => item.id === "kakao-summary");
+  assert.equal(app.kind ?? "product", "product");
+  assert.equal(app.authEndpoint, "https://nohdol-auto-downloads.nohdol-auto-download-gateway.workers.dev/authorize");
+  assert.deepEqual(app.assets.map((asset) => asset.id), ["macos-arm64", "macos-x64", "windows-x64"]);
+  assert.equal(app.demoGif, "./assets/kakao-summary-workflow.gif");
+  assert.equal(app.demoLabel, "기능 시연 화면 · 데모 데이터 · 외부 시스템 미연동");
+  for (const phrase of ["대화방", "요약", "근거", "원문", "예시"]) assert.ok(app.demoAlt.includes(phrase), `alt missing ${phrase}`);
+  for (const phrase of ["실제 앱 화면", "예시 응답", "카카오톡 수집", "OpenAI 요청", "실행하지 않았습니다", "Windows", "대화 수집·요약을 지원하지 않습니다"]) assert.ok(app.demoCaption.includes(phrase), `caption missing ${phrase}`);
+
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "showcase-kakao-gif-"));
+  await buildSite({ catalog: path.join(root, "apps.json"), site: path.join(root, "site"), output: path.join(temporary, "site") });
+  const html = await readFile(path.join(temporary, "site", "apps", app.id, "index.html"), "utf8");
+  assert.match(html, /<img class="workflow-image" src="\.\/assets\/kakao-summary-workflow\.gif"/);
+  for (const text of [app.demoLabel, app.demoAlt, app.demoCaption]) assert.ok(html.includes(text));
+  assert.match(html, /"@type":"SoftwareApplication"/);
+  assert.doesNotMatch(html, /workflow-motion-control|prefers-reduced-motion|설치 파일과 인증코드는 현재 제공되지 않습니다/);
+  const gif = await readFile(path.join(temporary, "site", "assets", "kakao-summary-workflow.gif"));
+  assert.equal(gif.subarray(0, 6).toString("ascii"), "GIF89a");
+  assert.ok(gif.length <= 8_000_000, "public GIF exceeds 8 MB");
+  assert.ok(gif.readUInt16LE(6) <= 1200, "public GIF exceeds 1200 px width");
+
+  const { page } = await renderKakaoRoute("detail");
+  const image = findByClass(page, "workflow-image");
+  assert.equal(image.src, app.demoGif);
+  assert.equal(image.alt, app.demoAlt);
+  assert.equal(findByClass(page, "demo-label").textContent, app.demoLabel);
+  assert.equal(findByClass(page, "workflow-caption").textContent, app.demoCaption);
+});
 
 test("Kakao Summary client keeps product-specific guidance and blocks unavailable downloads", async () => {
   for (const route of ["detail", "install"]) {

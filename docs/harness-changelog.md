@@ -28,3 +28,7 @@
 2026-09-11 배포 전 상태: 원본 v0.2.0 ZIP은 독립 downloads 저장소에서 private R2 read-back과 current feed까지 검증했다. 이 showcase의 `npm run deploy`는 자동 승인 검토가 최초 요청만으로 공개 게시 확인이 부족하다고 판단해 실행 전에 거부했다. 공개 게시 및 최초 설치 코드 설정 승인을 요청한 상태이며 authEndpoint는 null이다. main push가 legacy Pages 게시를 유발하므로 승인 전에는 로컬 커밋만 보관한다.
 
 2026-09-11 승인 후 게시: Kakao Summary v0.2.0 설치 코드를 Secret·server verifier·Keychain에 연결한 뒤 인증 endpoint 활성화. 76개 회귀/build/dry-run과 공개 자산 byte 일치, Worker `5eb07b2e-6941-425e-80a9-d2897cdd9192` 100%, 정상 ZIP3종 무결성과 코드/origin/변조/만료 거부 확인. 기존 gateway와 제품키는 변경하지 않았다. 반복 요청429는 운영 바인딩 확인과 별도로 미관측 상태다.
+
+2026-09-11 후속 GIF 로컬 검증: 사용자가 승인한 실제 앱 화면·예시 응답으로 대화방 선택, 수집·요약 진행, 요약 결과와 근거 원문 확인을 보여 주는 13.51초 GIF를 추가했다. 1200×850, 108프레임, 804,153바이트이며 모든 프레임에 시연·미연동을 표시한다. 제품 분류·기존 인증 endpoint·세 ZIP 자산은 유지했고 실제 카카오톡/native/OpenAI 실행은 하지 않았다. 새 GIF 회귀의 RED→GREEN, 전체 77개 테스트·102개 정적 자산·Worker dry-run, Abalone 감사와 390/768/1440px 상세·설치 6개 화면의 정상 로딩·넘침 없음·설치 활성 유지를 확인했다. GIF의 운영 게시와 live hash 확인은 대기 상태다.
+
+2026-09-11 GIF 공개 반영: Worker `71c07d8d-36f2-4e5b-bca3-b08d6faadc8f`100%, GIF HTTP200/image-gif 및 804,153바이트·SHA-256 일치, 카탈로그·상세·기존 설치 HTML byte 일치를 확인했다.
