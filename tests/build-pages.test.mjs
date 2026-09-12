@@ -545,7 +545,7 @@ test("demo entries generate detail, GIF, and non-downloadable install preview ro
   assert.doesNotMatch(appScript, /설치 준비 중|배포 준비 중/);
 });
 
-test("Kakao Summary routes disclose platform limits and a disabled install without invented activation", async () => {
+test("[REG:showcase.kakao_electron_installers] Kakao Summary routes disclose platform limits and a disabled install without invented activation", async () => {
   const app = catalog.apps.find((item) => item.id === "kakao-summary");
   assert.ok(app, "Kakao Summary must be in the catalog");
   if (app.authEndpoint !== null) assert.equal(app.authEndpoint, "https://nohdol-auto-downloads.nohdol-auto-download-gateway.workers.dev/authorize");
@@ -560,7 +560,8 @@ test("Kakao Summary routes disclose platform limits and a disabled install witho
   await buildSite({ catalog: fixturePath, site: path.join(root, "site"), output: path.join(temporary, "site") });
   for (const route of ["apps", "install"]) {
     const html = await readFile(path.join(temporary, "site", route, app.id, "index.html"), "utf8");
-    for (const phrase of ["macOS 15", "Windows", "진단", "이력", "제품키가 필요하지 않습니다", "OpenAI API 키", "메모리", "로컬", "다운로드는 현재 제공하지 않습니다", "시작.command", "시작.cmd", "Ctrl+C", "읽음"]) assert.ok(html.includes(phrase), `${route} missing ${phrase}`);
+    for (const phrase of ["macOS 15", "Windows", "진단", "이력", "제품키가 필요하지 않습니다", "OpenAI API 키", "메모리", "로컬", "다운로드는 현재 제공하지 않습니다", "PKG", "Setup", "앱을 실행", "읽음"]) assert.ok(html.includes(phrase), `${route} missing ${phrase}`);
+    assert.doesNotMatch(html, /시작\.command|시작\.cmd|Ctrl\+C|ZIP 전체 압축/);
     assert.doesNotMatch(html, /앱에서 한 번 활성화|설치와 활성화|결제 전|제품키 사용 경계/);
     if (route === "install") assert.doesNotMatch(html, /workflow-image/);
   }
@@ -618,7 +619,8 @@ test("Kakao Summary client keeps product-specific guidance and blocks unavailabl
   for (const route of ["detail", "install"]) {
     const { page, requests } = await renderKakaoRoute(route);
     const text = nodeText(page);
-    for (const phrase of ["macOS 15", "진단", "이력", "OpenAI API 키", "메모리", "로컬", "다운로드는 현재 제공하지 않습니다", "시작.command", "시작.cmd", "Ctrl+C", "읽음"]) assert.ok(text.includes(phrase), `${route} missing ${phrase}`);
+    for (const phrase of ["macOS 15", "진단", "이력", "OpenAI API 키", "메모리", "로컬", "다운로드는 현재 제공하지 않습니다", "PKG", "Setup", "앱을 실행", "읽음"]) assert.ok(text.includes(phrase), `${route} missing ${phrase}`);
+    assert.doesNotMatch(text, /시작\.command|시작\.cmd|Ctrl\+C|ZIP 전체 압축/);
     assert.doesNotMatch(text, /앱에서 한 번 활성화|설치와 활성화|제품키 입력란|결제 전/);
     if (route === "install") {
       const form = findTag(page, "form");
@@ -632,7 +634,7 @@ test("Kakao Summary client keeps product-specific guidance and blocks unavailabl
   assert.equal(findTag(page, "select").value, "windows-x64");
 });
 
-test("published Kakao Summary form sends the selected ZIP to its gateway and clears the code on rejection", async () => {
+test("[REG:showcase.kakao_electron_installers] published Kakao Summary form sends the selected Electron installer to its gateway and clears the code on rejection", async () => {
   const app = catalog.apps.find((item) => item.id === "kakao-summary");
   assert.equal(app.authEndpoint, "https://nohdol-auto-downloads.nohdol-auto-download-gateway.workers.dev/authorize");
   assert.equal(app.availabilityNote, undefined);

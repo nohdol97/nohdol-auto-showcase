@@ -36,6 +36,9 @@
     "showcase.reduced_motion": {
       "testFiles": ["tests/build-pages.test.mjs"]
     },
+    "showcase.kakao_electron_installers": {
+      "testFiles": ["tests/build-pages.test.mjs"]
+    },
     "showcase.recovery_states": {
       "testFiles": ["tests/build-pages.test.mjs"]
     },

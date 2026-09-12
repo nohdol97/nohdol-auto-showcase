@@ -21,10 +21,10 @@ Each app-named SQLite Durable Object keeps its own `unused`, `used`, and `revoke
 
 The public install route contains only the user installation and in-app activation instructions. It has no distribution administrator credential, issue form, key list, or revoke control, and it never sends a product key from browser JavaScript. The separate `/admin/radar/` opportunity-research route has no distribution binding or product-key authority.
 
-## Kakao Summary v0.2.0
+## Kakao Summary v0.3.0
 
 `kakao-summary`는 제품키 활성화를 사용하지 않는다. `activationRequired: false`는 공개 화면의 활성화 제목과 제품키 입력 안내를 제거하고 사용 준비 안내를 표시한다. `detailPoints`는 실제 업무·플랫폼·데이터 처리 설명을 초기 HTML과 동적 화면에 함께 반영한다.
 
-플랫폼은 `macos-arm64`, `macos-x64`, `windows-x64` ZIP으로 구분하고 각 asset의 `platform`은 OS 감지와 연결한다. macOS 15 이상 Apple Silicon과 Intel을 사용자가 선택하며 브라우저 값으로 CPU를 추정하지 않는다. Windows는 진단·이력 조회 전용이다. 기본 선택은 macOS Apple Silicon이다.
+플랫폼은 `macos-arm64`, `macos-x64` PKG와 `windows-x64` Setup으로 구분하고 각 asset의 `platform`은 OS 감지와 연결한다. macOS 15 이상 Apple Silicon과 Intel을 사용자가 선택하며 브라우저 값으로 CPU를 추정하지 않는다. Windows는 진단·이력 조회 전용이다. 기본 선택은 macOS Apple Silicon PKG다. 비공개 Release의 보조 ZIP은 공개 설치 선택지로 노출하지 않는다.
 
 요약 요청 시 선택한 대화 내용은 외부 요약 API로 전송한다. API 키는 사용자가 입력하며 실행 중 메모리에만 보관하고, 요약 이력은 로컬 저장한다. `authEndpoint: null`인 동안 `availabilityNote`를 초기 HTML과 동적 화면에 표시하고 요청을 차단한다. 인증 endpoint 활성화는 독립 배포 경계 검증 이후 별도로 수행한다.
