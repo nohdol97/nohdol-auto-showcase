@@ -1,6 +1,6 @@
 # Kakao Summary 공개 안내와 설치 경계
 
-상태: Electron v0.3.0 공개 전환 진행 · 예시 데이터 GIF 공개 반영·재생 검증 완료
+상태: Electron v0.3.0 공개 안내·설치 파일 전환 완료 · 2026-09-20
 
 ## 문제와 목표
 
@@ -66,3 +66,12 @@ GIF만 복구할 때는 새 GIF metadata와 공개 GIF 파일만 이전 상태�
 `npm run deploy`가 Worker `71c07d8d-36f2-4e5b-bca3-b08d6faadc8f`를 게시했고 deployments list에서100% 적용을 확인했다. 운영 GIF는 HTTP200·image/gif·804,153바이트이며 로컬 GIF와 SHA-256이 일치한다. apps.json, 초기 상세 HTML 및 기존 설치 HTML도 로컬 build와 byte 일치한다. 실제 수집·요약 호출이나 설치 credential 변경은 없다.
 
 운영 Chromium의390/1440px 상세에서 HTTP200, GIF1200×850 로딩, 넘침 없음과 정확한 고지를 확인했다. 각 너비에서1초 간격 이미지 캡처의 해시가 달라 재생을 확인했으며 기존 설치 양식은 활성 상태였다. 인증 제출은0건이다. 재현 명령은 무시된 `artifacts/kakao-summary-gif/render-live.mjs`이고 공개 화면 증거는 같은 폴더에 보관한다.
+
+
+## 2026-09-20 Electron 설치형 공개 전환 완료
+
+사용자가 공개 안내 배포를 직접 승인했다. 기존 소스 `712571110aceed9a7625dcd223f03c9b5ae4496d`의 검증은 77개 테스트·102개 자산 빌드·Wrangler dry-run·Abalone 정적 감사 통과다. Worker `0efe11f2-ebf2-4785-a872-901e8975abe9`에 변경된 apps.json과 Kakao 상세·설치 HTML 세 파일을 반영했다. 이전 기준 버전은 `71c07d8d-36f2-4e5b-bca3-b08d6faadc8f`다.
+
+운영 세 자산은 HTTP 200이고 검증 빌드와 바이트가 일치한다. Mac Apple Silicon·Intel은 PKG, Windows는 Setup과 앱 실행으로 안내하며 기존 ZIP·시작.command/cmd 안내를 제거했다. 독립 downloads 채널은 v0.3.0이며 기존 코드로 세 설치 파일을 실제 내려받아 전체 크기·해시·파일명·Content-Type이 원본 Release와 일치함을 확인했다. 홈 200, 문의 health ready, Radar session 200, 미인증 다운로드 관리 API 401을 확인했다.
+
+Windows 진단·이력 조회 전용, 미서명·미공증, 사용자 API 키·대화 전송 고지는 유지한다. 실제 카카오톡 작업이나 API 호출은 하지 않았다. 이번 실행에서는 연결된 브라우저가 없어 새 반응형 렌더 검증은 미실시했으며 초기 HTML·동적 화면 회귀·운영 바이트 검증과 구분한다. 기존 공통 하네스의 채널별 완료 증거 규칙으로 이번 작업을 기록하며 중복 규칙은 추가하지 않았다.

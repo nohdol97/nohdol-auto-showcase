@@ -1,5 +1,9 @@
 # 프로젝트 하네스 변경 기록
 
+## 2026-09-20
+
+- 사용자 직접 승인 후 Kakao Summary 설치 안내를 Electron v0.3.0 PKG·Setup으로 운영 반영했다. source7125711, Worker0efe11f2; 77개 회귀·build·dry-run, 실제 HTML/metadata 바이트 일치, 기존 인증·health 확인. 설치 파일은 독립 다운로드 채널에서 세 플랫폼 전체 바이트 대조 완료.
+
 ## 2026-09-07
 
 - 사용자 요청으로 별도 Cloudflare Browser Run 진단을 배포했다. 실제 헤드리스 브라우저에서 같은 당근 업체가 HTTP 200, 고객 후기 8개·답글 5개·표시 전체 11개로 확인됐다. 4개 진단 테스트와 dry-run을 통과했으며 [실측 문서](proposals/001-daangn-cloudflare-headless.md)에 근거와 한계를 남겼다. 운영 Radar 연결은 아직 적용하지 않았다.

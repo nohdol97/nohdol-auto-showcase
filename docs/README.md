@@ -15,4 +15,4 @@
 - [당근 후기 프로그램 아이템 스펙](specs/004-review-opportunity-items.md) — 2026-09-07 운영 배포 및 당근 접근 차단 검증 기록
 - [후기 근거 경계 ADR](adr/003-review-evidence-boundary.md)
 - [당근 Cloudflare 헤드리스 실측](proposals/001-daangn-cloudflare-headless.md) — 진단 성공, 운영 Radar 연결 미적용
-- [Kakao Summary 공개 안내와 설치 경계](specs/005-kakao-summary-catalog.md) — 공개 게시·인증 다운로드 검증 완료, 예시 데이터 GIF 공개 반영·재생 검증 완료; 반복 요청429는 미관측
+- [Kakao Summary 공개 안내와 설치 경계](specs/005-kakao-summary-catalog.md) — Electron v0.3.0 PKG·Setup 공개 안내와 실제 인증 다운로드 검증 완료, 예시 데이터 GIF 유지
